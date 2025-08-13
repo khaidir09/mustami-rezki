@@ -8,12 +8,12 @@
 
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">All Product</h4>
+                <h4 class="fs-18 fw-semibold m-0">Semua Produk</h4>
             </div>
 
             <div class="text-end">
                 <ol class="breadcrumb m-0 py-0">
-                     <a href="{{ route('add.product') }}" class="btn btn-secondary">Add Product</a>
+                     <a href="{{ route('add.product') }}" class="btn btn-secondary">Tambah Produk</a>
                 </ol>
             </div>
         </div>
@@ -31,33 +31,33 @@
     <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
         <tr>
-            <th>Sl</th>
-            <th>Image</th>
-            <th>Name</th> 
-            <th>Warehouse</th>
-            <th>Price</th>
-            <th>In Stock</th> 
-            <th>Action</th>
+            <th>Kode</th>
+            <th>Foto</th>
+            <th>Nama Produk</th>
+            <th>Modal</th>
+            <th>Harga Jual</th>
+            <th>Stok</th> 
+            <th>Aksi</th>
         </tr>
         </thead>
         <tbody>
     @foreach ($allData as $key=> $item) 
     <tr>
-        <td>{{ $key+1 }}</td>
-        <td>
+        <td>{{ $item->code }}</td>
+         <td>
             @php
                 $primaryImage = $item->images->first()->image ?? '/upload/no_image.jpg';
             @endphp
             <img src="{{ asset($primaryImage) }}" alt="img" width="40px">
         </td>
         <td>{{ $item->name }}</td>
-        <td>{{ $item['warehouse']['name'] }}</td>
-        <td>{{ $item->price }}</td>
+        <td>Rp. {{ number_format($item->modal, 0, ',', '.') }}</td>
+        <td>Rp. {{ number_format($item->price, 0, ',', '.') }}</td>
         <td>
             @if ($item->product_qty <= 3)
-            <span class="badge text-bg-danger">{{ $item->product_qty }}</span>
+            <span class="badge text-bg-danger">{{ $item->product_qty }} {{ $item->satuan }}</span>
             @else
-                <h4> <span class="badge text-bg-secondary">{{ $item->product_qty }}</span></h4> 
+                <span class="badge text-bg-secondary">{{ $item->product_qty }} {{ $item->satuan }}</span>
             @endif
         </td>
         <td>

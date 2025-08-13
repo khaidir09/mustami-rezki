@@ -9,19 +9,22 @@ use App\Models\Customer;
 
 class SupplierController extends Controller
 {
-    public function AllSupplier(){
+    public function AllSupplier()
+    {
         $supplier = Supplier::latest()->get();
-        return view('admin.backend.supplier.all_supplier',compact('supplier'));
+        return view('admin.backend.supplier.all_supplier', compact('supplier'));
     }
     //End Method 
 
-    public function AddSupplier(){ 
+    public function AddSupplier()
+    {
         return view('admin.backend.supplier.add_supplier');
     }
     //End Method 
 
-    public function StoreSupplier(Request $request){
- 
+    public function StoreSupplier(Request $request)
+    {
+
         Supplier::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -32,19 +35,20 @@ class SupplierController extends Controller
         $notification = array(
             'message' => 'Supplier Inserted Successfully',
             'alert-type' => 'success'
-         ); 
-         return redirect()->route('all.supplier')->with($notification);
-
+        );
+        return redirect()->route('all.supplier')->with($notification);
     }
     //End Method 
 
-    public function EditSupplier($id){
+    public function EditSupplier($id)
+    {
         $supplier = Supplier::find($id);
-        return view('admin.backend.supplier.edit_supplier',compact('supplier'));
+        return view('admin.backend.supplier.edit_supplier', compact('supplier'));
     }
     //End Method 
 
-    public function UpdateSupplier(Request $request){
+    public function UpdateSupplier(Request $request)
+    {
         $supp_id = $request->id;
 
         Supplier::find($supp_id)->update([
@@ -57,39 +61,41 @@ class SupplierController extends Controller
         $notification = array(
             'message' => 'Supplier Updated Successfully',
             'alert-type' => 'success'
-         ); 
-         return redirect()->route('all.supplier')->with($notification);
-
+        );
+        return redirect()->route('all.supplier')->with($notification);
     }
     //End Method 
 
-    public function DeleteSupplier($id){
+    public function DeleteSupplier($id)
+    {
         Supplier::find($id)->delete();
 
         $notification = array(
             'message' => 'Supplier Delete Successfully',
             'alert-type' => 'success'
-         ); 
-         return redirect()->back()->with($notification);
-
+        );
+        return redirect()->back()->with($notification);
     }
     //End Method 
 
     ///// Customer Method All 
 
-    public function AllCustomer(){
+    public function AllCustomer()
+    {
         $customer = Customer::latest()->get();
-        return view('admin.backend.customer.all_customer',compact('customer'));
+        return view('admin.backend.customer.all_customer', compact('customer'));
     }
     //End Method 
 
-    public function AddCustomer(){ 
+    public function AddCustomer()
+    {
         return view('admin.backend.customer.add_customer');
     }
     //End Method 
 
-    public function StoreCustomer(Request $request){
- 
+    public function StoreCustomer(Request $request)
+    {
+
         Customer::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -100,48 +106,48 @@ class SupplierController extends Controller
         $notification = array(
             'message' => 'Customer Inserted Successfully',
             'alert-type' => 'success'
-         ); 
-         return redirect()->route('all.customer')->with($notification);
-
+        );
+        return redirect()->route('all.customer')->with($notification);
     }
     //End Method 
 
-    public function EditCustomer($id){
+    public function EditCustomer($id)
+    {
         $customer = Customer::find($id);
-        return view('admin.backend.customer.edit_customer',compact('customer')); 
+        return response()->json($customer);
     }
-        //End Method 
+    //End Method 
 
-public function UpdateCustomer(Request $request){
-    $cust_id = $request->id;
+    public function UpdateCustomer(Request $request)
+    {
+        $cust_id = $request->cust_id;
 
-    Customer::find($cust_id)->update([
-        'name' => $request->name,
-        'email' => $request->email,
-        'phone' => $request->phone,
-        'address' => $request->address,
-    ]);
+        Customer::find($cust_id)->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'address' => $request->address,
+        ]);
 
-    $notification = array(
-        'message' => 'Customer Updated Successfully',
-        'alert-type' => 'success'
-        ); 
-     return redirect()->route('all.customer')->with($notification);
+        $notification = array(
+            'message' => 'Pelanggan Berhasil Diperbarui',
+            'alert-type' => 'success'
+        );
+        return redirect()->back()->with($notification);
+    }
+    //End Method 
+
+    public function DeleteCustomer($id)
+    {
+        Customer::find($id)->delete();
+
+        $notification = array(
+            'message' => 'Pelanggan Berhasil Dihapus',
+            'alert-type' => 'success'
+        );
+        return redirect()->back()->with($notification);
+    }
+    //End Method 
+
+
 
 }
-//End Method 
-
-public function DeleteCustomer($id){
-    Customer::find($id)->delete();
-
-    $notification = array(
-        'message' => 'Customer Deleted Successfully',
-        'alert-type' => 'success'
-        ); 
-     return redirect()->back()->with($notification);
-}
-//End Method 
-
-
-
-} 

@@ -8,12 +8,12 @@
 
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">All Product Category</h4>
+                <h4 class="fs-18 fw-semibold m-0">Semua Kategori</h4>
             </div>
 
             <div class="text-end">
                 <ol class="breadcrumb m-0 py-0"> 
-    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#standard-modal"> Add Category </button>
+    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#standard-modal"> Tambah Kategori </button>
                 </ol>
             </div>
         </div>
@@ -31,10 +31,9 @@
     <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
         <tr>
-            <th>Sl</th>
-            <th>Category Name</th>
-            <th>Category Slug</th>  
-            <th>Action</th>
+            <th>No.</th>
+            <th>Nama Kategori</th>
+            <th>Aksi</th>
         </tr>
         </thead>
         <tbody>
@@ -42,12 +41,11 @@
             <tr>
                 <td>{{ $key+1 }}</td>
                 <td>{{ $item->category_name }}</td>
-                <td>{{ $item->category_slug }}</td> 
                 <td> 
 
             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#category" id="{{ $item->id }}" onclick="categoryEdit(this.id)"> Edit</button>
 
-            <a href="{{ route('delete.category',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Delete</a>    
+            <a href="{{ route('delete.category',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>    
                 </td> 
             </tr>
             @endforeach 
@@ -76,7 +74,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="standard-modalLabel">Product Category</h1>
+                <h1 class="modal-title fs-5" id="standard-modalLabel">Kategori Produk</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -85,13 +83,13 @@
     @csrf
 
     <div class="form-group col-md-12">
-        <label for="input1" class="form-label">Product Category Name</label>
+        <label for="input1" class="form-label">Nama Kategori</label>
         <input type="text" name="category_name" class="form-control" id="input1"> 
     </div> 
             
     </div>
     <div class="modal-footer"> 
-        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
     </div>
 </form>
 
@@ -110,7 +108,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="standard-modalLabel">Edit Product Category</h1>
+                <h1 class="modal-title fs-5" id="standard-modalLabel">Edit Kategori Produk</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -120,13 +118,13 @@
      <input type="hidden" name="cat_id" id="cat_id">
 
     <div class="form-group col-md-12">
-        <label for="input1" class="form-label">Product Category Name</label>
+        <label for="input1" class="form-label">Nama Kategori</label>
         <input type="text" name="category_name" class="form-control" id="cat"> 
     </div> 
             
     </div>
     <div class="modal-footer"> 
-        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
     </div>
 </form>
 
