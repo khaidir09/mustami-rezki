@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sales Invoice</title>
+    <title>Nota Penjualan</title>
     <style>
         * {
             margin: 0;
@@ -116,42 +116,38 @@
 <body>
     <div class="invoice-container">
         <div class="invoice-header">
-            <h5>Sales Invoice</h5>
+            <h5>Nota Penjualan</h5>
         </div>
 
         <table class="info-section">
             <tr>
                 <td class="info-box">
-                    <h5>Customer Info</h5>
-<p><strong>Name:</strong> {{ $sales->customer->name }} </p>
-<p><strong>Email:</strong> {{ $sales->customer->email }}</p>
-<p><strong>Phone:</strong> {{ $sales->customer->phone }} </p>
+                    <h5>Info Pelanggan</h5>
+<p><strong>Nama:</strong> {{ $sales->customer->name }} </p>
+<p><strong>Nomor HP/WA:</strong> {{ $sales->customer->phone }} </p>
+<p><strong>Alamat:</strong> {{ $sales->customer->address }} </p>
                 </td>
                 <td class="info-box">
-                    <h5>Warehouse</h5>
-                    <p>{{ $sales->warehouse->name }} </p>
-                </td>
-                <td class="info-box">
-                    <h5>Sales Info</h5>
-<p><strong>Date:</strong> {{ $sales->date }} </p>
+                    <h5>Info Penjualan</h5>
+<p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($sales->date)->locale('id')->translatedFormat('d F Y') }} </p>
 <p><strong>Status:</strong> {{ $sales->status }} </p>
-<p><strong>Grand Total:</strong> ${{ number_format($sales->grand_total, 2)  }} </p>
-<p><strong>Paid Amount:</strong> ${{ number_format($sales->paid_amount, 2)  }} </p>
-<p><strong>Due Amount:</strong> ${{ number_format($sales->due_amount, 2)  }} </p>
+<p><strong>Grand Total:</strong> Rp {{ number_format($sales->grand_total, 0, ',', '.')  }} </p>
+<p><strong>Jumlah yang dibayarkan:</strong> Rp {{ number_format($sales->paid_amount, 0, ',', '.')  }} </p>
+<p><strong>Jumlah terhutang:</strong> Rp {{ number_format($sales->due_amount, 0, ',', '.')  }} </p>
                 </td>
             </tr>
         </table>
 
-        <h5 style="font-weight: bold; margin: 20px 0 10px;">Order Summary</h5>
+        <h5 style="font-weight: bold; margin: 20px 0 10px;">Ringkasan Penjualan</h5>
         <table class="table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Net Unit Cost</th>
-                    <th>Discount</th>
-                    <th>Subtotal</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Harga</th>
+                    <th>Diskon</th>
+                    <th>Sub total</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,9 +156,9 @@
                 <td>{{ $key + 1 }}</td>
                 <td>{{ $item->product->name }}</td>
                 <td>{{ $item->quantity }}</td>
-                <td>${{ number_format($item->net_unit_cost,2)  }}</td>
-                <td>${{ number_format($item->discount,2)  }}</td>
-                <td>${{ number_format($item->subtotal,2)  }}</td>
+                <td>Rp {{ number_format($item->net_unit_cost,0)  }}</td>
+                <td>Rp {{ number_format($item->discount,0)  }}</td>
+                <td>Rp {{ number_format($item->subtotal,0)  }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -170,13 +166,13 @@
 
         <table class="summary-table">
             <tr>
-                <td><strong>Total Discount:</strong> ${{ number_format($sales->discount,2)  }} </td>
+                <td><strong>Total Diskon:</strong> Rp {{ number_format($sales->discount,0)  }} </td>
             </tr>
             <tr>
-                <td><strong>Shipping Cost:</strong> ${{ number_format($sales->shipping,2)  }} </td>
+                <td><strong>Ongkos Kirim:</strong> Rp {{ number_format($sales->shipping,0)  }} </td>
             </tr>
             <tr>
-                <td><strong>Grand Total:</strong> ${{ number_format($sales->grand_total,2)  }} </td>
+                <td><strong>Grand Total:</strong> Rp {{ number_format($sales->grand_total,0)  }} </td>
             </tr>
         </table>
     </div>

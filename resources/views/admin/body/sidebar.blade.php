@@ -49,6 +49,13 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('all.sale') }}" class="tp-link">
+                        <i data-feather="award"></i>
+                        Penjualan
+                    </a>
+                </li>
+
 
                 {{-- <li>
                     <a href="#Purchase" data-bs-toggle="collapse">
@@ -64,24 +71,6 @@
                             <li>
                                 <a href="{{ route('all.return.purchase') }}" class="tp-link">Purchase Return</a>
                             </li>         
-                        </ul>
-                    </div>
-                </li>
-
-                <li>
-                    <a href="#Sale" data-bs-toggle="collapse">
-                    <i data-feather="award"></i>
-                        <span> Sale Manage </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="Sale">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="{{ route('all.sale') }}" class="tp-link">All Sale</a>
-                            </li>   
-                            <li>
-                                <a href="{{ route('all.sale.return') }}" class="tp-link">Sale Return</a>
-                            </li>        
                         </ul>
                     </div>
                 </li>

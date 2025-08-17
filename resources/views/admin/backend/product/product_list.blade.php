@@ -28,7 +28,8 @@
                     </div><!-- end card header -->
 
 <div class="card-body">
-    <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+    <div class="table-responsive">
+        <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
         <tr>
             <th>Kode</th>
@@ -51,8 +52,8 @@
             <img src="{{ asset($primaryImage) }}" alt="img" width="40px">
         </td>
         <td>{{ $item->name }}</td>
-        <td>Rp. {{ number_format($item->modal, 0, ',', '.') }}</td>
-        <td>Rp. {{ number_format($item->price, 0, ',', '.') }}</td>
+        <td>Rp {{ number_format($item->modal, 0, ',', '.') }}</td>
+        <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
         <td>
             @if ($item->product_qty <= 3)
             <span class="badge text-bg-danger">{{ $item->product_qty }} {{ $item->satuan }}</span>
@@ -72,6 +73,7 @@
                 
         </tbody>
     </table>
+    </div>
 </div>
 
                 </div>

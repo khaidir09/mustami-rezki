@@ -4,10 +4,17 @@
 <div class="content d-flex flex-column flex-column-fluid">
    <div class="d-flex flex-column-fluid">
       <div class="container-fluid my-4">
-         <div class="d-md-flex align-items-center justify-content-between">
-            <h3 class="mb-0">Edit Sales</h3>
-            <div class="text-end my-2 mt-md-0"><a class="btn btn-outline-primary" href="{{ route('all.sale') }}">Back</a></div>
-         </div>
+         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+            <div class="flex-grow-1">
+                <h2 class="fs-22 fw-semibold m-0">Edit Penjualan</h2>
+            </div>
+
+            <div class="text-end">
+                <ol class="breadcrumb m-0 py-0">
+                     <a href="{{ route('all.sale') }}" class="btn btn-dark">Kembali</a>
+                </ol>
+            </div>
+        </div>
          
 
  <div class="card">
@@ -21,33 +28,18 @@
     <div class="card">
        <div class="row">
           <div class="col-md-4 mb-3">
-             <label class="form-label">Date:  <span class="text-danger">*</span></label>
+             <label class="form-label">Tanggal: </label>
              <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>" class="form-control" value="{{ $editData->date }}">
              @error('date')
              <span class="text-danger">{{ $message }}</span>
              @enderror
           </div>
 
-        <input type="hidden" name="warehouse_id" value="{{ $editData->warehouse_id }}">
-
-          <div class="col-md-4 mb-3">
-                <div class="form-group w-100">
-                <label class="form-label" for="formBasic">Warehouse : <span class="text-danger">*</span></label>
-                <select name="warehouse_id" id="warehouse_id" class="form-control form-select" disabled>
-    <option value="">Select Warehouse</option>
-    @foreach ($warehouses as $item)
-    <option value="{{ $item->id }}" {{ $editData->warehouse_id == $item->id ? 'selected' : '' }} >{{ $item->name }}</option>
-    @endforeach
-                </select>
-                <small id="warehouse_error" class="text-danger d-none">Please select the first warehouse.</small>
-                </div>
-          </div>
-
           <div class="col-md-4 mb-3">
              <div class="form-group w-100">
-                <label class="form-label" for="formBasic">Customer : <span class="text-danger">*</span></label>
+                <label class="form-label" for="formBasic">Pelanggan :</label>
                 <select name="customer_id" id="customer_id" class="form-control form-select" >
-                   <option value="">Select Customer</option>
+                   <option value="">Pilih Pelanggan</option>
                    @foreach ($customers as $item)
                    <option value="{{ $item->id }}" {{ $editData->customer_id == $item->id ? 'selected' : '' }}>{{ $item->name }}</option>
                    @endforeach
@@ -59,12 +51,12 @@
 
        <div class="row">
           <div class="col-md-12 mb-3">
-             <label class="form-label">Product:</label>
+             <label class="form-label">Produk:</label>
              <div class="input-group">
                    <span class="input-group-text">
                       <i class="fas fa-search"></i>
                    </span>
-                   <input type="search" id="product_search" name="search" class="form-control" placeholder="Search product by code or name">
+                   <input type="search" id="product_search" name="search" class="form-control" placeholder="Cari produk berdasarkan nama atau kode">
              </div>
              <div id="product_list" class="list-group mt-2"></div>
           </div>
@@ -75,68 +67,70 @@
 
   <div class="row">
      <div class="col-md-12">
-        <label class="form-label">Order items: <span class="text-danger">*</span></label>
-        <table class="table table-striped table-bordered dataTable" style="width: 100%;">
-           <thead>
-              <tr role="row">
-                 <th>Product</th>
-                 <th>Net Unit Cost</th>
-                 <th>Stock</th>
-                 <th>Qty</th>
-                 <th>Discount</th>
-                 <th>Subtotal</th>
-                 <th>Action</th>
-              </tr>
-           </thead>
-           <tbody id="productBody">
-    @foreach ($editData->saleItems as $item)
-    <tr data-id={{ $item->id  }}>
-       
-        <td class="d-flex align-items-center gap-2">
-            <input type="text" class="form-control" value="{{ $item->product->code }} - {{ $item->product->name }}" readonly style="max-width: 300px" >
-            <button type="button" class="btn btn-primary btn-sm edit-discount-btn" 
-            data-id="{{ $item->id }}"
-            data-name="{{ $item->product->name }}"
-            data-cost="{{ $item->net_unit_cost }}"
-            data-bs-toggle="modal" data-bs-target="#discountModal" >
-            <span class="mdi mdi-book-edit "></span> 
-            </button> 
-        </td>
+        <label class="form-label">Item Penjualan:</label>
+        <div class="table-responsive">
+         <table class="table table-striped table-bordered dataTable" style="width: 100%;">
+                  <thead>
+                     <tr role="row">
+                        <th>Produk</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Jumlah</th>
+                        <th>Diskon</th>
+                        <th>Sub Total</th>
+                        <th>Aksi</th>
+                     </tr>
+                  </thead>
+                  <tbody id="productBody">
+            @foreach ($editData->saleItems as $item)
+            <tr data-id={{ $item->id  }}>
+               
+               <td class="d-flex align-items-center gap-2">
+                     <input type="text" class="form-control" value="{{ $item->product->code }} - {{ $item->product->name }}" readonly style="max-width: 300px" >
+                     <button type="button" class="btn btn-primary btn-sm edit-discount-btn" 
+                     data-id="{{ $item->id }}"
+                     data-name="{{ $item->product->name }}"
+                     data-cost="{{ $item->net_unit_cost }}"
+                     data-bs-toggle="modal" data-bs-target="#discountModal" >
+                     <span class="mdi mdi-book-edit "></span> 
+                     </button> 
+               </td>
 
-    <td>
-        <input type="number" name="products[{{ $item->product->id }}][net_unit_cost]" class="form-control net-cost" value="{{ $item->net_unit_cost }}" style="max-width: 90px;" readonly>
+            <td>
+               <input type="number" name="products[{{ $item->product->id }}][net_unit_cost]" class="form-control net-cost" value="{{ $item->net_unit_cost }}" style="max-width: 90px;" readonly>
 
-    </td>
-    <td>
-        <input type="number" name="products[{{ $item->product->id }}][stock]" class="form-control" value="{{ $item->product->product_qty }}" style="max-width: 80px;" readonly>
-    </td>
+            </td>
+            <td>
+               <input type="number" name="products[{{ $item->product->id }}][stock]" class="form-control" value="{{ $item->product->product_qty }}" style="max-width: 80px;" readonly>
+            </td>
 
-    <td>
-        <div class="input-group">
-            <button class="btn btn-outline-secondary decrement-qty" type="button">−</button>
-            <input type="text" class="form-control text-center qty-input"
-                name="products[{{ $item->product->id }}][quantity]" value="{{ $item->quantity }}" min="1" max="{{ $item->stock }}"
-                data-cost="{{ $item->net_unit_cost }}" style="max-width: 50px;">
-            <button class="btn btn-outline-secondary increment-qty" type="button">+</button>
+            <td>
+               <div class="input-group">
+                     <button class="btn btn-outline-secondary decrement-qty" type="button">−</button>
+                     <input type="text" class="form-control text-center qty-input"
+                        name="products[{{ $item->product->id }}][quantity]" value="{{ $item->quantity }}" min="1" max="{{ $item->stock }}"
+                        data-cost="{{ $item->net_unit_cost }}" style="max-width: 50px;">
+                     <button class="btn btn-outline-secondary increment-qty" type="button">+</button>
+               </div>
+            </td>
+
+            <td>
+               <input type="number" class="form-control discount-input"
+                     name="products[{{ $item->product->id }}][discount]" value="{{ $item->discount }}" style="max-width: 100px;">
+            </td>
+
+            <td class="subtotal">{{ number_format($item->subtotal,2) }}</td>
+            <input type="hidden" name="products[{{ $item->product->id }}][subtotal]" value="{{ $item->subtotal }}">
+
+            <td><button type="button" class="btn btn-danger btn-sm remove-item" data-id="{{ $item->id }}"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td> 
+
+            </tr> 
+               
+            @endforeach
+               
+                  </tbody>
+            </table>
         </div>
-    </td>
-
-    <td>
-        <input type="number" class="form-control discount-input"
-            name="products[{{ $item->product->id }}][discount]" value="{{ $item->discount }}" style="max-width: 100px;">
-    </td>
-
-    <td class="subtotal">{{ number_format($item->subtotal,2) }}</td>
-    <input type="hidden" name="products[{{ $item->product->id }}][subtotal]" value="{{ $item->subtotal }}">
-
-    <td><button type="button" class="btn btn-danger btn-sm remove-item" data-id="{{ $item->id }}"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td> 
-
-    </tr> 
-        
-    @endforeach
-        
-           </tbody>
-        </table>
      </div>
   </div>
 
@@ -148,36 +142,35 @@
              <table class="table border">
                 <tbody>
                    <tr>
-                      <td class="py-3">Discount</td>
-                      <td class="py-3" id="displayDiscount">TK {{ $editData->discount }}</td>
+                      <td class="py-3">Diskon</td>
+                      <td class="py-3" id="displayDiscount">Rp {{ $editData->discount }}</td>
                    </tr>
                    <tr>
-                      <td class="py-3">Shipping</td>
-                      <td class="py-3" id="shippingDisplay">TK {{ $editData->shipping }}</td>
+                      <td class="py-3">Pengiriman</td>
+                      <td class="py-3" id="shippingDisplay">Rp {{ $editData->shipping }}</td>
                    </tr>
                    <tr>
                       <td class="py-3 text-primary">Grand Total</td>
-                      <td class="py-3 text-primary" id="grandTotal">TK {{ $editData->grand_total }}</td>
+                      <td class="py-3 text-primary" id="grandTotal">Rp {{ $editData->grand_total }}</td>
                       <input type="hidden" name="grand_total" value="{{ $editData->grand_total }}">
                    </tr>      
                    
                
                   <tr>
-                      <td class="py-3">Paid Amount</td>
-                      <td class="py-3" id="paidAmount"> 
-                      <input type="text" name="paid_amount" value="{{ $editData->paid_amount }}" class="form-control">
+                      <td class="py-3">Jumlah yang dibayarkan</td>
+                      <td class="py-3" id="paidAmount">
+                        <div class="input-group">
+                              <input type="text" name="paid_amount" value="{{ $editData->paid_amount }}" class="form-control">
+                              <div class="input-group-append">
+                                 {{-- INI TOMBOL BARUNYA --}}
+                                 <button type="button" class="btn btn-success" id="btn-lunas">Lunas</button>
+                              </div>
+                        </div>
                       </td>
                    </tr>
-                   <!-- new add full paid functionality  -->
                    <tr>
-                      <td class="py-3">Full Paid</td>
-                      <td class="py-3" id="fullPaid"> 
-                         <input type="text" class="form-control" name="full_paid" id="fullPaidInput" value="{{ $editData->full_paid }}"> 
-                      </td>
-                   </tr>
-                   <tr>
-                      <td class="py-3">Due Amount</td>
-                      <td class="py-3" id="dueAmount">TK {{ $editData->due_amount }}</td>
+                      <td class="py-3">Jumlah terhutang</td>
+                      <td class="py-3" id="dueAmount">Rp {{ $editData->due_amount }}</td>
                       <input type="hidden" name="due_amount">
                    </tr>
               
@@ -193,21 +186,20 @@
 
       <div class="row">
          <div class="col-md-4">
-            <label class="form-label">Discount: </label>
+            <label class="form-label">Diskon: </label>
             <input type="number" id="inputDiscount" name="discount" class="form-control" value="{{ $editData->discount }}">
          </div>
          <div class="col-md-4">
-            <label class="form-label">Shipping: </label>
+            <label class="form-label">Pengiriman: </label>
             <input type="number" id="inputShipping" name="shipping" class="form-control" value="{{ $editData->shipping }}">
          </div>
          <div class="col-md-4">
             <div class="form-group w-100">
                <label class="form-label" for="formBasic">Status : <span class="text-danger">*</span></label>
                <select name="status" id="status" class="form-control form-select">
-                  <option value="">Select Status</option>
-                  <option value="Sale" {{ $editData->status == 'Sale' ? 'selected' : '' }} >Sale</option>
+                  <option value="Terjual" {{ $editData->status == 'Terjual' ? 'selected' : '' }} >Terjual</option>
                   <option value="Pending"  {{ $editData->status == 'Pending' ? 'selected' : '' }} >Pending</option>
-                  <option value="Ordered" {{ $editData->status == 'Ordered' ? 'selected' : '' }} >Ordered</option>
+                  <option value="Dipesan" {{ $editData->status == 'Dipesan' ? 'selected' : '' }} >Dipesan</option>
                </select>
                @error('status')
                   <span class="text-danger">{{ $message }}</span>
@@ -217,7 +209,7 @@
       </div>
 
       <div class="col-md-12 mt-2">
-         <label class="form-label">Notes: </label>
+         <label class="form-label">Catatan: </label>
          <textarea class="form-control" name="note" rows="3" placeholder="Enter Notes">{{ $editData->note }}</textarea>
       </div>
    </div>
@@ -225,9 +217,9 @@
 </div>
 
      <div class="col-xl-12">
-        <div class="d-flex mt-5 justify-content-end">
-           <button class="btn btn-primary me-3" type="submit">Save</button>
-           <a class="btn btn-secondary" href="{{ route('all.sale') }}">Cancel</a>
+        <div class="d-flex justify-content-end">
+           <button class="btn btn-primary me-3" type="submit">Simpan</button>
+           <a class="btn btn-secondary" href="{{ route('all.sale') }}">Batal</a>
         </div>
      </div>
   </div>
@@ -326,7 +318,7 @@
           }
  
           // Update Grand Total display
-          document.getElementById("grandTotal").textContent = `TK ${grandTotal.toFixed(2)}`;
+          document.getElementById("grandTotal").textContent = `Rp ${grandTotal.toFixed(2)}`;
  
           // Also update the hidden input field
           document.getElementById("grandTotalInput").value = grandTotal.toFixed(2);

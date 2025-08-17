@@ -41,8 +41,8 @@
             <li class="list-group-item"><strong>Kode:</strong> {{ $product->code }} </li>
             <li class="list-group-item"><strong>Nama:</strong> {{ $product->name }} </li>
             <li class="list-group-item"><strong>Kategori:</strong> {{ $product->category->category_name }} </li>
-            <li class="list-group-item"><strong>Modal:</strong> Rp. {{ number_format($product->modal, 0, ',', '.') }} </li>
-            <li class="list-group-item"><strong>Harga Jual:</strong> Rp. {{ number_format($product->price, 0, ',', '.') }} </li>
+            <li class="list-group-item"><strong>Modal:</strong> Rp {{ number_format($product->modal, 0, ',', '.') }} </li>
+            <li class="list-group-item"><strong>Harga Jual:</strong> Rp {{ number_format($product->price, 0, ',', '.') }} </li>
             <li class="list-group-item"><strong>Stok:</strong> {{ $product->product_qty }} {{ $product->satuan }}</li>
             <li class="list-group-item"><strong>Peringatan Stok Minimal:</strong> {{ $product->stock_alert }} </li>
             <li class="list-group-item"><strong>Catatan:</strong> {{ $product->note }} </li>
