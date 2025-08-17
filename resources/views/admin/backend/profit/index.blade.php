@@ -1,0 +1,116 @@
+@extends('admin.admin_master')
+@section('admin')
+
+<div class="content">
+
+    <div class="container-xxl">
+
+        <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+            <div class="flex-grow-1">
+                <h4 class="fs-18 fw-semibold m-0">Laporan Distribusi Profit</h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Pengembangan Modal</h5>
+                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalModal, 0, ',', '.') }}</h3>
+                        <p class="text-muted mb-0">Total dana terkumpul</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Pribadi</h5>
+                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalPribadi, 0, ',', '.') }}</h3>
+                        <p class="text-muted mb-0">Total dana terkumpul</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Sedekah</h5>
+                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalSedekah, 0, ',', '.') }}</h3>
+                        <p class="text-muted mb-0">Total dana terkumpul</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        
+                        <form action="{{ route('profit.distribution.report') }}" method="GET" class="mb-4">
+                            <div class="row align-items-end">
+                                <div class="col-md-4">
+                                    <label for="start_date" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="end_date" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                    <a href="{{ route('profit.distribution.report') }}" class="btn btn-secondary">Reset</a>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Tanggal</th>
+                                        <th>ID Transaksi</th>
+                                        <th>Tipe Transaksi</th>
+                                        <th>Jenis Distribusi</th>
+                                        <th>Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($distributions as $key => $item)
+                                    <tr>
+                                        <td>{{ $key+1  }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}</td>
+                                        <td>
+                                            @if($item->transaction_type == 'App\Models\Sale')
+                                                <a href="{{ route('details.sale', $item->transaction_id) }}">SALE-{{ $item->transaction_id }}</a>
+                                            @else
+                                                {{-- Tambahkan link untuk tipe lain jika ada, misal Jasa Jahit --}}
+                                                TRX-{{ $item->transaction_id }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            {{-- Menampilkan nama model yang lebih ramah dibaca --}}
+                                            {{ str_replace('App\Models\\', '', $item->transaction_type) }}
+                                        </td>
+                                        <td>
+                                            {{-- Mengubah snake_case menjadi Title Case --}}
+                                            {{ ucwords(str_replace('_', ' ', $item->distribution_type)) }}
+                                        </td>
+                                        <td>Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center">Tidak ada data ditemukan.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                        </div> 
+                    </div>
+                 </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

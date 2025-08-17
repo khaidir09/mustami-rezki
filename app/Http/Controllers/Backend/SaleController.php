@@ -189,6 +189,10 @@ class SaleController extends Controller
             $sales = Sale::findOrFail($id);
             $SalesItems = SaleItem::where('sale_id', $id)->get();
 
+            ProfitDistribution::where('transaction_id', $sales->id)
+                ->where('transaction_type', Sale::class) // Penting untuk polymorphic
+                ->delete();
+
             foreach ($SalesItems as $item) {
                 $product = Product::find($item->product_id);
                 if ($product) {

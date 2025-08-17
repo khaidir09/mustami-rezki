@@ -56,6 +56,13 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('profit.distribution.report') }}" class="tp-link">
+                        <i data-feather="award"></i>
+                        Laporan Profit
+                    </a>
+                </li>
+
 
                 {{-- <li>
                     <a href="#Purchase" data-bs-toggle="collapse">
