@@ -23,10 +23,6 @@
             <div class="col-12">
                 <div class="card">
 
-                    <div class="card-header">
-                         
-                    </div><!-- end card header -->
-
 <div class="card-body">
     <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
@@ -134,25 +130,35 @@
 </div>
 
 
-<script>
-    function categoryEdit(id){
-        $.ajax({
-            type: 'GET',
-            url: '/edit/category/'+id,
-            dataType: 'json',
-
-            success:function(data){
-                // console.log(data);
-                 $('#cat').val(data.category_name);
-                 $('#cat_id').val(data.id); 
-                
-            }
-        })
-    }
-</script>
-
-
 
 
 
 @endsection
+
+@push('scripts')
+    <script>
+        function categoryEdit(id){
+            $.ajax({
+                type: 'GET',
+                url: '/edit/category/'+id,
+                dataType: 'json',
+
+                success:function(data){
+                    // console.log(data);
+                    $('#cat').val(data.category_name);
+                    $('#cat_id').val(data.id); 
+                    
+                }
+            })
+        }
+    </script>
+    <script>
+        $("#datatable").dataTable({
+            "columnDefs": [{
+                "sortable": false,
+                "targets": [2]
+            }],
+            "order": [[0, "asc"]]
+        });
+    </script>
+@endpush

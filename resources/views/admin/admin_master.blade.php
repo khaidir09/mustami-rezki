@@ -28,6 +28,8 @@
 
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" >
 
+        @stack('style')
+
     </head>
 
     <!-- body start -->
@@ -129,6 +131,6 @@
          @endif 
         </script>
         
-
+        @stack('scripts')
     </body>
 </html>

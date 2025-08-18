@@ -23,10 +23,6 @@
             <div class="col-12">
                 <div class="card">
 
-                    <div class="card-header">
-                         
-                    </div><!-- end card header -->
-
 <div class="card-body">
     <div class="table-responsive">
         <table id="datatable" class="table table-bordered">
@@ -183,3 +179,15 @@
 
 
 @endsection
+
+@push('scripts')
+    <script>
+        $("#datatable").dataTable({
+            "columnDefs": [{
+                "sortable": false,
+                "targets": [4]
+            }],
+            "order": [[0, "asc"]]
+        });
+    </script>
+@endpush
