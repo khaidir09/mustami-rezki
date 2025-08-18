@@ -57,6 +57,20 @@
                 </li>
 
                 <li>
+                    <a href="{{ route('all.service') }}" class="tp-link">
+                        <i data-feather="award"></i>
+                        Jasa Jahit
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('all.tailor') }}" class="tp-link">
+                        <i data-feather="award"></i>
+                        Transaksi Jahit
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ route('profit.distribution.report') }}" class="tp-link">
                         <i data-feather="award"></i>
                         Laporan Profit

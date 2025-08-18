@@ -11,6 +11,8 @@ use App\Http\Controllers\Backend\PurchaseController;
 use App\Http\Controllers\Backend\SupplierController;
 use App\Http\Controllers\Backend\TransferController;
 use App\Http\Controllers\Backend\SaleReturnController;
+use App\Http\Controllers\Backend\ServiceController;
+use App\Http\Controllers\Backend\TailorTransactionController;
 use App\Http\Controllers\ProfitDistributionController;
 
 
@@ -146,6 +148,26 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(ReportController::class)->group(function () {
         Route::get('/laporan/distribusi-profit', [ProfitDistributionController::class, 'index'])->name('profit.distribution.report');
+    });
+
+    Route::controller(ServiceController::class)->group(function () {
+        Route::get('/all/service', 'AllService')->name('all.service');
+        Route::get('/add/service', 'AddService')->name('add.service');
+        Route::post('/store/service', 'StoreService')->name('store.service');
+        Route::get('/edit/service/{id}', 'EditService')->name('edit.service');
+        Route::post('/update/service', 'UpdateService')->name('update.service');
+        Route::get('/delete/service/{id}', 'DeleteService')->name('delete.service');
+    });
+
+    Route::controller(TailorTransactionController::class)->group(function () {
+        Route::get('/all/tailor', 'index')->name('all.tailor');
+        Route::get('/add/tailor', 'create')->name('add.tailor');
+        Route::post('/store/tailor', 'store')->name('store.tailor');
+        Route::get('/edit/tailor/{id}', 'edit')->name('edit.tailor');
+        Route::post('/update/tailor/{id}', 'update')->name('update.tailor');
+        Route::get('/delete/tailor/{id}', 'destroy')->name('delete.tailor');
+        Route::get('/details/tailor/{id}', 'show')->name('details.tailor');
+        // Route::get('/invoice/tailor/{id}', 'InvoiceSales')->name('invoice.tailor');
     });
 
 
