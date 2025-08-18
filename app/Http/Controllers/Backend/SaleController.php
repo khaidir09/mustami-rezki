@@ -48,7 +48,7 @@ class SaleController extends Controller
             $grandTotal = 0;
             $totalProfit = 0;
 
-            $sales = Sale::create([
+            $editdatas = Sale::create([
                 'date' => $request->date,
                 'customer_id' => $request->customer_id,
                 'discount' => $request->discount ?? 0,
@@ -77,7 +77,7 @@ class SaleController extends Controller
                 $grandTotal += $subtotal;
 
                 SaleItem::create([
-                    'sale_id' => $sales->id,
+                    'sale_id' => $editdatas->id,
                     'product_id' => $productData['id'],
                     'net_unit_cost' => $netUnitCost,
                     'stock' => $product->product_qty + $productData['quantity'],
@@ -89,7 +89,7 @@ class SaleController extends Controller
                 $product->decrement('product_qty', $productData['quantity']);
             }
 
-            $sales->update(['grand_total' => $grandTotal + $request->shipping - $request->discount]);
+            $editdatas->update(['grand_total' => $grandTotal + $request->shipping - $request->discount]);
 
             if ($totalProfit > 0) {
                 // 4. Hitung jumlah untuk setiap bagian (1/3)
@@ -99,7 +99,7 @@ class SaleController extends Controller
                 // 5. Buat data distribusi untuk setiap jenis
                 foreach ($distributionTypes as $type) {
                     ProfitDistribution::create([
-                        'transaction_id'   => $sales->id,
+                        'transaction_id'   => $editdatas->id,
                         'transaction_type' => Sale::class, // Menggunakan class constant lebih aman
                         'distribution_type' => $type,
                         'amount'           => $amountPerShare,
@@ -123,62 +123,114 @@ class SaleController extends Controller
 
     public function EditSales($id)
     {
-        $editData = Sale::with('saleItems.product')->findOrFail($id);
+        $sale = Sale::with('saleItems.product')->findOrFail($id);
         $customers = Customer::all();
-        return view('admin.backend.sales.edit_sales', compact('editData', 'customers'));
+        return view('admin.backend.sales.edit_sales', compact('sale', 'customers'));
     }
     // End Method 
 
     public function UpdateSales(Request $request, $id)
     {
-
         $request->validate([
             'date' => 'required|date',
+            'customer_id' => 'required',
             'status' => 'required',
+            'products' => 'required|array|min:1' // Pastikan ada minimal 1 produk
         ]);
 
-        $sales = Sale::findOrFail($id);
-        $sales->update([
-            'date' => $request->date,
-            'customer_id' => $request->customer_id,
-            'discount' => $request->discount ?? 0,
-            'shipping' => $request->shipping ?? 0,
-            'status' => $request->status,
-            'note' => $request->note,
-            'grand_total' => $request->grand_total,
-            'paid_amount' => $request->paid_amount,
-            'due_amount' => $request->due_amount,
-            'full_paid' => $request->full_paid,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // Delete old sales item
-        SaleItem::where('sale_id', $sales->id)->delete();
+            $sale = Sale::findOrFail($id);
 
-        foreach ($request->products as $product_id => $product) {
-            SaleItem::create([
-                'sale_id' => $sales->id,
-                'product_id' => $product_id,
-                'net_unit_cost' => $product['net_unit_cost'],
-                'stock' => $product['stock'],
-                'quantity' => $product['quantity'],
-                'discount' => $product['discount'] ?? 0,
-                'subtotal' => $product['subtotal'],
+            $oldSaleItems = $sale->saleItems;
+            foreach ($oldSaleItems as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $product->increment('product_qty', $item->quantity);
+                }
+            }
+
+            $sale->saleItems()->delete();
+            ProfitDistribution::where('transaction_id', $sale->id)
+                ->where('transaction_type', Sale::class)
+                ->delete();
+
+            $grandTotal = 0;
+            $totalProfit = 0;
+
+            foreach ($request->products as $product_id => $productData) {
+                $product = Product::findOrFail($product_id);
+
+                $netUnitCost = $productData['net_unit_cost'] ?? $product->price;
+
+                $itemProfit = ($netUnitCost - $product->cost) * $productData['quantity'];
+                $totalProfit += $itemProfit;
+
+                $subtotal = ($netUnitCost * $productData['quantity']) - ($productData['discount'] ?? 0);
+                $grandTotal += $subtotal;
+
+                SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'product_id' => $product_id,
+                    'net_unit_cost' => $netUnitCost,
+                    'stock' => $product->product_qty, // Stok saat ini sebelum dikurangi
+                    'quantity' => $productData['quantity'],
+                    'discount' => $productData['discount'] ?? 0,
+                    'subtotal' => $subtotal,
+                ]);
+
+                // Kurangi stok produk dengan kuantitas baru
+                $product->decrement('product_qty', $productData['quantity']);
+            }
+
+            // === 4. UPDATE DATA PENJUALAN UTAMA ===
+            $finalGrandTotal = $grandTotal + ($request->shipping ?? 0) - ($request->discount ?? 0);
+            $dueAmount = $finalGrandTotal - ($request->paid_amount ?? 0);
+
+            $sale->update([
+                'date' => $request->date,
+                'customer_id' => $request->customer_id,
+                'discount' => $request->discount ?? 0,
+                'shipping' => $request->shipping ?? 0,
+                'status' => $request->status,
+                'note' => $request->note,
+                'grand_total' => $finalGrandTotal,
+                'paid_amount' => $request->paid_amount ?? 0,
+                'due_amount' => $dueAmount,
             ]);
 
-            /// Update Product Stock
+            // === 5. BUAT ULANG DISTRIBUSI PROFIT ===
+            if ($totalProfit > 0) {
+                $amountPerShare = $totalProfit / 3;
+                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
 
-            $productModel = Product::find($product_id);
-            if ($productModel) {
-                $productModel->product_qty += $product['quantity'];
-                $productModel->save();
+                foreach ($distributionTypes as $type) {
+                    ProfitDistribution::create([
+                        'transaction_id'   => $sale->id,
+                        'transaction_type' => Sale::class,
+                        'distribution_type' => $type,
+                        'amount'           => $amountPerShare,
+                    ]);
+                }
             }
-        }
 
-        $notification = array(
-            'message' => 'Data Penjualan Berhasil Diperbarui',
-            'alert-type' => 'success'
-        );
-        return redirect()->route('all.sale')->with($notification);
+            DB::commit(); // Simpan semua perubahan jika tidak ada error
+
+            $notification = [
+                'message' => 'Data Penjualan Berhasil Diperbarui',
+                'alert-type' => 'success'
+            ];
+            return redirect()->route('all.sale')->with($notification);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Batalkan semua perubahan jika terjadi error
+
+            $notification = [
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'alert-type' => 'error'
+            ];
+            return redirect()->back()->with($notification);
+        }
     }
     // End Method 
 
@@ -186,21 +238,21 @@ class SaleController extends Controller
     {
         try {
             DB::beginTransaction();
-            $sales = Sale::findOrFail($id);
-            $SalesItems = SaleItem::where('sale_id', $id)->get();
+            $editdatas = Sale::findOrFail($id);
+            $editDatasItems = SaleItem::where('sale_id', $id)->get();
 
-            ProfitDistribution::where('transaction_id', $sales->id)
+            ProfitDistribution::where('transaction_id', $editdatas->id)
                 ->where('transaction_type', Sale::class) // Penting untuk polymorphic
                 ->delete();
 
-            foreach ($SalesItems as $item) {
+            foreach ($editDatasItems as $item) {
                 $product = Product::find($item->product_id);
                 if ($product) {
                     $product->increment('product_qty', $item->quantity);
                 }
             }
             SaleItem::where('sale_id', $id)->delete();
-            $sales->delete();
+            $editdatas->delete();
             DB::commit();
 
             $notification = array(

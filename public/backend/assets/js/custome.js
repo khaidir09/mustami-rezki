@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <input type="hidden" name="products[${productId}][name]" value="${productName}">
               <input type="hidden" name="products[${productId}][code]" value="${productCode}">
           </td>
-          <td>${netUnitCost.toFixed(2)}
+          <td>${netUnitCost.toFixed(0)}
               <input type="hidden" name="products[${productId}][cost]" value="${netUnitCost}">
           </td>
           <td style="color:#ffc121">${stock}</td>
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <input type="number" class="form-control discount-input"
                   name="products[${productId}][discount]" value="0" min="0" style="width:100px">
           </td>
-          <td class="subtotal">${netUnitCost.toFixed(2)}</td>
+          <td class="subtotal">${netUnitCost.toFixed(0)}</td>
           <td><button class="btn btn-danger btn-sm remove-product"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td>
       </tr>
   `;
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     let subtotal = unitCost * qty - discount;
                     row.querySelector(".subtotal").textContent =
-                        subtotal.toFixed(2);
+                        subtotal.toFixed(0);
 
                     updateGrandTotal();
                 });
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Calculate subtotal after discount
         let subtotal = netUnitCost * qty - discount;
-        row.querySelector(".subtotal").innerText = subtotal.toFixed(2);
+        row.querySelector(".subtotal").innerText = subtotal.toFixed(0);
 
         // Update Grand Total
         updateGrandTotal();
@@ -192,11 +192,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Grand total update function
     function updateGrandTotal() {
-        let grandTotal = 0;
+        let subtotalSum = 0;
 
         // Calculate subtotal sum
-        document.querySelectorAll(".subtotal").forEach(function (item) {
-            grandTotal += parseFloat(item.textContent) || 0;
+        document.querySelectorAll("td.subtotal").forEach(function (item) {
+            let textValue = item.textContent;
+
+            // 2. Bersihkan teks dari karakter non-numerik (seperti "Rp", spasi, dan titik ribuan)
+            // dan pastikan menggunakan titik sebagai desimal jika ada
+            let numericValue = parseFloat(textValue.replace(/[^0-9.-]+/g, ""));
+
+            // 3. Tambahkan ke total jika valid
+            if (!isNaN(numericValue)) {
+                subtotalSum += numericValue;
+            }
         });
 
         // Get discount and shipping values
@@ -206,20 +215,27 @@ document.addEventListener("DOMContentLoaded", function () {
             parseFloat(document.getElementById("inputShipping").value) || 0;
 
         // Apply discount and add shipping cost
-        grandTotal = grandTotal - discount + shipping;
+        grandTotal = subtotalSum - discount + shipping;
 
         // Ensure grand total is not negative
         if (grandTotal < 0) {
             grandTotal = 0;
         }
 
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                minimumFractionDigits: 0,
+            }).format(angka);
+        }
+
         // Update Grand Total display
-        document.getElementById(
-            "grandTotal"
-        ).textContent = `Rp ${grandTotal.toFixed(2)}`;
+        document.getElementById("grandTotal").textContent =
+            formatRupiah(grandTotal);
 
         document.querySelector("input[name='grand_total']").value =
-            grandTotal.toFixed(2);
+            grandTotal.toFixed(0);
 
         updateDueAmount();
     }
@@ -261,9 +277,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         document.getElementById(
             "dueAmount"
-        ).textContent = `Rp ${dueAmount.toFixed(2)}`;
+        ).textContent = `Rp ${dueAmount.toFixed(0)}`;
         document.querySelector("input[name='due_amount']").value =
-            dueAmount.toFixed(2);
+            dueAmount.toFixed(0);
     }
 
     // Event listeners for discount and shipping input change
@@ -375,11 +391,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 let subtotalCell = row.querySelector(".subtotal");
 
                 // Update price in table
-                priceCell.innerText = updatedPrice.toFixed(2);
+                priceCell.innerText = updatedPrice.toFixed(0);
                 qtyInput.setAttribute("data-cost", updatedPrice);
 
                 // Set discount value
-                discountInput.value = discountValue.toFixed(2);
+                discountInput.value = discountValue.toFixed(0);
 
                 // Apply discount calculation
                 let qty = parseFloat(qtyInput.value);
@@ -389,7 +405,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         : discountValue;
                 let subtotal = updatedPrice * qty - discountAmount;
 
-                subtotalCell.innerText = subtotal.toFixed(2);
+                subtotalCell.innerText = subtotal.toFixed(0);
 
                 modal.style.display = "none"; // Close modal
                 updateGrandTotal();
