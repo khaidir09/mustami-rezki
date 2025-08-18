@@ -30,14 +30,14 @@
 
                 <li>
                     <a href="{{ route('all.category') }}" class="tp-link">
-                        <i data-feather="home"></i>
+                        <i data-feather="package"></i>
                         Kategori Produk
                     </a>
                 </li>
 
                 <li>
                     <a href="{{ route('all.product') }}" class="tp-link">
-                        <i data-feather="home"></i>
+                        <i data-feather="package"></i>
                         Produk
                     </a>
                 </li>
@@ -51,28 +51,28 @@
 
                 <li>
                     <a href="{{ route('all.sale') }}" class="tp-link">
-                        <i data-feather="award"></i>
+                        <i data-feather="shopping-bag"></i>
                         Penjualan
                     </a>
                 </li>
 
                 <li>
                     <a href="{{ route('all.service') }}" class="tp-link">
-                        <i data-feather="award"></i>
+                        <i data-feather="pen-tool"></i>
                         Jasa Jahit
                     </a>
                 </li>
 
                 <li>
                     <a href="{{ route('all.tailor') }}" class="tp-link">
-                        <i data-feather="award"></i>
+                        <i data-feather="pen-tool"></i>
                         Transaksi Jahit
                     </a>
                 </li>
 
                 <li>
                     <a href="{{ route('profit.distribution.report') }}" class="tp-link">
-                        <i data-feather="award"></i>
+                        <i data-feather="dollar-sign"></i>
                         Laporan Profit
                     </a>
                 </li>
