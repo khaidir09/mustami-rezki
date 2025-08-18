@@ -85,7 +85,7 @@
                                                 <a href="{{ route('details.sale', $item->transaction_id) }}">SALE-{{ $item->transaction_id }}</a>
                                             @else
                                                 {{-- Tambahkan link untuk tipe lain jika ada, misal Jasa Jahit --}}
-                                                TRX-{{ $item->transaction_id }}
+                                                <a href="{{ route('details.tailor', $item->transaction_id) }}">JAHIT-{{ $item->transaction_id }}</a>
                                             @endif
                                         </td>
                                         <td>

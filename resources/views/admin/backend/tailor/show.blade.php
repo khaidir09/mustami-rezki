@@ -28,6 +28,7 @@
                             <div class="col-md-6 text-md-end">
                                 <h5>Info Transaksi:</h5>
                                 <p class="mb-1"><strong>Kode:</strong> {{ $transaction->transaction_code }}</p>
+                                <p class="mb-1"><strong>Penjahit:</strong> {{ $transaction->tailor->name ?? 'Belum Ditugaskan' }}</p>
                                 <p class="mb-1"><strong>Tgl. Masuk:</strong> {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') }}</p>
                                 <p class="mb-1"><strong>Target Selesai:</strong> {{ $transaction->due_date ? \Carbon\Carbon::parse($transaction->due_date)->format('d F Y') : '-' }}</p>
                                 <p class="mb-1"><strong>Status:</strong>

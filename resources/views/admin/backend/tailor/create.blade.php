@@ -18,15 +18,15 @@
                         <form action="{{ route('store.tailor') }}" method="POST" id="tailorTransactionForm">
                             @csrf
                             <div class="row g-3 mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-2">
                                     <label for="transaction_date" class="form-label">Tanggal Masuk <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="transaction_date" id="transaction_date" value="{{ date('Y-m-d') }}" required>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-2">
                                     <label for="due_date" class="form-label">Tanggal Selesai</label>
                                     <input type="date" class="form-control" name="due_date" id="due_date">
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-3">
                                     <label for="customer_id" class="form-label">Pelanggan <span class="text-danger">*</span></label>
                                     <select name="customer_id" id="customer_id" class="form-select" required>
                                         <option value="">Pilih Pelanggan</option>
@@ -35,7 +35,16 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-3">
+                                    <label for="tailor_id" class="form-label">Ditugaskan Kepada <span class="text-danger">*</span></label>
+                                    <select name="tailor_id" id="tailor_id" class="form-select" required>
+                                        <option value="">Pilih Penjahit</option>
+                                        @foreach($tailors as $tailor)
+                                        <option value="{{ $tailor->id }}">{{ $tailor->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-lg-2">
                                      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                      <select name="status" id="status" class="form-select">
                                          <option value="Antrian">Antrian</option>

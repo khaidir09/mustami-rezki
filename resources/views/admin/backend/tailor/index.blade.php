@@ -26,9 +26,11 @@
                                         <th>No.</th>
                                         <th>Kode Transaksi</th>
                                         <th>Pelanggan</th>
+                                        <th>Penjahit</th>
                                         <th>Tgl. Masuk</th>
                                         <th>Tgl. Selesai</th>
                                         <th>Total Harga</th>
+                                        <th>Komisi Penjahit</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -39,9 +41,17 @@
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $item->transaction_code }}</td>
                                         <td>{{ $item->customer->name ?? 'N/A' }}</td>
+                                        <td>{{ $item->tailor->name ?? 'N/A' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->transaction_date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('d-m-Y') : '-' }}</td>
                                         <td>Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                        <td>
+                                            @if($item->commission)
+                                                Rp {{ number_format($item->commission->amount, 0, ',', '.') }}
+                                            @else
+                                                Rp 0
+                                            @endif
+                                        </td>
                                         <td>
                                             @switch($item->status)
                                                 @case('Antrian')
@@ -78,7 +88,7 @@
         $("#datatable").dataTable({
             "columnDefs": [{
                 "sortable": false,
-                "targets": [7]
+                "targets": [9]
             }],
             "order": [[0, "asc"]]
         });

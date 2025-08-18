@@ -36,6 +36,17 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
+                                    <label for="tailor_id" class="form-label">Ditugaskan Kepada</label>
+                                    <select name="tailor_id" id="tailor_id" class="form-select">
+                                        <option value="">Pilih Penjahit</option>
+                                        @foreach($tailors as $tailor)
+                                        <option value="{{ $tailor->id }}" {{ $tailor->id == $transaction->tailor_id ? 'selected' : '' }}>
+                                            {{ $tailor->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
                                      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                      <select name="status" id="status" class="form-select">
                                          <option value="Antrian" {{ $transaction->status == 'Antrian' ? 'selected' : '' }}>Antrian</option>

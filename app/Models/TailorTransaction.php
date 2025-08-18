@@ -17,4 +17,14 @@ class TailorTransaction extends Model
     {
         return $this->hasMany(TailorTransactionItem::class);
     }
+
+    public function tailor()
+    {
+        return $this->belongsTo(User::class, 'tailor_id');
+    }
+
+    public function commission()
+    {
+        return $this->hasOne(TailorCommission::class, 'tailor_transaction_id');
+    }
 }

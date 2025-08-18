@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Backend;
 
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Service;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ class TailorTransactionController extends Controller
 {
     public function index()
     {
-        $transactions = TailorTransaction::with('customer')->latest()->get();
+        $transactions = TailorTransaction::with('customer', 'tailor', 'commission')->latest()->get();
         return view('admin.backend.tailor.index', compact('transactions'));
     }
 
@@ -26,8 +28,9 @@ class TailorTransactionController extends Controller
     public function create()
     {
         $customers = Customer::all();
+        $tailors = User::role('Tailor')->get();
         $services = Service::where('is_active', true)->get();
-        return view('admin.backend.tailor.create', compact('customers', 'services'));
+        return view('admin.backend.tailor.create', compact('customers', 'services', 'tailors'));
     }
 
     /**
@@ -35,7 +38,11 @@ class TailorTransactionController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi bisa ditambahkan di sini sesuai kebutuhan
+        $request->validate([
+            'customer_id' => 'required',
+            'tailor_id' => 'required', // Wajibkan penjahit dipilih
+            'transaction_date' => 'required|date',
+        ]);
 
         try {
             DB::beginTransaction();
@@ -48,21 +55,24 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // Hitung profit dan sisa bayar
-            $profit = $total_price - $request->cost_price;
-            $due_amount = $total_price - $request->paid_amount;
+            $total_profit = $total_price - ($request->cost_price ?? 0);
+            $owner_profit = $total_profit * (1 / 3);
+            $tailor_commission = $total_profit * (2 / 3);
+
+            $due_amount = $total_price - ($request->paid_amount ?? 0);
 
             // Buat transaksi utama
             $transaction = TailorTransaction::create([
                 'transaction_code' => 'JAHIT-' . Carbon::now()->format('dm') . mt_rand(00, 99),
                 'customer_id' => $request->customer_id,
+                'tailor_id' => $request->tailor_id,
                 'transaction_date' => $request->transaction_date,
                 'due_date' => $request->due_date,
                 'description' => $request->description,
-                'cost_price' => $request->cost_price,
+                'cost_price' => $request->cost_price ?? 0,
                 'total_price' => $total_price,
-                'profit' => $profit,
-                'paid_amount' => $request->paid_amount,
+                'profit' => $total_profit,
+                'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
             ]);
@@ -80,9 +90,18 @@ class TailorTransactionController extends Controller
                 }
             }
 
+            // Simpan komisi untuk penjahit
+            if ($tailor_commission > 0) {
+                TailorCommission::create([
+                    'tailor_transaction_id' => $transaction->id,
+                    'user_id' => $request->tailor_id,
+                    'amount' => $tailor_commission,
+                ]);
+            }
+
             // Simpan distribusi profit jika ada profit
-            if ($profit > 0) {
-                $amountPerShare = $profit / 3;
+            if ($owner_profit  > 0) {
+                $amountPerShare = $owner_profit  / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
 
                 foreach ($distributionTypes as $type) {
@@ -122,9 +141,10 @@ class TailorTransactionController extends Controller
 
         // Ambil data master untuk dropdown
         $customers = Customer::all();
+        $tailors = User::role('Tailor')->get();
         $services = Service::where('is_active', true)->get();
 
-        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services'));
+        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services', 'tailors'));
     }
 
     /**
@@ -132,6 +152,12 @@ class TailorTransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'customer_id' => 'required',
+            'tailor_id' => 'required',
+            'transaction_date' => 'required|date',
+        ]);
+
         try {
             DB::beginTransaction();
 
@@ -139,6 +165,7 @@ class TailorTransactionController extends Controller
 
             // 1. Hapus item dan distribusi profit yang lama
             $transaction->items()->delete();
+            TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
@@ -151,20 +178,23 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // 3. Hitung ulang profit dan sisa bayar
-            $profit = $total_price - $request->cost_price;
-            $due_amount = $total_price - $request->paid_amount;
+            $total_profit = $total_price - ($request->cost_price ?? 0);
+            $owner_profit = $total_profit * (1 / 3);
+            $tailor_commission = $total_profit * (2 / 3);
+            $due_amount = $total_price - ($request->paid_amount ?? 0);
+
 
             // 4. Update data transaksi utama
             $transaction->update([
                 'customer_id' => $request->customer_id,
+                'tailor_id' => $request->tailor_id,
                 'transaction_date' => $request->transaction_date,
                 'due_date' => $request->due_date,
                 'description' => $request->description,
-                'cost_price' => $request->cost_price,
+                'cost_price' => $request->cost_price ?? 0,
                 'total_price' => $total_price,
-                'profit' => $profit,
-                'paid_amount' => $request->paid_amount,
+                'profit' => $total_profit,
+                'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
             ]);
@@ -182,11 +212,19 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // 6. Buat ulang distribusi profit jika ada profit
-            if ($profit > 0) {
-                $amountPerShare = $profit / 3;
-                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
+            // Buat ulang komisi
+            if ($tailor_commission > 0) {
+                TailorCommission::create([
+                    'tailor_transaction_id' => $transaction->id,
+                    'user_id' => $request->tailor_id,
+                    'amount' => $tailor_commission,
+                ]);
+            }
 
+            // Buat ulang distribusi profit owner
+            if ($owner_profit > 0) {
+                $amountPerShare = $owner_profit / 3;
+                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
                 foreach ($distributionTypes as $type) {
                     ProfitDistribution::create([
                         'transaction_id'   => $transaction->id,
