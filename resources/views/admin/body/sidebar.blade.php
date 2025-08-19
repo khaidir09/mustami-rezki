@@ -155,7 +155,7 @@
                     </div>
                 </li> --}}
 
-                @if (Auth::user()->hasRole('Super Admin'))
+                {{-- @if (Auth::user()->hasRole('Super Admin'))
                     <li>
                         <a href="#sidebarBaseui" data-bs-toggle="collapse">
                             <i data-feather="package"></i>
@@ -197,7 +197,7 @@
                             </ul>
                         </div>
                     </li>
-                @endif
+                @endif --}}
             </ul>
 
         </div>
