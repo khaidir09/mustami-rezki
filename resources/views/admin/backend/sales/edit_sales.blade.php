@@ -30,7 +30,7 @@
                                         <div class="col-md-4 mb-3">
                                             <div class="form-group w-100">
                                                 <label class="form-label" for="formBasic">Pelanggan : <span class="text-danger">*</span></label>
-                                                <select name="customer_id" id="customer_id" class="form-control form-select">
+                                                <select name="customer_id" id="customer_id" class="form-control form-select select2">
                                                     <option value="">Pilih Pelanggan</option>
                                                     @foreach ($customers as $item)
                                                     <option value="{{ $item->id }}" {{ $item->id == $sale->customer_id ? 'selected' : '' }}>
@@ -206,21 +206,27 @@
     </div>
 </div>
 
-<script>
-    var productSearchUrl = "{{ route('purchase.product.search') }}";
-
-    // PENTING: Panggil fungsi kalkulasi awal setelah halaman siap
-    document.addEventListener("DOMContentLoaded", function () {
-        // Panggil updateEvents() untuk memastikan baris yang ada sudah bisa di-edit (qty, diskon, hapus)
-        if(typeof updateEvents === 'function') {
-            updateEvents();
-        }
-
-        // Panggil updateGrandTotal() untuk menghitung total awal dari item yang ada
-        if(typeof updateGrandTotal === 'function') {
-            updateGrandTotal();
-        }
-    });
-</script>
-
 @endsection
+
+@push('scripts')
+    <script>
+      var productSearchUrl = "{{ route('purchase.product.search') }}";
+
+        // PENTING: Panggil fungsi kalkulasi awal setelah halaman siap
+        document.addEventListener("DOMContentLoaded", function () {
+            // Panggil updateEvents() untuk memastikan baris yang ada sudah bisa di-edit (qty, diskon, hapus)
+            if(typeof updateEvents === 'function') {
+                updateEvents();
+            }
+
+            // Panggil updateGrandTotal() untuk menghitung total awal dari item yang ada
+            if(typeof updateGrandTotal === 'function') {
+                updateGrandTotal();
+            }
+        });
+      $(document).ready(function() {
+         // Inisialisasi Select2 pada semua elemen dengan class 'select2'
+         $('.select2').select2();
+      });
+   </script>
+@endpush

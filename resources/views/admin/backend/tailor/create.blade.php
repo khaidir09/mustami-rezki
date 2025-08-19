@@ -28,7 +28,7 @@
                                 </div>
                                 <div class="col-md-4 col-lg-3">
                                     <label for="customer_id" class="form-label">Pelanggan <span class="text-danger">*</span></label>
-                                    <select name="customer_id" id="customer_id" class="form-select" required>
+                                    <select name="customer_id" id="customer_id" class="form-select select2" required>
                                         <option value="">Pilih Pelanggan</option>
                                         @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -58,7 +58,7 @@
                             <div class="row g-3 align-items-end px-3 pb-3 my-3 bg-light rounded">
                                 <div class="col-md-5">
                                     <label for="service_id_selector" class="form-label">Pilih Jasa <span class="text-danger">*</span></label>
-                                    <select id="service_id_selector" class="form-select">
+                                    <select id="service_id_selector" class="form-select select2">
                                         <option value="">Pilih Jasa</option>
                                         @foreach($services as $service)
                                         <option value="{{ $service->id }}" data-price="{{ $service->base_price }}">{{ $service->name }} ({{ $service->type }})</option>
@@ -142,93 +142,100 @@
                         </form>
                     </div> </div> </div> </div>
 
-    </div> </div> <script type="text/javascript">
-    $(document).ready(function(){
-        // Saat service dipilih, otomatis isi harga satuannya
-        $('#service_id_selector').on('change', function(){
-            var selectedOption = $(this).find('option:selected');
-            var price = selectedOption.data('price');
-            $('#item_price').val(price);
-        });
-
-        // Saat tombol "Tambah Item" diklik
-        $('#addItemBtn').on('click', function(){
-            var serviceSelector = $('#service_id_selector');
-            var serviceId = serviceSelector.val();
-            var serviceName = serviceSelector.find('option:selected').text();
-            var quantity = parseInt($('#item_quantity').val());
-            var price = parseFloat($('#item_price').val());
-
-            if (!serviceId || !quantity || isNaN(price)) {
-                alert('Silakan pilih jasa dan isi harga dengan benar.');
-                return;
-            }
-
-            var subtotal = quantity * price;
-
-            var newRow = `
-                <tr>
-                    <td>
-                        <input type="hidden" name="items[${Date.now()}][service_id]" value="${serviceId}">
-                        ${serviceName}
-                    </td>
-                    <td>
-                        <input type="hidden" name="items[${Date.now()}][quantity]" value="${quantity}">
-                        ${quantity}
-                    </td>
-                    <td>
-                        <input type="hidden" name="items[${Date.now()}][price]" value="${price}">
-                        ${formatRupiah(price)}
-                    </td>
-                    <td>
-                        <input type="hidden" name="items[${Date.now()}][subtotal]" class="item-subtotal" value="${subtotal}">
-                        ${formatRupiah(subtotal)}
-                    </td>
-                    <td><button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button></td>
-                </tr>
-            `;
-
-            $('#transactionItemsTbody').append(newRow);
-            updateTotals();
-
-            // Reset input fields
-            serviceSelector.val('');
-            $('#item_quantity').val(1);
-            $('#item_price').val('');
-        });
-
-        // Saat tombol "Hapus" pada item diklik
-        $(document).on('click', '.removeItemBtn', function(){
-            $(this).closest('tr').remove();
-            updateTotals();
-        });
-
-        // Saat input biaya modal atau pembayaran berubah
-        $('#cost_price, #paid_amount').on('input', function(){
-            updateTotals();
-        });
-
-        function updateTotals(){
-            var totalPrice = 0;
-            $('.item-subtotal').each(function(){
-                totalPrice += parseFloat($(this).val());
-            });
-
-            var costPrice = parseFloat($('#cost_price').val()) || 0;
-            var paidAmount = parseFloat($('#paid_amount').val()) || 0;
-
-            var profit = totalPrice - costPrice;
-            var dueAmount = totalPrice - paidAmount;
-
-            $('#display_total_price').text(formatRupiah(totalPrice));
-            $('#display_profit').text(formatRupiah(profit));
-            $('#display_due_amount').text(formatRupiah(dueAmount));
-        }
-
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-        }
-    });
-</script>
+    </div> </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            // Inisialisasi Select2 pada semua elemen dengan class 'select2'
+            $('.select2').select2();
+
+            // Saat service dipilih, otomatis isi harga satuannya
+            $('#service_id_selector').on('change', function(){
+                var selectedOption = $(this).find('option:selected');
+                var price = selectedOption.data('price');
+                $('#item_price').val(price);
+            });
+
+            // Saat tombol "Tambah Item" diklik
+            $('#addItemBtn').on('click', function(){
+                var serviceSelector = $('#service_id_selector');
+                var serviceId = serviceSelector.val();
+                var serviceName = serviceSelector.find('option:selected').text();
+                var quantity = parseInt($('#item_quantity').val());
+                var price = parseFloat($('#item_price').val());
+
+                if (!serviceId || !quantity || isNaN(price)) {
+                    alert('Silakan pilih jasa dan isi harga dengan benar.');
+                    return;
+                }
+
+                var subtotal = quantity * price;
+
+                var newRow = `
+                    <tr>
+                        <td>
+                            <input type="hidden" name="items[${Date.now()}][service_id]" value="${serviceId}">
+                            ${serviceName}
+                        </td>
+                        <td>
+                            <input type="hidden" name="items[${Date.now()}][quantity]" value="${quantity}">
+                            ${quantity}
+                        </td>
+                        <td>
+                            <input type="hidden" name="items[${Date.now()}][price]" value="${price}">
+                            ${formatRupiah(price)}
+                        </td>
+                        <td>
+                            <input type="hidden" name="items[${Date.now()}][subtotal]" class="item-subtotal" value="${subtotal}">
+                            ${formatRupiah(subtotal)}
+                        </td>
+                        <td><button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button></td>
+                    </tr>
+                `;
+
+                $('#transactionItemsTbody').append(newRow);
+                updateTotals();
+
+                // Reset input fields
+                serviceSelector.val('');
+                $('#item_quantity').val(1);
+                $('#item_price').val('');
+            });
+
+            // Saat tombol "Hapus" pada item diklik
+            $(document).on('click', '.removeItemBtn', function(){
+                $(this).closest('tr').remove();
+                updateTotals();
+            });
+
+            // Saat input biaya modal atau pembayaran berubah
+            $('#cost_price, #paid_amount').on('input', function(){
+                updateTotals();
+            });
+
+            function updateTotals(){
+                var totalPrice = 0;
+                $('.item-subtotal').each(function(){
+                    totalPrice += parseFloat($(this).val());
+                });
+
+                var costPrice = parseFloat($('#cost_price').val()) || 0;
+                var paidAmount = parseFloat($('#paid_amount').val()) || 0;
+
+                var profit = totalPrice - costPrice;
+                var dueAmount = totalPrice - paidAmount;
+
+                $('#display_total_price').text(formatRupiah(totalPrice));
+                $('#display_profit').text(formatRupiah(profit));
+                $('#display_due_amount').text(formatRupiah(dueAmount));
+            }
+
+            function formatRupiah(angka) {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+            }
+        });
+    </script>
+@endpush

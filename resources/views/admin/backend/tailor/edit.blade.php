@@ -18,24 +18,24 @@
                         <form action="{{ route('update.tailor', $transaction->id) }}" method="POST" id="tailorTransactionForm">
                             @csrf
                             <div class="row g-3 mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-2">
                                     <label for="transaction_date" class="form-label">Tanggal Masuk <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="transaction_date" id="transaction_date" value="{{ $transaction->transaction_date }}" required>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-2">
                                     <label for="due_date" class="form-label">Tanggal Selesai</label>
                                     <input type="date" class="form-control" name="due_date" id="due_date" value="{{ $transaction->due_date }}">
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-3">
                                     <label for="customer_id" class="form-label">Pelanggan <span class="text-danger">*</span></label>
-                                    <select name="customer_id" id="customer_id" class="form-select" required>
+                                    <select name="customer_id" id="customer_id" class="form-select select2" required>
                                         <option value="">Pilih Pelanggan</option>
                                         @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}" {{ $customer->id == $transaction->customer_id ? 'selected' : '' }}>{{ $customer->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-3">
                                     <label for="tailor_id" class="form-label">Ditugaskan Kepada</label>
                                     <select name="tailor_id" id="tailor_id" class="form-select">
                                         <option value="">Pilih Penjahit</option>
@@ -46,7 +46,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4 col-lg-2">
                                      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                      <select name="status" id="status" class="form-select">
                                          <option value="Antrian" {{ $transaction->status == 'Antrian' ? 'selected' : '' }}>Antrian</option>
@@ -60,7 +60,7 @@
                             <div class="row g-3 align-items-end px-3 pb-3 my-3 bg-light rounded">
                                 <div class="col-md-5">
                                     <label for="service_id_selector" class="form-label">Pilih Jasa</label>
-                                    <select id="service_id_selector" class="form-select">
+                                    <select id="service_id_selector" class="form-select select2">
                                         <option value="">Pilih Jasa</option>
                                         @foreach($services as $service)
                                         <option value="{{ $service->id }}" data-price="{{ $service->base_price }}">{{ $service->name }} ({{ $service->type }})</option>
@@ -165,8 +165,15 @@
                         </form>
                     </div> </div> </div> </div>
 
-    </div> </div> <script type="text/javascript">
+    </div> </div> 
+
+@endsection
+
+@push('scripts')
+    <script type="text/javascript">
     $(document).ready(function(){
+        $('.select2').select2();
+
         // Saat service dipilih, otomatis isi harga satuannya
         $('#service_id_selector').on('change', function(){
             var selectedOption = $(this).find('option:selected');
@@ -258,5 +265,4 @@
         updateTotals();
     });
 </script>
-
-@endsection
+@endpush
