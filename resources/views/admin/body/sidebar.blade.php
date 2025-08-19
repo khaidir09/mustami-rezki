@@ -28,40 +28,44 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="{{ route('all.category') }}" class="tp-link">
-                        <i data-feather="package"></i>
-                        Kategori Produk
-                    </a>
-                </li>
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <li>
+                        <a href="{{ route('all.category') }}" class="tp-link">
+                            <i data-feather="package"></i>
+                            Kategori Produk
+                        </a>
+                    </li>
 
-                <li>
-                    <a href="{{ route('all.product') }}" class="tp-link">
-                        <i data-feather="package"></i>
-                        Produk
-                    </a>
-                </li>
+                    <li>
+                        <a href="{{ route('all.product') }}" class="tp-link">
+                            <i data-feather="package"></i>
+                            Produk
+                        </a>
+                    </li>
+                @endif
 
-                <li>
-                    <a href="{{ route('all.customer') }}" class="tp-link">
-                        <i data-feather="users"></i>
-                        Pelanggan
-                    </a>
-                </li>
+                @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+                    <li>
+                        <a href="{{ route('all.customer') }}" class="tp-link">
+                            <i data-feather="users"></i>
+                            Pelanggan
+                        </a>
+                    </li>
 
-                <li>
-                    <a href="{{ route('all.sale') }}" class="tp-link">
-                        <i data-feather="shopping-bag"></i>
-                        Penjualan
-                    </a>
-                </li>
+                    <li>
+                        <a href="{{ route('all.sale') }}" class="tp-link">
+                            <i data-feather="shopping-bag"></i>
+                            Penjualan
+                        </a>
+                    </li>
 
-                <li>
-                    <a href="{{ route('all.service') }}" class="tp-link">
-                        <i data-feather="pen-tool"></i>
-                        Jasa Jahit
-                    </a>
-                </li>
+                    <li>
+                        <a href="{{ route('all.service') }}" class="tp-link">
+                            <i data-feather="pen-tool"></i>
+                            Jasa Jahit
+                        </a>
+                    </li>
+                @endif
 
                 <li>
                     <a href="{{ route('all.tailor') }}" class="tp-link">
@@ -70,12 +74,14 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="{{ route('profit.distribution.report') }}" class="tp-link">
-                        <i data-feather="dollar-sign"></i>
-                        Laporan Profit
-                    </a>
-                </li>
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <li>
+                        <a href="{{ route('profit.distribution.report') }}" class="tp-link">
+                            <i data-feather="dollar-sign"></i>
+                            Laporan Profit
+                        </a>
+                    </li>
+                @endif
 
 
                 {{-- <li>
@@ -149,47 +155,49 @@
                     </div>
                 </li> --}}
 
-                <li>
-                    <a href="#sidebarBaseui" data-bs-toggle="collapse">
-                        <i data-feather="package"></i>
-                        <span> Role & Permission </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="sidebarBaseui">
-                    <ul class="nav-second-level">
-                        <li>
-                            <a href="{{ route('all.permission') }}" class="tp-link">All Permission</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('all.roles') }}" class="tp-link">All Roles</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('add.roles.permission') }}" class="tp-link">Role In Permission</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('all.roles.permission') }}" class="tp-link">All Role Permission</a>
-                        </li>
-                        
-                    </ul>
-                    </div>
-                </li>
-
-                <li>
-                    <a href="#Admin" data-bs-toggle="collapse">
-                    <i data-feather="map"></i>
-                        <span> Manage Admin </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="Admin">
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <li>
+                        <a href="#sidebarBaseui" data-bs-toggle="collapse">
+                            <i data-feather="package"></i>
+                            <span> Peran & Izin </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarBaseui">
                         <ul class="nav-second-level">
                             <li>
-                                <a href="{{ route('all.admin') }}" class="tp-link">All Admin</a>
-                            </li> 
+                                <a href="{{ route('all.permission') }}" class="tp-link">Semua Izin</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('all.roles') }}" class="tp-link">Semua Peran</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('add.roles.permission') }}" class="tp-link">Peran Dalam Izin</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('all.roles.permission') }}" class="tp-link">Semua Izin Peran</a>
+                            </li>
                             
                         </ul>
-                    </div>
-                </li>
+                        </div>
+                    </li>
+
+                    <li>
+                        <a href="#Admin" data-bs-toggle="collapse">
+                        <i data-feather="map"></i>
+                            <span> Kelola Admin </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="Admin">
+                            <ul class="nav-second-level">
+                                <li>
+                                    <a href="{{ route('all.admin') }}" class="tp-link">Semua Admin</a>
+                                </li> 
+                                
+                            </ul>
+                        </div>
+                    </li>
+                @endif
             </ul>
 
         </div>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\TailorCommission;
+use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -108,9 +110,6 @@ class AdminController extends Controller
 
     public function AdminDashboard()
     {
-
-        // TAMBAHKAN LOGIKA UNTUK MENGAMBIL DATA PROFIT
-        // Menghitung total untuk bulan ini
         $totalModal = ProfitDistribution::where('distribution_type', 'pengembangan_modal')
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
@@ -126,13 +125,24 @@ class AdminController extends Controller
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
 
-        // TAMBAHKAN LOGIKA UNTUK STATISTIK PRODUK
         $productCount = Product::count();
         $lowStockCount = Product::where('product_qty', '<=', 3)->count();
 
-        // Menghitung total nilai modal dari stok (cost * qty)
         $stockValue = Product::select(DB::raw('SUM(modal * product_qty) as total_value'))
             ->value('total_value');
+
+        $ongoingJobs = TailorTransaction::whereIn('status', ['Antrian', 'Dikerjakan'])->count();
+
+        $completedJobsThisMonth = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+
+        $tailorOwnerProfit = ProfitDistribution::where('transaction_type', 'App\Models\TailorTransaction')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+
 
         return view('admin.index', compact(
             'totalModal',
@@ -140,7 +150,10 @@ class AdminController extends Controller
             'totalSedekah',
             'productCount',
             'lowStockCount',
-            'stockValue'
+            'stockValue',
+            'ongoingJobs',
+            'completedJobsThisMonth',
+            'tailorOwnerProfit'
         ));
     }
 }
