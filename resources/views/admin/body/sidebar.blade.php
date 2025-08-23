@@ -42,6 +42,13 @@
                             Produk
                         </a>
                     </li>
+
+                    <li>
+                        <a href="{{ route('all.supplier') }}" class="tp-link">
+                            <i data-feather="users"></i>
+                            Supplier
+                        </a>
+                    </li>
                 @endif
 
                 @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
@@ -155,49 +162,14 @@
                     </div>
                 </li> --}}
 
-                {{-- @if (Auth::user()->hasRole('Super Admin'))
+                @if (Auth::user()->hasRole('Super Admin'))
                     <li>
-                        <a href="#sidebarBaseui" data-bs-toggle="collapse">
-                            <i data-feather="package"></i>
-                            <span> Peran & Izin </span>
-                            <span class="menu-arrow"></span>
+                        <a href="{{ route('all.admin') }}" class="tp-link">
+                            <i data-feather="map"></i>
+                            Kelola Pengguna
                         </a>
-                        <div class="collapse" id="sidebarBaseui">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="{{ route('all.permission') }}" class="tp-link">Semua Izin</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('all.roles') }}" class="tp-link">Semua Peran</a>
-                            </li>
-
-                            <li>
-                                <a href="{{ route('add.roles.permission') }}" class="tp-link">Peran Dalam Izin</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('all.roles.permission') }}" class="tp-link">Semua Izin Peran</a>
-                            </li>
-                            
-                        </ul>
-                        </div>
                     </li>
-
-                    <li>
-                        <a href="#Admin" data-bs-toggle="collapse">
-                        <i data-feather="map"></i>
-                            <span> Kelola Admin </span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <div class="collapse" id="Admin">
-                            <ul class="nav-second-level">
-                                <li>
-                                    <a href="{{ route('all.admin') }}" class="tp-link">Semua Admin</a>
-                                </li> 
-                                
-                            </ul>
-                        </div>
-                    </li>
-                @endif --}}
+                @endif
             </ul>
 
         </div>

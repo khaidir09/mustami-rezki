@@ -14,8 +14,7 @@
 
             <div class="text-end">
                 <ol class="breadcrumb m-0 py-0">
-                    
-                    <li class="breadcrumb-item active">Edit Admin</li>
+                     <a href="{{ route('all.admin') }}" class="btn btn-dark">Kembali</a>
                 </ol>
             </div>
         </div>
@@ -24,42 +23,38 @@
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Edit Admin</h5>
-                    </div><!-- end card header -->
+                    <div class="card-body">
+                        <form action="{{ route('update.admin',$admin->id) }}" method="post" class="row g-3" enctype="multipart/form-data">
+                            @csrf
 
-<div class="card-body">
-    <form action="{{ route('update.admin',$admin->id) }}" method="post" class="row g-3" enctype="multipart/form-data">
-        @csrf
+                            <div class="col-md-6">
+                                <label for="validationDefault01" class="form-label">Nama</label>
+                                <input type="text" class="form-control" name="name" value="{{ $admin->name }}"  >  
+                            </div>
 
-        <div class="col-md-6">
-            <label for="validationDefault01" class="form-label">Admin Name</label>
-            <input type="text" class="form-control" name="name" value="{{ $admin->name }}"  >  
-        </div>
+                            <div class="col-md-6">
+                                <label for="validationDefault01" class="form-label">Email</label>
+                                <input type="emal" class="form-control" name="email"  value="{{ $admin->email }}"  >  
+                            </div>
+                    
 
-          <div class="col-md-6">
-            <label for="validationDefault01" class="form-label">Admin Email</label>
-            <input type="emal" class="form-control" name="email"  value="{{ $admin->email }}"  >  
-        </div>
- 
-
-          <div class="col-md-6">
-            <label for="validationDefault01" class="form-label">Role </label>
-            <select name="roles" class="form-select" id="example-select">
-                <option value="" selected>Select Role</option>
-                 @foreach ($roles as $role) 
-                <option value="{{ $role->id }}" {{ $admin->hasRole($role->name) ? 'selected' : '' }} >{{ $role->name }}</option> 
-                  @endforeach
-            </select>
-        </div>
- 
- 
-            
-        <div class="col-12">
-            <button class="btn btn-primary" type="submit">Save Change</button>
-        </div>
-    </form>
-</div> <!-- end card-body -->
+                            <div class="col-md-6">
+                                <label for="validationDefault01" class="form-label">Peran</label>
+                                <select name="roles" class="form-select" id="example-select">
+                                    <option value="" selected>Pilih Peran</option>
+                                    @foreach ($roles as $role) 
+                                    <option value="{{ $role->id }}" {{ $admin->hasRole($role->name) ? 'selected' : '' }} >{{ $role->name }}</option> 
+                                    @endforeach
+                                </select>
+                            </div>
+                    
+                    
+                                
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit">Simpan</button>
+                            </div>
+                        </form>
+                    </div> <!-- end card-body -->
                 </div> <!-- end card-->
             </div> <!-- end col -->
 
