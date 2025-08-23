@@ -110,50 +110,53 @@ class AdminController extends Controller
 
     public function AdminDashboard()
     {
-        $totalModal = ProfitDistribution::where('distribution_type', 'pengembangan_modal')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
+        $user = Auth::user();
+        $data = [];
 
-        $totalPribadi = ProfitDistribution::where('distribution_type', 'pribadi')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
-
-        $totalSedekah = ProfitDistribution::where('distribution_type', 'sedekah')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
-
-        $productCount = Product::count();
-        $lowStockCount = Product::where('product_qty', '<=', 3)->count();
-
-        $stockValue = Product::select(DB::raw('SUM(modal * product_qty) as total_value'))
+        $data['productCount'] = Product::count();
+        $data['lowStockCount'] = Product::where('product_qty', '<=', 3)->count();
+        $data['stockValue'] = Product::select(DB::raw('SUM(modal * product_qty) as total_value'))
             ->value('total_value');
+        $data['ongoingJobs'] = TailorTransaction::whereIn('status', ['Antrian', 'Dikerjakan'])->count();
 
-        $ongoingJobs = TailorTransaction::whereIn('status', ['Antrian', 'Dikerjakan'])->count();
-
-        $completedJobsThisMonth = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
+        $data['totalModal'] = ProfitDistribution::where('distribution_type', 'pengembangan_modal')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+        $data['totalPribadi'] = ProfitDistribution::where('distribution_type', 'pribadi')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+        $data['totalSedekah'] = ProfitDistribution::where('distribution_type', 'sedekah')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+        $data['completedJobsThisMonth'] = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->count();
-
-        $tailorOwnerProfit = ProfitDistribution::where('transaction_type', 'App\Models\TailorTransaction')
+        $data['tailorOwnerProfit'] = ProfitDistribution::where('transaction_type', 'App\Models\TailorTransaction')
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
 
+        // Cek jika user adalah Penjahit, ambil data personal
+        if ($user->hasRole('Tailor')) {
+            $data['assignedJobs'] = TailorTransaction::where('tailor_id', $user->id)
+                ->whereIn('status', ['Antrian', 'Dikerjakan'])
+                ->count();
 
-        return view('admin.index', compact(
-            'totalModal',
-            'totalPribadi',
-            'totalSedekah',
-            'productCount',
-            'lowStockCount',
-            'stockValue',
-            'ongoingJobs',
-            'completedJobsThisMonth',
-            'tailorOwnerProfit'
-        ));
+            $data['completedJobsThisMonth'] = TailorTransaction::where('tailor_id', $user->id)
+                ->whereIn('status', ['Selesai', 'Diambil'])
+                ->whereMonth('created_at', date('m'))
+                ->whereYear('created_at', date('Y'))
+                ->count();
+
+            $data['pendapatanPenjahit'] = TailorCommission::where('user_id', $user->id)
+                ->sum('amount');
+        }
+
+
+        return view('admin.index', $data);
     }
 }
