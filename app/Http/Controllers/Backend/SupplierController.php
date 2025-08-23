@@ -18,7 +18,7 @@ class SupplierController extends Controller
 
     public function AddSupplier()
     {
-        return view('admin.backend.supplier.add_supplier');
+        //
     }
     //End Method 
 
@@ -27,13 +27,13 @@ class SupplierController extends Controller
 
         Supplier::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'type' => $request->type,
             'phone' => $request->phone,
             'address' => $request->address,
         ]);
 
         $notification = array(
-            'message' => 'Supplier Inserted Successfully',
+            'message' => 'Supplier Berhasil Ditambahkan',
             'alert-type' => 'success'
         );
         return redirect()->route('all.supplier')->with($notification);
@@ -43,23 +43,23 @@ class SupplierController extends Controller
     public function EditSupplier($id)
     {
         $supplier = Supplier::find($id);
-        return view('admin.backend.supplier.edit_supplier', compact('supplier'));
+        return response()->json($supplier);
     }
     //End Method 
 
     public function UpdateSupplier(Request $request)
     {
-        $supp_id = $request->id;
+        $supp_id = $request->supp_id;
 
         Supplier::find($supp_id)->update([
             'name' => $request->name,
-            'email' => $request->email,
+            'type' => $request->type,
             'phone' => $request->phone,
             'address' => $request->address,
         ]);
 
         $notification = array(
-            'message' => 'Supplier Updated Successfully',
+            'message' => 'Supplier Berhasil Diperbarui',
             'alert-type' => 'success'
         );
         return redirect()->route('all.supplier')->with($notification);
@@ -71,7 +71,7 @@ class SupplierController extends Controller
         Supplier::find($id)->delete();
 
         $notification = array(
-            'message' => 'Supplier Delete Successfully',
+            'message' => 'Supplier Berhasil Dihapus',
             'alert-type' => 'success'
         );
         return redirect()->back()->with($notification);

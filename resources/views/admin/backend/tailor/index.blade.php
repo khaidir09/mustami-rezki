@@ -30,7 +30,6 @@
                                         <th>Tgl. Masuk</th>
                                         <th>Tgl. Selesai</th>
                                         <th>Total Harga</th>
-                                        <th>Komisi Penjahit</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -41,17 +40,18 @@
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $item->transaction_code }}</td>
                                         <td>{{ $item->customer->name ?? 'N/A' }}</td>
-                                        <td>{{ $item->tailor->name ?? 'N/A' }}</td>
+                                        <td>
+                                            @if($item->work_type == 'Internal' && $item->tailor)
+                                                {{ $item->tailor->name }}
+                                            @elseif($item->work_type == 'Eksternal' && $item->supplier)
+                                                {{ $item->supplier->name }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td>{{ \Carbon\Carbon::parse($item->transaction_date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('d-m-Y') : '-' }}</td>
                                         <td>Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
-                                        <td>
-                                            @if($item->commission)
-                                                Rp {{ number_format($item->commission->amount, 0, ',', '.') }}
-                                            @else
-                                                Rp 0
-                                            @endif
-                                        </td>
                                         <td>
                                             @switch($item->status)
                                                 @case('Antrian')
@@ -72,23 +72,31 @@
                                         </td>
                                         <td>
                                             <a title="Details" href="{{ route('details.tailor', $item->id) }}" class="btn btn-info btn-sm"> <span class="mdi mdi-eye-circle mdi-18px"></span> </a>
+                                            @if (Auth::user()->hasRole('Super Admin'))
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
                                             <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete-circle mdi-18px"></span></a>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-                    </div></div> </div></div>
-        </div> </div> @endsection
+                    </div>
+                </div> 
+            </div>
+        </div>
+        
+    </div> 
+</div> 
+@endsection
 
 @push('scripts')
     <script>
         $("#datatable").dataTable({
             "columnDefs": [{
                 "sortable": false,
-                "targets": [9]
+                "targets": [10]
             }],
             "order": [[0, "asc"]]
         });

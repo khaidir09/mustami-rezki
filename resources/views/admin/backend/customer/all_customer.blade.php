@@ -32,7 +32,9 @@
             <th>Nama Pelanggan</th>
             <th>Nomor HP/WA</th>
             <th>Alamat</th>
-            <th>Aksi</th>
+            @if (Auth::user()->hasRole('Super Admin'))
+                <th>Aksi</th>
+            @endif
         </tr>
         </thead>
         <tbody>
@@ -42,12 +44,12 @@
                 <td>{{ $item->name }}</td>
                 <td>{{ $item->phone }}</td>
                 <td>{{ Str::limit($item->address, 50, '...')  }}</td>
-                <td> 
-
-            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#customer" id="{{ $item->id }}" onclick="customerEdit(this.id)"> Edit</button>
-
-            <a href="{{ route('delete.customer',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>    
-                </td> 
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <td> 
+                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#customer" id="{{ $item->id }}" onclick="customerEdit(this.id)"> Edit</button>
+                        <a href="{{ route('delete.customer',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>    
+                    </td> 
+                @endif
             </tr>
             @endforeach 
                 

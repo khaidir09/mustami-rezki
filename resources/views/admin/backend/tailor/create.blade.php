@@ -18,24 +18,39 @@
                         <form action="{{ route('store.tailor') }}" method="POST" id="tailorTransactionForm">
                             @csrf
                             <div class="row g-3 mb-3">
-                                <div class="col-md-4 col-lg-2">
-                                    <label for="transaction_date" class="form-label">Tanggal Masuk <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" name="transaction_date" id="transaction_date" value="{{ date('Y-m-d') }}" required>
+                                <div class="col-md-3">
+                                    <label for="work-type" class="form-label">Tipe Pengerjaan <span class="text-danger">*</span></label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="work_type" id="internalRadio" value="Internal" checked>
+                                            <label class="form-check-label" for="internalRadio">Internal (Penjahit In-House)</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="work_type" id="eksternalRadio" value="Eksternal">
+                                            <label class="form-check-label" for="eksternalRadio">Eksternal</label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-4 col-lg-2">
-                                    <label for="due_date" class="form-label">Tanggal Selesai</label>
-                                    <input type="date" class="form-control" name="due_date" id="due_date">
-                                </div>
-                                <div class="col-md-4 col-lg-3">
+                                <div class="col-md-3">
                                     <label for="customer_id" class="form-label">Pelanggan <span class="text-danger">*</span></label>
-                                    <select name="customer_id" id="customer_id" class="form-select select2" required>
+                                    <select name="customer_id" id="customer_id" class="form-select select2 w-100" required>
                                         <option value="">Pilih Pelanggan</option>
                                         @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4 col-lg-3">
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <label for="transaction_date" class="form-label">Tanggal Masuk <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="transaction_date" id="transaction_date" value="{{ date('Y-m-d') }}" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="due_date" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" name="due_date" id="due_date">
+                                </div>
+                                <div class="col-md-3" id="internal_tailor_div">
                                     <label for="tailor_id" class="form-label">Ditugaskan Kepada <span class="text-danger">*</span></label>
                                     <select name="tailor_id" id="tailor_id" class="form-select" required>
                                         <option value="">Pilih Penjahit</option>
@@ -44,7 +59,16 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-4 col-lg-2">
+                                <div class="col-md-3" id="external_tailor_div" style="display: none;">
+                                    <label for="supplier_id" class="form-label">Ditugaskan Kepada (Eksternal) <span class="text-danger">*</span></label>
+                                    <select name="supplier_id" id="supplier_id" class="form-select">
+                                        <option value="">Pilih Penjahit Eksternal</option>
+                                        @foreach($serviceSuppliers as $supplier)
+                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
                                      <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                      <select name="status" id="status" class="form-select">
                                          <option value="Antrian">Antrian</option>
@@ -112,7 +136,7 @@
                                                 <td class="text-end fw-bold fs-18" id="display_total_price">Rp 0</td>
                                             </tr>
                                             <tr>
-                                                <td>Biaya Modal</td>
+                                                <td id="cost_price_label">Biaya Modal</td>
                                                 <td><input type="number" name="cost_price" id="cost_price" class="form-control" value="0"></td>
                                             </tr>
                                             <tr>
@@ -236,6 +260,51 @@
             function formatRupiah(angka) {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
             }
+
+            const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
+            const internalTailorDiv = document.getElementById('internal_tailor_div');
+            const internalTailorSelect = document.getElementById('tailor_id');
+            const externalTailorDiv = document.getElementById('external_tailor_div');
+            const externalTailorSelect = document.getElementById('supplier_id');
+            const costPriceLabel = document.getElementById('cost_price_label');
+
+            function toggleTailorSelection() {
+                // Cari radio button mana yang sedang dipilih
+                const selectedType = document.querySelector('input[name="work_type"]:checked').value;
+
+                if (selectedType === 'Internal') {
+                    // Tampilkan dropdown internal
+                    internalTailorDiv.style.display = 'block';
+                    internalTailorSelect.disabled = false; // Aktifkan select agar datanya terkirim
+
+                    // Sembunyikan dropdown eksternal
+                    externalTailorDiv.style.display = 'none';
+                    externalTailorSelect.disabled = true; // Nonaktifkan agar datanya TIDAK terkirim
+
+                    // Ubah label biaya
+                    costPriceLabel.textContent = 'Biaya Modal';
+
+                } else { // Jika 'Eksternal' yang dipilih
+                    // Sembunyikan dropdown internal
+                    internalTailorDiv.style.display = 'none';
+                    internalTailorSelect.disabled = true;
+
+                    // Tampilkan dropdown eksternal
+                    externalTailorDiv.style.display = 'block';
+                    externalTailorSelect.disabled = false;
+
+                    // Ubah label biaya
+                    costPriceLabel.textContent = 'Biaya dari Penjahit Luar';
+                }
+            }
+
+            // Tambahkan event listener ke setiap radio button
+            workTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleTailorSelection);
+            });
+
+            // Panggil fungsi sekali saat halaman dimuat untuk mengatur tampilan awal
+            toggleTailorSelection();
         });
     </script>
 @endpush
