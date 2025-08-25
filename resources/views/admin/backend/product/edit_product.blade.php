@@ -73,7 +73,7 @@
                </div>
                <div class="col-md-6 mb-3">
                   <label class="form-label">Stok:</label>
-                  <input type="number" name="product_qty" class="form-control" min="1" value="{{ $editData->product_qty }}">
+                  <input type="number" name="product_qty" class="form-control" min="0" value="{{ $editData->product_qty }}">
                </div>
 
                <div class="col-md-6 mb-3">
