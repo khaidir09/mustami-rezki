@@ -70,7 +70,7 @@
                </div>
                <div class="col-md-6 mb-3">
                   <label class="form-label">Stok: <span class="text-danger">*</span></label>
-                  <input type="number" name="product_qty" class="form-control" placeholder="Masukkan stok" min="1" required>
+                  <input type="number" name="product_qty" class="form-control" placeholder="Masukkan stok" min="0" required>
                </div>
 
                <div class="col-md-6 mb-3">
