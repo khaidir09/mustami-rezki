@@ -28,7 +28,7 @@
                     </a>
                 </li>
 
-                @if (Auth::user()->hasRole('Super Admin'))
+                @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
                     <li>
                         <a href="{{ route('all.category') }}" class="tp-link">
                             <i data-feather="package"></i>
@@ -42,7 +42,9 @@
                             Produk
                         </a>
                     </li>
+                @endif
 
+                @if (Auth::user()->hasRole('Super Admin'))
                     <li>
                         <a href="{{ route('all.supplier') }}" class="tp-link">
                             <i data-feather="users"></i>
