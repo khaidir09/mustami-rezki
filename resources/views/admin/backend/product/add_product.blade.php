@@ -26,7 +26,7 @@
                <div class="col-md-6 mb-3">
                   <div class="form-group w-100">
                      <label class="form-label" for="formBasic">Kategori Produk : <span class="text-danger">*</span></label>
-                     <select name="category_id" id="category_id" class="form-control form-select">
+                     <select name="category_id" id="category_id" class="form-control form-select" required>
                         <option value="">Pilih Kategori</option>
                         @foreach ($categories as $item)
                         <option value="{{ $item->id }}">{{ $item->category_name }}</option>
@@ -40,12 +40,12 @@
                </div>
                <div class="col-md-6 mb-3">
                   <label class="form-label">Nama Produk:  <span class="text-danger">*</span></label>
-                  <input type="text" name="name" placeholder="Masukkan nama" class="form-control">  
+                  <input type="text" name="name" placeholder="Masukkan nama" class="form-control" required>  
                </div>
                <div class="col-md-6 mb-3">
                   <div class="form-group w-100">
                      <label class="form-label" for="formBasic">Satuan : <span class="text-danger">*</span></label>
-                     <select name="satuan" id="satuan" class="form-control form-select">
+                     <select name="satuan" id="satuan" class="form-control form-select" required>
                         <option value="">Pilih Satuan</option>
                         <option value="Pcs">Pcs</option>
                         <option value="Meter">Meter</option>
@@ -87,7 +87,7 @@
       </div>
       <div class="col-xl-4">
          <div class="card">
-            <label class="form-label">Foto-foto produk: <span class="text-danger">*</span></label>
+            <label class="form-label">Foto-foto produk:</label>
             <div class="mb-3">
                <input name="image[]" accept=".png, .jpg, .jpeg" multiple="" type="file" id="multiImg" class="upload-input-file form-control">
             </div>
