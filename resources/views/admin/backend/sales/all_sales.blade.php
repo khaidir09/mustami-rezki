@@ -30,7 +30,7 @@
         <tr>
             <th>No.</th>
             <th>Tanggal</th>
-            <th>Pelanggan</th>
+            <th>Qty</th>
             <th>Total Penjualan</th>
             <th>Status</th>
             <th>Aksi</th>
@@ -41,7 +41,7 @@
     <tr>
         <td>{{ $key+1 }}</td>
         <td>{{ \Carbon\Carbon::parse($item->date)->format('d-m-Y') }}</td>
-        <td>{{ $item->customer->name }}</td>
+        <td>{{ $item->saleItems->sum('quantity') }}</td>
         <td>Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td> 
         <td>
             @if ($item->status == 'Pending')

@@ -122,12 +122,6 @@
         <table class="info-section">
             <tr>
                 <td class="info-box">
-                    <h5>Info Pelanggan</h5>
-<p><strong>Nama:</strong> {{ $sales->customer->name }} </p>
-<p><strong>Nomor HP/WA:</strong> {{ $sales->customer->phone }} </p>
-<p><strong>Alamat:</strong> {{ $sales->customer->address }} </p>
-                </td>
-                <td class="info-box">
                     <h5>Info Penjualan</h5>
 <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($sales->date)->locale('id')->translatedFormat('d F Y') }} </p>
 <p><strong>Status:</strong> {{ $sales->status }} </p>

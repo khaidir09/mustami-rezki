@@ -22,23 +22,9 @@
                             <div class="col-xl-12">
                                 <div class="card">
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label class="form-label">Tanggal: <span class="text-danger">*</span></label>
                                             <input type="date" name="date" value="{{ $sale->date }}" class="form-control">
-                                        </div>
-
-                                        <div class="col-md-4 mb-3">
-                                            <div class="form-group w-100">
-                                                <label class="form-label" for="formBasic">Pelanggan : <span class="text-danger">*</span></label>
-                                                <select name="customer_id" id="customer_id" class="form-control form-select select2">
-                                                    <option value="">Pilih Pelanggan</option>
-                                                    @foreach ($customers as $item)
-                                                    <option value="{{ $item->id }}" {{ $item->id == $sale->customer_id ? 'selected' : '' }}>
-                                                        {{ $item->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
                                         </div>
                                     </div>
 
@@ -224,9 +210,5 @@
                 updateGrandTotal();
             }
         });
-      $(document).ready(function() {
-         // Inisialisasi Select2 pada semua elemen dengan class 'select2'
-         $('.select2').select2();
-      });
    </script>
 @endpush

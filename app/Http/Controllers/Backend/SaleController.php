@@ -4,17 +4,13 @@ namespace App\Http\Controllers\Backend;
 
 use App\Models\Sale;
 use App\Models\Product;
-use App\Models\Customer;
 use App\Models\SaleItem;
 use App\Models\WareHouse;
 use Illuminate\Http\Request;
-use App\Models\ProductCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 
 class SaleController extends Controller
 {
@@ -27,9 +23,7 @@ class SaleController extends Controller
 
     public function AddSales()
     {
-        $customers = Customer::all();
-        $warehouses = WareHouse::all();
-        return view('admin.backend.sales.add_sales', compact('customers', 'warehouses'));
+        return view('admin.backend.sales.add_sales');
     }
     // End Method
 
@@ -38,7 +32,6 @@ class SaleController extends Controller
 
         $request->validate([
             'date' => 'required|date',
-            'customer_id' => 'required|exists:customers,id',
         ]);
 
         try {
@@ -50,7 +43,6 @@ class SaleController extends Controller
 
             $editdatas = Sale::create([
                 'date' => $request->date,
-                'customer_id' => $request->customer_id,
                 'discount' => $request->discount ?? 0,
                 'shipping' => $request->shipping ?? 0,
                 'status' => $request->status,
@@ -124,8 +116,7 @@ class SaleController extends Controller
     public function EditSales($id)
     {
         $sale = Sale::with('saleItems.product')->findOrFail($id);
-        $customers = Customer::all();
-        return view('admin.backend.sales.edit_sales', compact('sale', 'customers'));
+        return view('admin.backend.sales.edit_sales', compact('sale'));
     }
     // End Method 
 
@@ -133,7 +124,6 @@ class SaleController extends Controller
     {
         $request->validate([
             'date' => 'required|date',
-            'customer_id' => 'required',
             'status' => 'required',
             'products' => 'required|array|min:1' // Pastikan ada minimal 1 produk
         ]);
@@ -190,7 +180,6 @@ class SaleController extends Controller
 
             $sale->update([
                 'date' => $request->date,
-                'customer_id' => $request->customer_id,
                 'discount' => $request->discount ?? 0,
                 'shipping' => $request->shipping ?? 0,
                 'status' => $request->status,
@@ -269,14 +258,14 @@ class SaleController extends Controller
 
     public function DetailsSales($id)
     {
-        $sales = Sale::with(['customer', 'saleItems.product'])->find($id);
+        $sales = Sale::with('saleItems.product')->find($id);
         return view('admin.backend.sales.sales_details', compact('sales'));
     }
     // End Method 
 
     public function InvoiceSales($id)
     {
-        $sales = Sale::with(['customer', 'saleItems.product'])->find($id);
+        $sales = Sale::with('saleItems.product')->find($id);
 
         $pdf = Pdf::loadView('admin.backend.sales.invoice_pdf', compact('sales'));
         return $pdf->download('sales_' . $id . '.pdf');
