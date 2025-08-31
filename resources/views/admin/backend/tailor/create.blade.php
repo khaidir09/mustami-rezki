@@ -165,7 +165,15 @@
                                             </tr>
                                              <tr>
                                                 <td>Jumlah Dibayar</td>
-                                                <td><input type="number" name="paid_amount" id="paid_amount" class="form-control" value="0"></td>
+                                                <td id="paidAmount">
+                                                    <div class="input-group">
+                                                        <input type="text" name="paid_amount" placeholder="Masukkan jumlah yang dibayarkan" class="form-control">
+                                                        <div class="input-group-append">
+                                                            {{-- INI TOMBOL BARUNYA --}}
+                                                            <button type="button" class="btn btn-success" id="btn-lunas">Lunas</button>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td>Sisa Bayar</td>
@@ -299,67 +307,83 @@
         updateTotals();
     });
 
-    $('#cost_price, #paid_amount').on('input', function(){
+    $('input[name="cost_price"], input[name="paid_amount"]').on('input', function() {
         updateTotals();
     });
 
-    function updateTotals(){
-        let totalPrice = 0;
-        $('.item-subtotal').each(function(){
-            totalPrice += parseFloat($(this).val());
-        });
-
-        const costPrice = parseFloat($('#cost_price').val()) || 0;
-        const paidAmount = parseFloat($('#paid_amount').val()) || 0;
-        const profit = totalPrice - costPrice;
-        const dueAmount = totalPrice - paidAmount;
-
-        $('#display_total_price').text(formatRupiah(totalPrice));
-        $('#display_profit').text(formatRupiah(profit));
-        $('#display_due_amount').text(formatRupiah(dueAmount));
-    }
-
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-    }
-    
-    // --- Logika untuk Tipe Pengerjaan (Internal/Eksternal) ---
-    const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
-    const internalTailorDiv = document.getElementById('internal_tailor_div');
-    const internalTailorSelect = document.getElementById('tailor_id');
-    const externalTailorDiv = document.getElementById('external_tailor_div');
-    const externalTailorSelect = document.getElementById('supplier_id');
-    const costPriceRow = document.getElementById('cost_price_row');
-    const profitRow = document.getElementById('profit_row');
-
-    function toggleTailorSelection() {
-        const selectedType = document.querySelector('input[name="work_type"]:checked').value;
-
-        if (selectedType === 'Internal') {
-            internalTailorDiv.style.display = 'block';
-            internalTailorSelect.required = true;
-            externalTailorDiv.style.display = 'none';
-            externalTailorSelect.required = false;
-            
-            costPriceRow.style.display = 'none';
-            profitRow.style.display = 'none';
-        } else { // Eksternal
-            internalTailorDiv.style.display = 'none';
-            internalTailorSelect.required = false;
-            externalTailorDiv.style.display = 'block';
-            externalTailorSelect.required = true;
-
-            costPriceRow.style.display = 'table-row';
-            profitRow.style.display = 'table-row';
-        }
-         $('#tailor_id, #supplier_id').val(null).trigger('change');
-    }
-
-    workTypeRadios.forEach(radio => {
-        radio.addEventListener('change', toggleTailorSelection);
+    // =======================================================
+    // ## INI KODE BARU UNTUK TOMBOL LUNAS ##
+    $('#btn-lunas').on('click', function() {
+    // 1. Hitung total harga saat ini
+    let currentTotalPrice = 0;
+    $('.item-subtotal').each(function() {
+    currentTotalPrice += parseFloat($(this).val()) || 0;
     });
 
-    toggleTailorSelection();
-        });
+    // 2. Masukkan total harga ke dalam input 'paid_amount'
+    $('input[name="paid_amount"]').val(currentTotalPrice);
+
+    // 3. Panggil fungsi updateTotals() agar "Sisa Bayar" ikut ter-update
+    updateTotals();
+    });
+
+    function updateTotals(){
+let totalPrice = 0;
+$('.item-subtotal').each(function(){
+totalPrice += parseFloat($(this).val()) || 0;
+});
+
+const costPrice = parseFloat($('input[name="cost_price"]').val()) || 0;
+const paidAmount = parseFloat($('input[name="paid_amount"]').val()) || 0;
+const profit = totalPrice - costPrice;
+const dueAmount = totalPrice - paidAmount;
+
+$('#display_total_price').text(formatRupiah(totalPrice));
+$('#display_profit').text(formatRupiah(profit));
+$('#display_due_amount').text(formatRupiah(dueAmount));
+}
+
+function formatRupiah(angka) {
+return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+}
+
+// --- Logika untuk Tipe Pengerjaan (Internal/Eksternal) ---
+const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
+const internalTailorDiv = document.getElementById('internal_tailor_div');
+const internalTailorSelect = document.getElementById('tailor_id');
+const externalTailorDiv = document.getElementById('external_tailor_div');
+const externalTailorSelect = document.getElementById('supplier_id');
+const costPriceRow = document.getElementById('cost_price_row');
+const profitRow = document.getElementById('profit_row');
+
+function toggleTailorSelection() {
+const selectedType = document.querySelector('input[name="work_type"]:checked').value;
+
+if (selectedType === 'Internal') {
+internalTailorDiv.style.display = 'block';
+internalTailorSelect.required = true;
+externalTailorDiv.style.display = 'none';
+externalTailorSelect.required = false;
+
+costPriceRow.style.display = 'none';
+profitRow.style.display = 'none';
+} else { // Eksternal
+internalTailorDiv.style.display = 'none';
+internalTailorSelect.required = false;
+externalTailorDiv.style.display = 'block';
+externalTailorSelect.required = true;
+
+costPriceRow.style.display = 'table-row';
+profitRow.style.display = 'table-row';
+}
+$('#tailor_id, #supplier_id').val(null).trigger('change');
+}
+
+workTypeRadios.forEach(radio => {
+radio.addEventListener('change', toggleTailorSelection);
+});
+
+toggleTailorSelection();
+});
     </script>
 @endpush

@@ -188,9 +188,17 @@
                                                 <td>Profit</td>
                                                 <td class="text-end fw-bold fs-18" id="display_profit">Rp 0</td>
                                             </tr>
-                                             <tr>
+                                            <tr>
                                                 <td>Jumlah Dibayar</td>
-                                                <td><input type="number" name="paid_amount" id="paid_amount" class="form-control" value="{{ $transaction->paid_amount }}"></td>
+                                                <td id="paidAmount">
+                                                    <div class="input-group">
+                                                        <input type="text" name="paid_amount" placeholder="Masukkan jumlah yang dibayarkan" class="form-control" value="{{ $transaction->paid_amount }}">
+                                                        <div class="input-group-append">
+                                                            {{-- INI TOMBOL BARUNYA --}}
+                                                            <button type="button" class="btn btn-success" id="btn-lunas">Lunas</button>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td>Sisa Bayar</td>
@@ -328,16 +336,30 @@
         updateTotals();
     });
 
+    $('#btn-lunas').on('click', function() {
+    // 1. Hitung total harga saat ini
+    let currentTotalPrice = 0;
+    $('.item-subtotal').each(function() {
+    currentTotalPrice += parseFloat($(this).val()) || 0;
+    });
+
+    // 2. Masukkan total harga ke dalam input 'paid_amount'
+    $('input[name="paid_amount"]').val(currentTotalPrice);
+
+    // 3. Panggil fungsi updateTotals() agar "Sisa Bayar" ikut ter-update
+    updateTotals();
+    });
+
     function updateTotals(){
         let totalPrice = 0;
         $('.item-subtotal').each(function(){
             totalPrice += parseFloat($(this).val());
         });
 
-        const costPrice = parseFloat($('#cost_price').val()) || 0;
-        const paidAmount = parseFloat($('#paid_amount').val()) || 0;
-        const profit = totalPrice - costPrice;
-        const dueAmount = totalPrice - paidAmount;
+        const costPrice = parseFloat($('input[name="cost_price"]').val()) || 0;
+const paidAmount = parseFloat($('input[name="paid_amount"]').val()) || 0;
+const profit = totalPrice - costPrice;
+const dueAmount = totalPrice - paidAmount;
 
         $('#display_total_price').text(formatRupiah(totalPrice));
         $('#display_profit').text(formatRupiah(profit));
