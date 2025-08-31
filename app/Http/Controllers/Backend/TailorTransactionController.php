@@ -12,6 +12,7 @@ use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ServiceType;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TailorTransactionItem;
@@ -46,9 +47,10 @@ class TailorTransactionController extends Controller
     {
         $customers = Customer::all();
         $tailors = User::role('Tailor')->get();
+        $types = ServiceType::all();
         $services = Service::where('is_active', true)->get();
         $serviceSuppliers = Supplier::where('type', 'Jasa')->get();
-        return view('admin.backend.tailor.create', compact('customers', 'services', 'tailors', 'serviceSuppliers'));
+        return view('admin.backend.tailor.create', compact('types', 'customers', 'services', 'tailors', 'serviceSuppliers'));
     }
 
     /**
@@ -60,6 +62,10 @@ class TailorTransactionController extends Controller
             'customer_id' => 'required',
             'transaction_date' => 'required|date',
             'work_type' => 'required|in:Internal,Eksternal',
+            'items' => 'required|array|min:1',
+            'items.*.service_type_id' => 'required|exists:service_types,id', // Validasi untuk type_id
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.price' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -69,8 +75,7 @@ class TailorTransactionController extends Controller
             $total_price = 0;
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    // Pastikan subtotal adalah angka
-                    $total_price += floatval($item['subtotal']);
+                    $total_price += floatval($item['quantity']) * floatval($item['price']);
                 }
             }
 
@@ -143,13 +148,34 @@ class TailorTransactionController extends Controller
             // Simpan item-item transaksi
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    TailorTransactionItem::create([
-                        'tailor_transaction_id' => $transaction->id,
-                        'service_id' => $item['service_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'subtotal' => $item['subtotal'],
-                    ]);
+                    $serviceId = null;
+                    $namaKomponen = '';
+
+                    if (isset($item['manual_service_name']) && !empty($item['manual_service_name'])) {
+                        // --- PROSES INPUT MANUAL ---
+                        // **DISESUAIKAN**: Ambil nama langsung dari inputan. service_id dibiarkan null.
+                        $namaKomponen = $item['manual_service_name'];
+                        $serviceId = null;
+                    } else if (isset($item['service_id'])) {
+                        // --- PROSES DARI DROPDOWN ---
+                        // **DISESUAIKAN**: Ambil service_id dan cari namanya di database.
+                        $serviceId = $item['service_id'];
+                        $service = Service::find($serviceId);
+                        $namaKomponen = $service ? $service->name : 'Komponen Tidak Ditemukan';
+                    }
+
+                    // Simpan item jika nama komponen berhasil didapatkan
+                    if (!empty($namaKomponen)) {
+                        TailorTransactionItem::create([
+                            'tailor_transaction_id' => $transaction->id,
+                            'service_type_id'       => $item['service_type_id'],
+                            'service_id'            => $serviceId,       // Akan bernilai NULL jika input manual
+                            'nama_komponen'         => $namaKomponen,    // <-- NAMA KOMPONEN DISIMPAN DI SINI
+                            'quantity'              => $item['quantity'],
+                            'price'                 => $item['price'],
+                            'subtotal'              => floatval($item['quantity']) * floatval($item['price']),
+                        ]);
+                    }
                 }
             }
 
@@ -206,9 +232,10 @@ class TailorTransactionController extends Controller
         $customers = Customer::all();
         $tailors = User::role('Tailor')->get();
         $services = Service::where('is_active', true)->get();
+        $types = ServiceType::all();
         $serviceSuppliers = Supplier::where('type', 'Jasa')->get();
 
-        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services', 'tailors', 'serviceSuppliers'));
+        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services', 'types', 'tailors', 'serviceSuppliers'));
     }
 
     /**
@@ -232,7 +259,7 @@ class TailorTransactionController extends Controller
             $total_price = 0;
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    $total_price += floatval($item['subtotal']);
+                    $total_price += floatval($item['quantity']) * floatval($item['price']);
                 }
             }
 
@@ -298,13 +325,34 @@ class TailorTransactionController extends Controller
             // 5. Buat ulang item-item transaksi
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    TailorTransactionItem::create([
-                        'tailor_transaction_id' => $transaction->id,
-                        'service_id' => $item['service_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'subtotal' => $item['subtotal'],
-                    ]);
+                    $serviceId = null;
+                    $namaKomponen = '';
+
+                    if (isset($item['manual_service_name']) && !empty($item['manual_service_name'])) {
+                        // --- PROSES INPUT MANUAL ---
+                        // **DISESUAIKAN**: Ambil nama langsung dari inputan. service_id dibiarkan null.
+                        $namaKomponen = $item['manual_service_name'];
+                        $serviceId = null;
+                    } else if (isset($item['service_id'])) {
+                        // --- PROSES DARI DROPDOWN ---
+                        // **DISESUAIKAN**: Ambil service_id dan cari namanya di database.
+                        $serviceId = $item['service_id'];
+                        $service = Service::find($serviceId);
+                        $namaKomponen = $service ? $service->name : 'Komponen Tidak Ditemukan';
+                    }
+
+                    // Simpan item jika nama komponen berhasil didapatkan
+                    if (!empty($namaKomponen)) {
+                        TailorTransactionItem::create([
+                            'tailor_transaction_id' => $transaction->id,
+                            'service_type_id'       => $item['service_type_id'],
+                            'service_id'            => $serviceId,       // Akan bernilai NULL jika input manual
+                            'nama_komponen'         => $namaKomponen,    // <-- NAMA KOMPONEN DISIMPAN DI SINI
+                            'quantity'              => $item['quantity'],
+                            'price'                 => $item['price'],
+                            'subtotal'              => floatval($item['quantity']) * floatval($item['price']),
+                        ]);
+                    }
                 }
             }
 

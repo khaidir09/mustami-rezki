@@ -12,4 +12,9 @@ class TailorTransactionItem extends Model
     {
         return $this->belongsTo(Service::class, 'service_id');
     }
+
+    public function type()
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id');
+    }
 }

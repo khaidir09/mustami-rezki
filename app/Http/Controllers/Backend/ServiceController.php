@@ -24,19 +24,17 @@ class ServiceController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:Permak,Bikin',
             'base_price' => 'required|numeric|min:0',
         ]);
 
         Service::create([
             'name' => $request->name,
-            'type' => $request->type,
             'base_price' => $request->base_price,
             'is_active' => $request->filled('is_active'),
         ]);
 
         $notification = array(
-            'message' => 'Jasa Baru Berhasil Ditambahkan',
+            'message' => 'Komponen Jasa Baru Berhasil Ditambahkan',
             'alert-type' => 'success'
         );
 
@@ -62,13 +60,12 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         $service->name = $request->name;
-        $service->type = $request->type;
         $service->base_price = $request->base_price;
         $service->is_active = $request->is_active;
         $service->save();
 
         $notification = array(
-            'message' => 'Jasa Jahit Berhasil Diperbarui',
+            'message' => 'Komponen Jasa Jahit Berhasil Diperbarui',
             'alert-type' => 'success'
         );
         return redirect()->route('all.service')->with($notification);

@@ -62,8 +62,8 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nama Jasa</th>
-                                                <th>Tipe</th>
+                                                <th>Jenis</th>
+                                                <th>Komponen</th>
                                                 <th class="text-center">Jumlah</th>
                                                 <th class="text-end">Harga Satuan</th>
                                                 <th class="text-end">Subtotal</th>
@@ -73,8 +73,8 @@
                                             @forelse ($transaction->items as $key => $item)
                                             <tr>
                                                 <td>{{ $key + 1 }}</td>
-                                                <td>{{ $item->service->name ?? 'Jasa Dihapus' }}</td>
-                                                <td>{{ $item->service->type ?? '-' }}</td>
+                                                <td>{{ $item->type->name ?? '-' }}</td>
+                                                <td>{{ $item->nama_komponen }}</td>
                                                 <td class="text-center">{{ $item->quantity }}</td>
                                                 <td class="text-end">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
                                                 <td class="text-end">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>

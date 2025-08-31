@@ -23,18 +23,8 @@
 
    <div class="row">
       <div class="col-md-6 mb-3">
-         <label class="form-label">Nama Jasa:</label>
+         <label class="form-label">Komponen Jasa:</label>
          <input type="text" name="name" class=" form-control" value="{{ $editData->name }}">
-      </div>
-      <div class="col-md-6 mb-3">
-         <div class="form-group w-100">
-            <label class="form-label" for="formBasic">Tipe :</label>
-            <select name="type" id="type" class="form-control form-select">
-               <option value="{{ $editData->type }}" {{ $editData->type ? 'selected' : ''}}>{{ $editData->type }}</option>
-               <option value="Permak">Permak</option>
-               <option value="Bikin">Bikin</option>
-            </select>
-         </div>
       </div>
       <div class="col-md-6 mb-3">
          <label class="form-label">Biaya Dasar:</label>

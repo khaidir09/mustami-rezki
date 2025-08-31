@@ -30,6 +30,7 @@
                                         <th>Tgl. Masuk</th>
                                         <th>Tgl. Selesai</th>
                                         <th>Total Harga</th>
+                                        <th>Total Komponen</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -52,6 +53,7 @@
                                         <td>{{ \Carbon\Carbon::parse($item->transaction_date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('d-m-Y') : '-' }}</td>
                                         <td>Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                        <td>{{ $item->items->count() }}</td>
                                         <td>
                                             @switch($item->status)
                                                 @case('Antrian')

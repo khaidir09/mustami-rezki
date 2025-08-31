@@ -79,21 +79,40 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 align-items-end px-3 pb-3 my-3 bg-light rounded">
-                                <div class="col-md-5">
-                                    <label for="service_id_selector" class="form-label">Pilih Jasa <span class="text-danger">*</span></label>
-                                    <select id="service_id_selector" class="form-select select2">
-                                        <option value="">Pilih Jasa</option>
-                                        @foreach($services as $service)
-                                        <option value="{{ $service->id }}" data-price="{{ $service->base_price }}">{{ $service->name }} ({{ $service->type }})</option>
+                            <div class="row g-3 align-items-end p-3 my-3 bg-light rounded">
+                                <div class="col-md-2">
+                                    <label for="type_selector" class="form-label">Jenis Jasa <span class="text-danger">*</span></label>
+                                    <select id="type_selector" class="form-select">
+                                        <option value="">Pilih Jenis Jasa</option>
+                                        @foreach($types as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="service_id_selector" class="form-label">Komponen <span class="text-danger">*</span></label>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <select id="service_id_selector" class="form-select">
+                                                <option value="">Pilih Komponen</option>
+                                                @foreach($services as $item)
+                                                <option value="{{ $item->id }}" data-price="{{ $item->base_price }}">{{ $item->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            {{-- Input manual, awalnya disembunyikan --}}
+                                            <input type="text" id="manual_service_name" class="form-control" placeholder="Ketik Nama Komponen" style="display: none;">
+                                        </div>
+                                        {{-- Tombol untuk beralih antara select dan input manual --}}
+                                        <button type="button" class="btn btn-outline-secondary ms-2" id="toggle_service_input_btn" title="Input Manual">
+                                            Manual
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="item_quantity" class="form-label">Jumlah <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="item_quantity" value="1" min="1">
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="item_price" class="form-label">Harga Satuan <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="item_price" placeholder="Harga Jasa">
                                 </div>
@@ -102,14 +121,15 @@
                                 </div>
                             </div>
 
+                            {{-- Tabel Item yang Dipesan --}}
                             <div class="row">
                                 <div class="col-12">
-                                     <label class="form-label">Item Jasa Dipesan</label>
-                                     <div class="table-responsive">
+                                    <div class="table-responsive">
                                         <table class="table table-bordered">
                                             <thead>
                                                 <tr>
                                                     <th>Nama Jasa</th>
+                                                    <th>Jenis Komponen</th>
                                                     <th>Jumlah</th>
                                                     <th>Harga Satuan</th>
                                                     <th>Subtotal</th>
@@ -117,9 +137,9 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="transactionItemsTbody">
-                                                </tbody>
+                                            </tbody>
                                         </table>
-                                     </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -176,135 +196,170 @@
             // Inisialisasi Select2 pada semua elemen dengan class 'select2'
             $('.select2').select2();
 
-            // Saat service dipilih, otomatis isi harga satuannya
-            $('#service_id_selector').on('change', function(){
-                var selectedOption = $(this).find('option:selected');
-                var price = selectedOption.data('price');
-                $('#item_price').val(price);
-            });
+            let isManualServiceInput = false;
+    let itemCounter = 0;
 
-            // Saat tombol "Tambah Item" diklik
-            $('#addItemBtn').on('click', function(){
-                var serviceSelector = $('#service_id_selector');
-                var serviceId = serviceSelector.val();
-                var serviceName = serviceSelector.find('option:selected').text();
-                var quantity = parseInt($('#item_quantity').val());
-                var price = parseFloat($('#item_price').val());
+    $('#toggle_service_input_btn').on('click', function() {
+        isManualServiceInput = !isManualServiceInput;
+        
+        if (isManualServiceInput) {
+            $('#service_id_selector').hide();
+            $('#manual_service_name').show().focus();
+            $(this).html('Pilih Daftar').attr('title', 'Pilih dari Daftar');
+            $('#item_price').val('').prop('readonly', false);
+        } else {
+            $('#manual_service_name').hide();
+            $('#service_id_selector').show();
+            $(this).html('Manual').attr('title', 'Input Manual');
+            $('#service_id_selector').val(null).trigger('change');
+        }
+    });
 
-                if (!serviceId || !quantity || isNaN(price)) {
-                    alert('Silakan pilih jasa dan isi harga dengan benar.');
-                    return;
-                }
+    $('#service_id_selector').on('change', function(){
+        const selectedOption = $(this).find('option:selected');
+        const price = selectedOption.data('price') || '';
+        $('#item_price').val(price);
+    });
 
-                var subtotal = quantity * price;
+    $('#addItemBtn').on('click', function(){
+        itemCounter++;
+        
+        const typeSelector = $('#type_selector');
+        const typeId = typeSelector.val();
+        const typeName = typeSelector.find('option:selected').text();
 
-                var newRow = `
-                    <tr>
-                        <td>
-                            <input type="hidden" name="items[${Date.now()}][service_id]" value="${serviceId}">
-                            ${serviceName}
-                        </td>
-                        <td>
-                            <input type="hidden" name="items[${Date.now()}][quantity]" value="${quantity}">
-                            ${quantity}
-                        </td>
-                        <td>
-                            <input type="hidden" name="items[${Date.now()}][price]" value="${price}">
-                            ${formatRupiah(price)}
-                        </td>
-                        <td>
-                            <input type="hidden" name="items[${Date.now()}][subtotal]" class="item-subtotal" value="${subtotal}">
-                            ${formatRupiah(subtotal)}
-                        </td>
-                        <td><button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button></td>
-                    </tr>
-                `;
+        let serviceId = '';
+        let serviceName = '';
 
-                $('#transactionItemsTbody').append(newRow);
-                updateTotals();
-
-                // Reset input fields
-                serviceSelector.val('');
-                $('#item_quantity').val(1);
-                $('#item_price').val('');
-            });
-
-            // Saat tombol "Hapus" pada item diklik
-            $(document).on('click', '.removeItemBtn', function(){
-                $(this).closest('tr').remove();
-                updateTotals();
-            });
-
-            // Saat input biaya modal atau pembayaran berubah
-            $('#cost_price, #paid_amount').on('input', function(){
-                updateTotals();
-            });
-
-            function updateTotals(){
-                var totalPrice = 0;
-                $('.item-subtotal').each(function(){
-                    totalPrice += parseFloat($(this).val());
-                });
-
-                var costPrice = parseFloat($('#cost_price').val()) || 0;
-                var paidAmount = parseFloat($('#paid_amount').val()) || 0;
-
-                var profit = totalPrice - costPrice;
-                var dueAmount = totalPrice - paidAmount;
-
-                $('#display_total_price').text(formatRupiah(totalPrice));
-                $('#display_profit').text(formatRupiah(profit));
-                $('#display_due_amount').text(formatRupiah(dueAmount));
+        if (!typeId) {
+            alert('Silakan pilih "Jenis Jasa" terlebih dahulu!');
+            return; 
+        }
+        
+        if (isManualServiceInput) {
+            serviceName = $('#manual_service_name').val();
+            if (!serviceName) {
+                alert('Nama komponen jahit manual harus diisi.');
+                return;
             }
-
-            function formatRupiah(angka) {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        } else {
+            serviceId = $('#service_id_selector').val();
+            serviceName = $('#service_id_selector').find('option:selected').text();
+            if (!serviceId) {
+                alert('Silakan pilih komponen jahit dari daftar.');
+                return;
             }
+        }
 
-            const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
-            const internalTailorDiv = document.getElementById('internal_tailor_div');
-            const internalTailorSelect = document.getElementById('tailor_id');
-            const externalTailorDiv = document.getElementById('external_tailor_div');
-            const externalTailorSelect = document.getElementById('supplier_id');
-            const costPriceLabel = document.getElementById('cost_price_label');
+        const quantity = parseInt($('#item_quantity').val());
+        const price = parseFloat($('#item_price').val());
 
-            function toggleTailorSelection() {
-                // Cari radio button mana yang sedang dipilih
-                const selectedType = document.querySelector('input[name="work_type"]:checked').value;
+        if (isNaN(quantity) || quantity <= 0 || isNaN(price)) {
+            alert('Jumlah dan harga satuan harus diisi dengan angka yang valid.');
+            return;
+        }
 
-                if (selectedType === 'Internal') {
-                    // Tampilkan dropdown internal
-                    internalTailorDiv.style.display = 'block';
-                    internalTailorSelect.disabled = false; // Aktifkan select agar datanya terkirim
+        const subtotal = quantity * price;
+        const hiddenServiceInput = isManualServiceInput 
+            ? `<input type="hidden" name="items[${itemCounter}][manual_service_name]" value="${serviceName}">`
+            : `<input type="hidden" name="items[${itemCounter}][service_id]" value="${serviceId}">`;
+        
+        const newRow = `
+            <tr class="transaction-item">
+                <td>
+                    <input type="hidden" name="items[${itemCounter}][service_type_id]" value="${typeId}">
+                    ${hiddenServiceInput}
+                    <input type="hidden" name="items[${itemCounter}][quantity]" value="${quantity}">
+                    <input type="hidden" name="items[${itemCounter}][price]" value="${price}">
+                    <input type="hidden" class="item-subtotal" value="${subtotal}">
+                    ${typeName}
+                </td>
+                <td>${serviceName}</td>
+                <td>${quantity}</td>
+                <td>${formatRupiah(price)}</td>
+                <td>${formatRupiah(subtotal)}</td>
+                <td><button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button></td>
+            </tr>
+        `;
 
-                    // Sembunyikan dropdown eksternal
-                    externalTailorDiv.style.display = 'none';
-                    externalTailorSelect.disabled = true; // Nonaktifkan agar datanya TIDAK terkirim
+        $('#transactionItemsTbody').append(newRow);
+        updateTotals();
 
-                    // Ubah label biaya
-                    costPriceLabel.textContent = 'Biaya Modal';
+        if(isManualServiceInput){
+            $('#manual_service_name').val('');
+        } else {
+            $('#service_id_selector').val(null).trigger('change');
+        }
+        $('#item_quantity').val(1);
+        $('#item_price').val('');
+    });
 
-                } else { // Jika 'Eksternal' yang dipilih
-                    // Sembunyikan dropdown internal
-                    internalTailorDiv.style.display = 'none';
-                    internalTailorSelect.disabled = true;
+    $(document).on('click', '.removeItemBtn', function(){
+        $(this).closest('tr').remove();
+        updateTotals();
+    });
 
-                    // Tampilkan dropdown eksternal
-                    externalTailorDiv.style.display = 'block';
-                    externalTailorSelect.disabled = false;
+    $('#cost_price, #paid_amount').on('input', function(){
+        updateTotals();
+    });
 
-                    // Ubah label biaya
-                    costPriceLabel.textContent = 'Biaya dari Penjahit Luar';
-                }
-            }
+    function updateTotals(){
+        let totalPrice = 0;
+        $('.item-subtotal').each(function(){
+            totalPrice += parseFloat($(this).val());
+        });
 
-            // Tambahkan event listener ke setiap radio button
-            workTypeRadios.forEach(radio => {
-                radio.addEventListener('change', toggleTailorSelection);
-            });
+        const costPrice = parseFloat($('#cost_price').val()) || 0;
+        const paidAmount = parseFloat($('#paid_amount').val()) || 0;
+        const profit = totalPrice - costPrice;
+        const dueAmount = totalPrice - paidAmount;
 
-            // Panggil fungsi sekali saat halaman dimuat untuk mengatur tampilan awal
-            toggleTailorSelection();
+        $('#display_total_price').text(formatRupiah(totalPrice));
+        $('#display_profit').text(formatRupiah(profit));
+        $('#display_due_amount').text(formatRupiah(dueAmount));
+    }
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    }
+    
+    // --- Logika untuk Tipe Pengerjaan (Internal/Eksternal) ---
+    const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
+    const internalTailorDiv = document.getElementById('internal_tailor_div');
+    const internalTailorSelect = document.getElementById('tailor_id');
+    const externalTailorDiv = document.getElementById('external_tailor_div');
+    const externalTailorSelect = document.getElementById('supplier_id');
+    const costPriceRow = document.getElementById('cost_price_row');
+    const profitRow = document.getElementById('profit_row');
+
+    function toggleTailorSelection() {
+        const selectedType = document.querySelector('input[name="work_type"]:checked').value;
+
+        if (selectedType === 'Internal') {
+            internalTailorDiv.style.display = 'block';
+            internalTailorSelect.required = true;
+            externalTailorDiv.style.display = 'none';
+            externalTailorSelect.required = false;
+            
+            costPriceRow.style.display = 'none';
+            profitRow.style.display = 'none';
+        } else { // Eksternal
+            internalTailorDiv.style.display = 'none';
+            internalTailorSelect.required = false;
+            externalTailorDiv.style.display = 'block';
+            externalTailorSelect.required = true;
+
+            costPriceRow.style.display = 'table-row';
+            profitRow.style.display = 'table-row';
+        }
+         $('#tailor_id, #supplier_id').val(null).trigger('change');
+    }
+
+    workTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleTailorSelection);
+    });
+
+    toggleTailorSelection();
         });
     </script>
 @endpush

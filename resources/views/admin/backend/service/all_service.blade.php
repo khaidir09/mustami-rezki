@@ -29,8 +29,7 @@
                             <thead>
                             <tr>
                                 <th>No.</th>
-                                <th>Nama Jasa</th>
-                                <th>Tipe</th>
+                                <th>Komponen Jasa</th>
                                 <th>Biaya Dasar</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
@@ -41,7 +40,6 @@
                                 <tr>
                                     <td>{{ $key+1 }}</td>
                                     <td>{{ $item->name }}</td>
-                                    <td>{{ $item->type }}</td>
                                     <td>Rp {{ number_format($item->base_price, 0, ',', '.') }}</td>
                                     <td>
                                         @if ($item->is_active)
@@ -78,25 +76,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="standard-modalLabel">Jasa Jahit</h1>
+                <h1 class="modal-title fs-5" id="standard-modalLabel">Komponen Jahit</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
                 <form action="{{ route('store.service') }}" method="post">
                     @csrf
-
+                    
                     <div class="form-group mb-3 col-md-12">
-                        <label for="input1" class="form-label">Nama Jasa</label>
-                        <input type="text" class="form-control" name="name"   id="input1"> 
-                    </div>
-
-                    <div class="form-group mb-3 col-md-12">
-                        <label for="input2" class="form-label">Tipe</label>
-                        <select name="type" class="form-select" id="input2">
-                            <option value="Permak">Permak</option>
-                            <option value="Bikin">Bikin</option>
-                        </select>
+                        <label for="input1" class="form-label">Komponen</label>
+                        <input type="text" class="form-control" name="name" id="input1"> 
                     </div>
 
                     <div class="form-group mb-3 col-md-12">
