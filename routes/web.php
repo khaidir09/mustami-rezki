@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Backend\ExpenseController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\RoleController;
 use App\Http\Controllers\Backend\SaleController;
@@ -168,6 +169,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete/tailor/{id}', 'destroy')->name('delete.tailor');
         Route::get('/details/tailor/{id}', 'show')->name('details.tailor');
         // Route::get('/invoice/tailor/{id}', 'InvoiceSales')->name('invoice.tailor');
+    });
+
+    Route::controller(ExpenseController::class)->group(function () {
+        Route::get('/all/expense', 'index')->name('all.expense');
+        Route::get('/add/expense', 'create')->name('add.expense');
+        Route::post('/store/expense', 'store')->name('store.expense');
+        Route::get('/edit/expense/{id}', 'edit')->name('edit.expense');
+        Route::post('/update/expense', 'update')->name('update.expense');
+        Route::get('/delete/expense/{id}', 'destroy')->name('delete.expense');
     });
 
 

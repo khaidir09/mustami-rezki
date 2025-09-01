@@ -92,6 +92,15 @@
                     </li>
                 @endif
 
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <li>
+                        <a href="{{ route('all.expense') }}" class="tp-link">
+                            <i data-feather="dollar-sign"></i>
+                            Pengeluaran
+                        </a>
+                    </li>
+                @endif
+
 
                 {{-- <li>
                     <a href="#Purchase" data-bs-toggle="collapse">
