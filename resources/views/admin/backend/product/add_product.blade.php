@@ -49,6 +49,7 @@
                         <option value="">Pilih Satuan</option>
                         <option value="Pcs">Pcs</option>
                         <option value="Meter">Meter</option>
+                        <option value="Cm">Cm</option>
                         <option value="Gulung">Gulung</option>
                         <option value="Lusin">Lusin</option>
                         <option value="Set">Set</option>
