@@ -98,7 +98,6 @@ class SupplierController extends Controller
 
         Customer::create([
             'name' => $request->name,
-            'email' => $request->email,
             'phone' => $request->phone,
             'address' => $request->address,
         ]);
