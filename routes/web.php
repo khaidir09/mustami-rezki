@@ -185,6 +185,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
         Route::get('/attendances/create', [AttendanceController::class, 'create'])->name('attendances.create');
         Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
+        Route::get('/delete/attendances/{id}', 'destroy')->name('attendances.delete');
     });
 
 

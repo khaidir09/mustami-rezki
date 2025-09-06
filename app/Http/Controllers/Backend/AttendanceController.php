@@ -52,6 +52,12 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
         $today = Carbon::today();
+        $action = $request->input('action');
+
+        // Validasi khusus jika aksi adalah 'absence'
+        if ($action == 'absence') {
+            $request->validate(['notes' => 'required|string|max:255']);
+        }
 
         // Cek apakah sudah absen hari ini
         $attendanceToday = Attendance::where('user_id', $user->id)
@@ -64,15 +70,21 @@ class AttendanceController extends Controller
 
         // Proses Check-in
         if (!$attendanceToday) {
+            $checkInTime = Carbon::now()->format('H:i:s');
+            $checkIn = $action == 'absence' ? null : $checkInTime;
+            $status = $action == 'absence' ? $request->input('status') : 'Hadir';
+            $notes = $action == 'absence' ? $request->input('notes') : null;
+
             Attendance::create([
                 'user_id' => $user->id,
                 'date' => $today,
-                'check_in' => Carbon::now(),
-                'status' => 'Hadir',
+                'check_in' => $checkIn,
+                'status' => $status,
+                'notes' => $notes,
             ]);
 
             // Jika yang absen adalah Kasir, catat gaji hariannya
-            if ($user->hasRole('Admin')) {
+            if ($user->hasRole('Admin') && $status == 'Hadir') {
                 Salary::create([
                     'user_id'       => $user->id,
                     'type'          => 'Gaji Harian', // Jenis pembayaran
@@ -124,6 +136,19 @@ class AttendanceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $attendance = Attendance::findOrFail($id);
+        $attendance->delete();
+
+        // Hapus gaji harian terkait jika ada
+        Salary::where('user_id', $attendance->user_id)
+            ->where('payment_date', $attendance->date)
+            ->delete();
+
+        $notification = array(
+            'message' => 'Presensi Berhasil Dihapus',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->back()->with($notification);
     }
 }
