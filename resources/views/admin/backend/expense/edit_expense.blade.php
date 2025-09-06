@@ -17,7 +17,7 @@
         </div>
          <div class="card">
             <div class="card-body">
-<form action="{{ route('update.expense') }}" method="post">
+<form action="{{ route('update.expense') }}" method="post" enctype="multipart/form-data">
    @csrf
    <input type="hidden" name="id" value="{{ $editData->id }}">
 
@@ -34,6 +34,23 @@
          <label class="form-label">Jumlah</label>
          <input type="number" name="amount" class="form-control" min="0" value="{{ $editData->amount }}">
       </div>
+      @if ($editData->photo)
+      <div class="col-md-12 mb-3">
+         <label class="form-label">Foto/Struk</label>
+         <div class="form-group">
+            <img src="{{ asset($editData->photo) }}" alt="Foto/Struk">
+            <div class="mt-2">
+               <label for="sertifikat">Ganti Foto (Opsional)</label>
+               <input type="file" name="photo" class="form-control">
+            </div>
+         </div>
+      </div>
+      @else
+         <div class="col-md-6 mb-3">
+            <label class="form-label">Foto/Struk</label>
+            <input type="file" name="photo" class="form-control">
+         </div>
+      @endif
       <div class="col-xl-12">
          <div class="d-flex justify-content-start">
             <button class="btn btn-primary me-3" type="submit">Simpan</button>

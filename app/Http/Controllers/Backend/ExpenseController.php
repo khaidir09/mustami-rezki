@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class ExpenseController extends Controller
 {
@@ -34,12 +37,27 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:1000',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $image = $request->file('photo');
+        $save_url = null;
+        if ($image) {
+            $manager = new ImageManager(new Driver());
+            $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
+
+            $img = $manager->read($image);
+            $img->resize(300, 300, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save('upload/expense/' . $name_gen);
+            $save_url = 'upload/expense/' . $name_gen;
+        }
 
         Expense::create([
             'date' => $request->date,
             'amount' => $request->amount,
             'description' => $request->description,
+            'photo' => $save_url,
         ]);
 
         $notification = array(
@@ -76,9 +94,28 @@ class ExpenseController extends Controller
 
         $expense = Expense::findOrFail($id);
 
+        $image = $request->file('photo');
+        $save_url = null;
+        if ($image) {
+            $manager = new ImageManager(new Driver());
+            $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
+
+            $img = $manager->read($image);
+            $img->resize(300, 300, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save('upload/expense/' . $name_gen);
+            $save_url = 'upload/expense/' . $name_gen;
+        }
+
+        if ($image && $expense->photo) {
+            // Hapus file lama jika ada
+            unlink($expense->photo);
+        }
+
         $expense->date = $request->date;
-        $expense->description = $request->description;
         $expense->amount = $request->amount;
+        $expense->description = $request->description;
+        $expense->photo = $save_url;
         $expense->save();
 
         $notification = array(
@@ -93,7 +130,12 @@ class ExpenseController extends Controller
      */
     public function destroy(string $id)
     {
-        Expense::find($id)->delete();
+        $expense = Expense::find($id);
+        if ($expense->photo) {
+            unlink($expense->photo);
+        }
+
+        $expense->delete();
 
         $notification = array(
             'message' => 'Pengeluaran Berhasil Dihapus',
