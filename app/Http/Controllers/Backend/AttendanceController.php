@@ -58,9 +58,9 @@ class AttendanceController extends Controller
             ->where('date', $today)
             ->first();
 
-        if ($attendanceToday && $attendanceToday->check_out) {
-            return redirect()->back()->with('error', 'Anda sudah melakukan absen pulang hari ini.');
-        }
+        // if ($attendanceToday && $attendanceToday->check_out) {
+        //     return redirect()->back()->with('error', 'Anda sudah melakukan absen pulang hari ini.');
+        // }
 
         // Proses Check-in
         if (!$attendanceToday) {
@@ -85,12 +85,12 @@ class AttendanceController extends Controller
         }
 
         // Proses Check-out
-        if ($attendanceToday && !$attendanceToday->check_out) {
-            $attendanceToday->update([
-                'check_out' => Carbon::now(),
-            ]);
-            return redirect()->back()->with('success', 'Berhasil absen pulang!');
-        }
+        // if ($attendanceToday && !$attendanceToday->check_out) {
+        //     $attendanceToday->update([
+        //         'check_out' => Carbon::now(),
+        //     ]);
+        //     return redirect()->back()->with('success', 'Berhasil absen pulang!');
+        // }
 
         return redirect()->back()->with('info', 'Tidak ada aksi presensi yang dapat dilakukan.');
     }

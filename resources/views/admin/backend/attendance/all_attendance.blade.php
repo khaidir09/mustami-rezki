@@ -26,22 +26,10 @@
                                     <button type="submit" name="action" value="check_in" class="btn btn-primary btn-lg waves-effect waves-light">
                                         <i class="ri-fingerprint-line me-2"></i> Absen Masuk
                                     </button>
-                                @elseif($attendanceToday->check_in && !$attendanceToday->check_out)
+                                @else
                                     {{-- Tombol Check-out --}}
                                     <div class="alert alert-success">
                                         Anda sudah absen masuk pada jam: <strong>{{ \Carbon\Carbon::parse($attendanceToday->check_in)->format('H:i') }}</strong>
-                                    </div>
-                                    <button type="submit" name="action" value="check_out" class="btn btn-danger btn-lg waves-effect waves-light">
-                                        <i class="ri-logout-box-r-line me-2"></i> Absen Pulang
-                                    </button>
-                                @else
-                                    {{-- Sudah Selesai Absen --}}
-                                    <div class="alert alert-info">
-                                        Terima kasih, Anda sudah menyelesaikan presensi hari ini.
-                                        <p class="mb-0 mt-2">
-                                            Masuk: <strong>{{ \Carbon\Carbon::parse($attendanceToday->check_in)->format('H:i') }}</strong> | 
-                                            Pulang: <strong>{{ \Carbon\Carbon::parse($attendanceToday->check_out)->format('H:i') }}</strong>
-                                        </p>
                                     </div>
                                 @endif
                             </form>
@@ -56,14 +44,14 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="datatable" class="table table-bordered">
+                            <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
                             <thead>
                             <tr>
                                 <th>No.</th>
                                 <th>Nama</th>
                                 <th>Tanggal</th>
                                 <th>Jam Masuk</th>
-                                <th>Jam Pulang</th>
+                                {{-- <th>Jam Pulang</th> --}}
                                 <th>Status</th>
                             </tr>
                             </thead>
@@ -74,16 +62,15 @@
                                         <td>{{ $item->user->name }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item->date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->check_in ? \Carbon\Carbon::parse($item->check_in)->format('H:i') : '-' }}</td>
-                                        <td>{{ $item->check_out ? \Carbon\Carbon::parse($item->check_out)->format('H:i') : '-' }}</td>
-                                        <td>
-                                            @if ($item->check_in && $item->check_out)
+                                        <td><span class="badge text-bg-success">{{ $item->status }}</span></td>
+                                        {{-- <td>{{ $item->check_out ? \Carbon\Carbon::parse($item->check_out)->format('H:i') : '-' }}</td> --}}
+                                        {{-- <td>
+                                            @if ($item->check_in)
                                                 <span class="badge text-bg-success">Hadir</span>
-                                            @elseif ($item->check_in && !$item->check_out)
-                                                <span class="badge text-bg-warning">Belum Pulang</span>
                                             @else
                                                 <span class="badge text-bg-danger">Tidak Hadir</span>
                                             @endif
-                                        </td>
+                                        </td> --}}
                                     </tr>
                                 @endforeach
                             </tbody>
