@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Backend\AttendanceController;
 use App\Http\Controllers\Backend\ExpenseController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\RoleController;
@@ -178,6 +179,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/expense/{id}', 'edit')->name('edit.expense');
         Route::post('/update/expense', 'update')->name('update.expense');
         Route::get('/delete/expense/{id}', 'destroy')->name('delete.expense');
+    });
+
+    Route::controller(AttendanceController::class)->group(function () {
+        Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+        Route::get('/attendances/create', [AttendanceController::class, 'create'])->name('attendances.create');
+        Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
     });
 
 

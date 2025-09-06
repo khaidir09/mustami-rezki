@@ -101,6 +101,13 @@
                     </li>
                 @endif
 
+                <li>
+                    <a href="{{ route('attendances.index') }}" class="tp-link">
+                        <i data-feather="check-square"></i>
+                        Presensi
+                    </a>
+                </li>
+
 
                 {{-- <li>
                     <a href="#Purchase" data-bs-toggle="collapse">
