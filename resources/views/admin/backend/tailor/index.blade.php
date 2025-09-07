@@ -10,9 +10,11 @@
                 <h4 class="fs-18 fw-semibold m-0">Semua Transaksi Jasa Jahit</h4>
             </div>
 
-            <div class="text-end">
-                <a href="{{ route('add.tailor') }}" class="btn btn-secondary">Tambah Transaksi Jahit</a>
-            </div>
+            @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+                <div class="text-end">
+                    <a href="{{ route('add.tailor') }}" class="btn btn-secondary">Tambah Transaksi Jahit</a>
+                </div>
+            @endif
         </div>
 
         <div class="row">
