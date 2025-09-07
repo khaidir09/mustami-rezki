@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Expense;
 use App\Models\Product;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
@@ -113,6 +116,8 @@ class AdminController extends Controller
         $user = Auth::user();
         $data = [];
 
+        $today = Carbon::today();
+
         $data['productCount'] = Product::count();
         $data['lowStockCount'] = Product::where('product_qty', '<=', 3)->count();
         $data['stockValue'] = Product::select(DB::raw('SUM(modal * product_qty) as total_value'))
@@ -140,6 +145,13 @@ class AdminController extends Controller
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
 
+        $data['monthlyExpenses'] = Expense::whereYear('date', date('Y'))
+            ->whereMonth('date', date('m'))
+            ->sum('amount');
+
+        $data['todayExpenses'] = Expense::whereDate('date', $today)
+            ->sum('amount');
+
         // Cek jika user adalah Penjahit, ambil data personal
         if ($user->hasRole('Tailor')) {
             $data['assignedJobs'] = TailorTransaction::where('tailor_id', $user->id)
@@ -155,6 +167,15 @@ class AdminController extends Controller
             $data['pendapatanPenjahit'] = TailorCommission::where('user_id', $user->id)
                 ->sum('amount');
         }
+
+        $data['employees'] = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['Admin', 'Tailor']);
+        })->get();
+
+        $data['todaysAttendances'] = Attendance::with('user')
+            ->where('date', $today)
+            ->get()
+            ->keyBy('user_id');
 
 
         return view('admin.index', $data);
