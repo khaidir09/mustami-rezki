@@ -27,8 +27,7 @@ class PurchaseController extends Controller
     public function AddPurchase()
     {
         $suppliers = Supplier::all();
-        $warehouses = WareHouse::all();
-        return view('admin.backend.purchase.add_purchase', compact('suppliers', 'warehouses'));
+        return view('admin.backend.purchase.add_purchase', compact('suppliers'));
     }
     // End Method 
 
@@ -65,7 +64,6 @@ class PurchaseController extends Controller
 
             $purchase = Purchase::create([
                 'date' => $request->date,
-                'warehouse_id' => $request->warehouse_id,
                 'supplier_id' => $request->supplier_id,
                 'discount' => $request->discount ?? 0,
                 'shipping' => $request->shipping ?? 0,
@@ -120,8 +118,7 @@ class PurchaseController extends Controller
     {
         $editData = Purchase::with('purchaseItems.product')->findOrFail($id);
         $suppliers = Supplier::all();
-        $warehouses = WareHouse::all();
-        return view('admin.backend.purchase.edit_purchase', compact('editData', 'suppliers', 'warehouses'));
+        return view('admin.backend.purchase.edit_purchase', compact('editData', 'suppliers'));
     }
     // End Method 
 
@@ -141,7 +138,6 @@ class PurchaseController extends Controller
 
             $purchase->update([
                 'date' => $request->date,
-                'warehouse_id' => $request->warehouse_id,
                 'supplier_id' => $request->supplier_id,
                 'discount' => $request->discount ?? 0,
                 'shipping' => $request->shipping ?? 0,

@@ -99,6 +99,12 @@
                             Pengeluaran
                         </a>
                     </li>
+                    <li>
+                    <a href="{{ route('all.purchase') }}" class="tp-link">
+                        <i data-feather="aperture"></i>
+                            Pembelian Barang
+                        </a>
+                    </li>
                 @endif
 
                 <li>
@@ -108,25 +114,7 @@
                     </a>
                 </li>
 
-
-                {{-- <li>
-                    <a href="#Purchase" data-bs-toggle="collapse">
-                    <i data-feather="aperture"></i>
-                        <span> Purchase Manage </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="Purchase">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="{{ route('all.purchase') }}" class="tp-link">All Purchase</a>
-                            </li>   
-                            <li>
-                                <a href="{{ route('all.return.purchase') }}" class="tp-link">Purchase Return</a>
-                            </li>         
-                        </ul>
-                    </div>
-                </li>
-
+                {{-- 
                 <li>
                     <a href="#Due" data-bs-toggle="collapse">
                     <i data-feather="briefcase"></i>

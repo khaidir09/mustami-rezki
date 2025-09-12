@@ -8,12 +8,12 @@
 
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">All Purchase</h4>
+                <h4 class="fs-18 fw-semibold m-0">Semua Pembelian Barang</h4>
             </div>
 
             <div class="text-end">
                 <ol class="breadcrumb m-0 py-0">
-                     <a href="{{ route('add.purchase') }}" class="btn btn-secondary">Add Purchase</a>
+                     <a href="{{ route('add.purchase') }}" class="btn btn-secondary">Tambah Pembelian Barang</a>
                 </ol>
             </div>
         </div>
@@ -23,28 +23,22 @@
             <div class="col-12">
                 <div class="card">
 
-                    <div class="card-header">
-                         
-                    </div><!-- end card header -->
-
 <div class="card-body">
     <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
         <tr>
-            <th>Sl</th>
-            <th>WareHouse</th>
+            <th>No.</th>
             <th>Status</th> 
             <th>Grand Total</th>
-            <th>Payment</th>
-            <th>Created</th> 
-            <th>Action</th>
+            <th>Pembayaran</th>
+            <th>Tanggal</th> 
+            <th>Aksi</th>
         </tr>
         </thead>
         <tbody>
     @foreach ($allData as $key=> $item) 
     <tr>
-        <td>{{ $key+1 }}</td> 
-        <td>{{ $item['warehouse']['name'] }}</td>
+        <td>{{ $key+1 }}</td>
         <td>{{ $item->status }}</td>
         <td>${{ $item->grand_total }}</td> 
         <td>Cash</td>
