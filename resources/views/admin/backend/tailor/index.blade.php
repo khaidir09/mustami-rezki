@@ -80,6 +80,14 @@
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
                                             <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete-circle mdi-18px"></span></a>
                                             @endif
+                                            @if($item->customer->phone)
+                                                <a title="Kirim Nota via WA" 
+                                                href="{{ \App\Helpers\WhatsAppHelper::generateTailorInvoiceLink($item) }}" 
+                                                target="_blank" 
+                                                class="btn btn-primary btn-sm">
+                                                    <span class="mdi mdi-message-text mdi-18px"></span>
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
