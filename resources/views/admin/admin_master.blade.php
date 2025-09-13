@@ -91,6 +91,7 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> 
         <script src="{{ asset('backend/assets/js/code.js') }}"></script>
         <script src="{{ asset('backend/assets/js/custome.js') }}"></script>
+        <script src="{{ asset('backend/assets/js/purchase.js') }}"></script>
 
         <script src="{{ asset('backend/assets/js/validate.min.js') }}"></script>
         <!-- App js-->

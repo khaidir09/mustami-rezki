@@ -12,7 +12,7 @@
                 <h4 class="fs-18 fw-semibold m-0">Tambah Pengguna</h4>
             </div>
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-0">
+                <ol class="breadcrumb m-0 py-2">
                      <a href="{{ route('all.admin') }}" class="btn btn-dark">Kembali</a>
                 </ol>
             </div>

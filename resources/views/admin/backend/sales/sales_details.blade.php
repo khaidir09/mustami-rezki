@@ -10,16 +10,14 @@
             </div>
 
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-0">
+                <ol class="breadcrumb m-0 py-2">
                     <a href="{{ route('all.sale') }}" class="btn btn-dark">Kembali</a>
                 </ol>
             </div>
         </div>
          
 
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
+        <div class="row">
                     {{-- Purchase info --}}
                     <div class="col-12">
                         <div class="card shadow-sm border-0 h-100" style="border-radius: 10px; transition: 0.2s">
@@ -55,8 +53,7 @@
                 {{-- Order Summary  --}}
                 <div class="row mt-4">
                     <div class="col-md-12">
-                        <div class="card">
-                            <div class="card shadow-sm border-0 h-100" style="border-radius: 10px; transition: 0.2s">
+                        <div class="card shadow-sm border-0 h-100" style="border-radius: 10px; transition: 0.2s">
                                 <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #17a2b8, #0d6efd); border-radius:10px 10px 0 0;">
                                     <h5 class="mb-0 fw-bold">Ringkasan Penjualan</h5> 
                                 </div>
@@ -87,11 +84,8 @@
                                     </table> 
                                 </div>
                             </div> 
-                        </div> 
                     </div> 
                 </div>
-            </div>
-        </div>
       </div>
    </div>
 </div>

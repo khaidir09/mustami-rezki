@@ -268,7 +268,7 @@ class SaleController extends Controller
         $sales = Sale::with('saleItems.product')->find($id);
 
         $pdf = Pdf::loadView('admin.backend.sales.invoice_pdf', compact('sales'));
-        return $pdf->download('sales_' . $id . '.pdf');
+        return $pdf->stream('sales_' . $id . '.pdf');
     }
     // End Method 
 

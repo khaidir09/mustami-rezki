@@ -14,15 +14,14 @@
             font-size: 12px;
             line-height: 1.5;
             color: #333;
-            margin: 20mm;
+            margin-left: 10mm;
+            margin-right: 10mm;
             background: #fff;
         }
         .invoice-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
             page-break-inside: avoid;
         }
         .invoice-header {
@@ -97,9 +96,6 @@
             font-weight: bold;
             border: none;
             font-size: 12px;
-        }
-        @page {
-            margin: 20mm;
         }
         @media print {
             .invoice-container {

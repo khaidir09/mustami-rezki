@@ -13,7 +13,7 @@
             </div>
 
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-0">
+                <ol class="breadcrumb m-0 py-2">
                     
                     <li class="breadcrumb-item active">Edit Supplier</li>
                 </ol>
