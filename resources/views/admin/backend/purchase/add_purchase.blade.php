@@ -10,7 +10,7 @@
             </div>
 
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-0">
+                <ol class="breadcrumb m-0 py-2">
                      <a href="{{ route('all.purchase') }}" class="btn btn-dark">Kembali</a>
                 </ol>
             </div>
@@ -55,23 +55,24 @@
                   <span class="input-group-text">
                      <i class="fas fa-search"></i>
                   </span>
-                  <input type="search" id="product_search" name="search" class="form-control" placeholder="Search product by code or name">
+                  <input type="search" id="purchase_product_search" name="search" class="form-control" placeholder="Cari produk berdasarkan nama atau kode">
             </div>
-            <div id="product_list" class="list-group mt-2"></div>
+            <div id="purchase_product_list" class="list-group mt-2"></div>
          </div>
       </div>
 
       <div class="row">
          <div class="col-md-12">
-            <label class="form-label">Item Pesanan: <span class="text-danger">*</span></label>
-            <table class="table table-striped table-bordered dataTable" style="width: 100%;">
+            <label class="form-label">Item Pembelian: <span class="text-danger">*</span></label>
+            <div class="table-responsive">
+               <table class="table table-striped table-bordered dataTable" style="width: 100%;">
                <thead>
                   <tr role="row">
                      <th>Produk</th>
                      <th>Harga</th>
                      <th>Stok</th>
                      <th>Qty</th>
-                     <th>Diskon</th>
+                     {{-- <th>Diskon</th> --}}
                      <th>Sub Total</th>
                      <th>Aksi</th>
                   </tr>
@@ -80,20 +81,39 @@
             
                </tbody>
             </table>
+            </div>
          </div>
       </div>
 
-      <div class="row">
+      <div class="row mt-3 g-2">
+      <div class="col-md-3">
+         <label class="form-label">Pengiriman: </label>
+         <input type="number" id="inputShipping" name="shipping" class="form-control" value="0">
+      </div>
+      <div class="col-md-3">
+         <div class="form-group w-100">
+            <label class="form-label" for="formBasic">Status : <span class="text-danger">*</span></label>
+            <select name="status" id="status" class="form-control form-select">
+               <option value="">Pilih Status</option>
+               <option value="Diterima">Diterima</option>
+               <option value="Tertunda">Tertunda</option>
+               <option value="Dipesan">Dipesan</option>
+            </select>
+            @error('status')
+               <span class="text-danger">{{ $message }}</span>
+            @enderror
+         </div>
+      </div>
       <div class="col-md-6 ms-auto">
          <div class="card">
             <div class="card-body pt-7 pb-2">
                <div class="table-responsive">
                   <table class="table border">
                      <tbody>
-                        <tr>
+                        {{-- <tr>
                            <td class="py-3">Diskon</td>
                            <td class="py-3" id="displayDiscount">Rp 0</td>
-                        </tr>
+                        </tr> --}}
                         <tr>
                            <td class="py-3">Pengiriman</td>
                            <td class="py-3" id="shippingDisplay">Rp 0</td>
@@ -111,41 +131,15 @@
       </div>
       </div>
 
-
-      <div class="row">
-         <div class="col-md-4">
-            <label class="form-label">Diskon: </label>
-            <input type="number" id="inputDiscount" name="discount" class="form-control" value="0">
-         </div>
-         <div class="col-md-4">
-            <label class="form-label">Pengiriman: </label>
-            <input type="number" id="inputShipping" name="shipping" class="form-control" value="0">
-         </div>
-         <div class="col-md-4">
-            <div class="form-group w-100">
-               <label class="form-label" for="formBasic">Status : <span class="text-danger">*</span></label>
-               <select name="status" id="status" class="form-control form-select">
-                  <option value="">Pilih Status</option>
-                  <option value="Diterima">Diterima</option>
-                  <option value="Tertunda">Tertunda</option>
-                  <option value="Dipesan">Dipesan</option>
-               </select>
-               @error('status')
-                  <span class="text-danger">{{ $message }}</span>
-               @enderror
-            </div>
-         </div>
-      </div>
-
       <div class="col-md-12 mt-2">
          <label class="form-label">Catatan: </label>
-         <textarea class="form-control" name="note" rows="3" placeholder="Enter Notes"></textarea>
+         <textarea class="form-control" name="note" rows="3" placeholder="Masukkan catatan"></textarea>
       </div>
 </div>
 </div>
 
      <div class="col-xl-12">
-        <div class="d-flex mt-5 justify-content-end">
+        <div class="d-flex mt-3 justify-content-end">
            <button class="btn btn-primary me-3" type="submit">Simpan</button>
            <a class="btn btn-secondary" href="{{ route('all.purchase') }}">Batal</a>
         </div>
@@ -162,6 +156,6 @@
 
 @push('scripts')
     <script>
-      var productSearchUrl = "{{ route('purchase.product.search') }}"
+      var purchaseProductSearchUrl = "{{ route('purchase.product.search.modal') }}"
    </script>
 @endpush

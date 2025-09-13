@@ -3,11 +3,18 @@
 
 <div class="content d-flex flex-column flex-column-fluid">
    <div class="d-flex flex-column-fluid">
-      <div class="container-fluid my-4">
-         <div class="d-md-flex align-items-center justify-content-between">
-            <h3 class="mb-0">Edit Purchase</h3>
-            <div class="text-end my-2 mt-md-0"><a class="btn btn-outline-primary" href="{{ route('all.purchase') }}">Back</a></div>
-         </div>
+      <div class="container-fluid my-0">
+          <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+            <div class="flex-grow-1">
+                <h2 class="fs-22 fw-semibold m-0">Edit Pembelian Barang</h2>
+            </div>
+
+            <div class="text-end">
+                <ol class="breadcrumb m-0 py-2">
+                     <a href="{{ route('all.purchase') }}" class="btn btn-dark">Kembali</a>
+                </ol>
+            </div>
+        </div>
          
 
  <div class="card">
@@ -18,74 +25,56 @@
 
 <div class="row">
  <div class="col-xl-12">
-    <div class="card">
-       <div class="row">
-          <div class="col-md-4 mb-3">
-             <label class="form-label">Date:  <span class="text-danger">*</span></label>
+    <div class="row">
+          <div class="col-md-2 mb-3">
+             <label class="form-label">Tanggal:</label>
              <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>" class="form-control" value="{{ $editData->date }}">
              @error('date')
              <span class="text-danger">{{ $message }}</span>
              @enderror
-          </div>
+          </div>          
 
-        <input type="hidden" name="warehouse_id" value="{{ $editData->warehouse_id }}">
-
-          <div class="col-md-4 mb-3">
-                <div class="form-group w-100">
-                <label class="form-label" for="formBasic">Warehouse : <span class="text-danger">*</span></label>
-                <select name="warehouse_id" id="warehouse_id" class="form-control form-select" disabled>
-    <option value="">Select Warehouse</option>
-    @foreach ($warehouses as $item)
-    <option value="{{ $item->id }}" {{ $editData->warehouse_id == $item->id ? 'selected' : '' }} >{{ $item->name }}</option>
-    @endforeach
-                </select>
-                <small id="warehouse_error" class="text-danger d-none">Please select the first warehouse.</small>
-                </div>
-          </div>
-
-          <div class="col-md-4 mb-3">
+          <div class="col-md-3 mb-3">
              <div class="form-group w-100">
-                <label class="form-label" for="formBasic">Supplier : <span class="text-danger">*</span></label>
+                <label class="form-label" for="formBasic">Supplier :</label>
                 <select name="supplier_id" id="supplier_id" class="form-control form-select" >
-                   <option value="">Select Supplier</option>
+                   <option value="">Pilih Supplier</option>
                    @foreach ($suppliers as $item)
                    <option value="{{ $item->id }}" {{ $editData->supplier_id == $item->id ? 'selected' : '' }}>{{ $item->name }}</option>
                    @endforeach
                 </select>  
              </div>
           </div>
-       </div>
 
-
-       <div class="row">
-          <div class="col-md-12 mb-3">
+          <div class="col-md-7 mb-3">
              <label class="form-label">Product:</label>
              <div class="input-group">
                    <span class="input-group-text">
                       <i class="fas fa-search"></i>
                    </span>
-                   <input type="search" id="product_search" name="search" class="form-control" placeholder="Search product by code or name">
+                   <input type="search" id="purchase_product_search" name="search" class="form-control" placeholder="Search product by code or name">
              </div>
-             <div id="product_list" class="list-group mt-2"></div>
+             <div id="purchase_product_list" class="list-group mt-2"></div>
           </div>
        </div>
+       
 
 
 
 
   <div class="row">
      <div class="col-md-12">
-        <label class="form-label">Order items: <span class="text-danger">*</span></label>
+        <label class="form-label">Item Pembelian: <span class="text-danger">*</span></label>
         <table class="table table-striped table-bordered dataTable" style="width: 100%;">
            <thead>
               <tr role="row">
-                 <th>Product</th>
-                 <th>Net Unit Cost</th>
-                 <th>Stock</th>
-                 <th>Qty</th>
-                 <th>Discount</th>
-                 <th>Subtotal</th>
-                 <th>Action</th>
+                 <th>Produk</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Qty</th>
+                  {{-- <th>Diskon</th> --}}
+                  <th>Sub Total</th>
+                  <th>Aksi</th>
               </tr>
            </thead>
            <tbody id="productBody">
@@ -94,13 +83,6 @@
        
         <td class="d-flex align-items-center gap-2">
             <input type="text" class="form-control" value="{{ $item->product->code }} - {{ $item->product->name }}" readonly style="max-width: 300px" >
-            <button type="button" class="btn btn-primary btn-sm edit-discount-btn" 
-            data-id="{{ $item->id }}"
-            data-name="{{ $item->product->name }}"
-            data-cost="{{ $item->net_unit_cost }}"
-            data-bs-toggle="modal" data-bs-target="#discountModal" >
-            <span class="mdi mdi-book-edit "></span> 
-            </button> 
         </td>
 
     <td>
@@ -121,11 +103,6 @@
         </div>
     </td>
 
-    <td>
-        <input type="number" class="form-control discount-input"
-            name="products[{{ $item->product->id }}][discount]" value="{{ $item->discount }}" style="max-width: 100px;">
-    </td>
-
     <td class="subtotal">{{ number_format($item->subtotal,2) }}</td>
     <input type="hidden" name="products[{{ $item->product->id }}][subtotal]" value="{{ $item->subtotal }}">
 
@@ -140,7 +117,25 @@
      </div>
   </div>
 
-<div class="row">
+<div class="row mt-3 g-2">
+   <div class="col-md-3">
+      <label class="form-label">Pengiriman: </label>
+      <input type="number" id="inputShipping" name="shipping" class="form-control" value="{{ $editData->shipping }}">
+   </div>
+   <div class="col-md-3">
+      <div class="form-group w-100">
+         <label class="form-label" for="formBasic">Status :</label>
+         <select name="status" id="status" class="form-control form-select">
+            <option value="">Select Status</option>
+            <option value="Diterima" {{ $editData->status == 'Diterima' ? 'selected' : '' }} >Diterima</option>
+            <option value="Tertunda"  {{ $editData->status == 'Tertunda' ? 'selected' : '' }} >Tertunda</option>
+            <option value="Dipesan" {{ $editData->status == 'Dipesan' ? 'selected' : '' }} >Dipesan</option>
+         </select>
+         @error('status')
+            <span class="text-danger">{{ $message }}</span>
+         @enderror
+      </div>
+   </div>
  <div class="col-md-6 ms-auto">
     <div class="card">
        <div class="card-body pt-7 pb-2">
@@ -148,40 +143,14 @@
              <table class="table border">
                 <tbody>
                    <tr>
-                      <td class="py-3">Discount</td>
-                      <td class="py-3" id="displayDiscount">TK {{ $editData->discount }}</td>
-                   </tr>
-                   <tr>
-                      <td class="py-3">Shipping</td>
-                      <td class="py-3" id="shippingDisplay">TK {{ $editData->shipping }}</td>
+                      <td class="py-3">Pengiriman</td>
+                      <td class="py-3" id="shippingDisplay">Rp {{ $editData->shipping }}</td>
                    </tr>
                    <tr>
                       <td class="py-3 text-primary">Grand Total</td>
-                      <td class="py-3 text-primary" id="grandTotal">TK {{ $editData->grand_total }}</td>
+                      <td class="py-3 text-primary" id="grandTotal">Rp {{ $editData->grand_total }}</td>
                       <input type="hidden" name="grand_total" value="{{ $editData->grand_total }}">
-                   </tr>      
-                   
-               
-                  <tr class="d-none">
-                      <td class="py-3">Paid Amount</td>
-                      <td class="py-3" id="paidAmount"> 
-                      <input type="text" name="paid_amount" placeholder="Enter amount paid" class="form-control">
-                      </td>
                    </tr>
-                   <!-- new add full paid functionality  -->
-                   <tr class="d-none">
-                      <td class="py-3">Full Paid</td>
-                      <td class="py-3" id="fullPaid"> 
-                         <input type="text" name="full_paid" id="fullPaidInput">
-                      </td>
-                   </tr>
-                   <tr class="d-none">
-                      <td class="py-3">Due Amount</td>
-                      <td class="py-3" id="dueAmount">TK 0.00</td>
-                      <input type="hidden" name="due_amount">
-                   </tr>
-              
-
                 </tbody>
              </table>
           </div>
@@ -190,37 +159,11 @@
  </div>
 </div>
 
-
-      <div class="row">
-         <div class="col-md-4">
-            <label class="form-label">Discount: </label>
-            <input type="number" id="inputDiscount" name="discount" class="form-control" value="{{ $editData->discount }}">
-         </div>
-         <div class="col-md-4">
-            <label class="form-label">Shipping: </label>
-            <input type="number" id="inputShipping" name="shipping" class="form-control" value="{{ $editData->shipping }}">
-         </div>
-         <div class="col-md-4">
-            <div class="form-group w-100">
-               <label class="form-label" for="formBasic">Status : <span class="text-danger">*</span></label>
-               <select name="status" id="status" class="form-control form-select">
-                  <option value="">Select Status</option>
-                  <option value="Received" {{ $editData->status == 'Received' ? 'selected' : '' }} >Received</option>
-                  <option value="Pending"  {{ $editData->status == 'Pending' ? 'selected' : '' }} >Pending</option>
-                  <option value="Ordered" {{ $editData->status == 'Ordered' ? 'selected' : '' }} >Ordered</option>
-               </select>
-               @error('status')
-                  <span class="text-danger">{{ $message }}</span>
-               @enderror
-            </div>
-         </div>
-      </div>
-
       <div class="col-md-12 mt-2">
          <label class="form-label">Notes: </label>
          <textarea class="form-control" name="note" rows="3" placeholder="Enter Notes">{{ $editData->note }}</textarea>
       </div>
-   </div>
+   
 </div>
 </div>
 
@@ -238,8 +181,14 @@
    </div>
 </div>
 
- 
+
+@endsection
+
+@push('scripts')
 <script>
+      var purchaseProductSearchUrl = "{{ route('purchase.product.search.modal') }}"
+   </script>
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
         const productBody = document.getElementById("productBody");
     
@@ -249,10 +198,9 @@
                 let row = e.target.closest("tr");
                 let qty = parseFloat(row.querySelector(".qty-input").value) || 0;
                 let cost = parseFloat(row.querySelector(".net-cost").value) || 0;
-                let discount = parseFloat(row.querySelector(".discount-input").value) || 0;
     
-                let subtotal = (qty * cost) - discount;
-                row.querySelector(".subtotal").textContent = subtotal.toFixed(2);
+                let subtotal = qty * cost;
+                row.querySelector(".subtotal").textContent = subtotal.toFixed(0);
             }
         });
                 
@@ -286,17 +234,16 @@
  
           function updateSubtotal(row) {
              let qty = parseFloat(row.querySelector(".qty-input").value);
-             let discount = parseFloat(row.querySelector(".discount-input").value) || 0;
              let netUnitCost = parseFloat(row.querySelector(".qty-input").dataset.cost);
  
              // Calculate subtotal after discount
-             let subtotal = (netUnitCost * qty) - discount;
+             let subtotal = netUnitCost * qty;
              
              // Update visible subtotal
-             row.querySelector(".subtotal").innerText = subtotal.toFixed(2);
+             row.querySelector(".subtotal").innerText = subtotal.toFixed(0);
  
              // Update hidden input for subtotal
-             row.querySelector("input[name^='products['][name$='][subtotal]']").value = subtotal.toFixed(2);
+             row.querySelector("input[name^='products['][name$='][subtotal]']").value = subtotal.toFixed(0);
  
              // Update Grand Total
              updateGrandTotal();
@@ -314,22 +261,29 @@
           });
  
           // Get discount and shipping values
-          let discount = parseFloat(document.getElementById("inputDiscount").value) || 0;
           let shipping = parseFloat(document.getElementById("inputShipping").value) || 0;
  
           // Apply discount and add shipping cost
-          grandTotal = grandTotal - discount + shipping;
+          grandTotal = grandTotal + shipping;
  
           // Ensure grand total is not negative
           if (grandTotal < 0) {
              grandTotal = 0;
           }
+
+         function formatRupiah(angka) {
+               return new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                  minimumFractionDigits: 0,
+               }).format(angka);
+         }
  
           // Update Grand Total display
-          document.getElementById("grandTotal").textContent = `TK ${grandTotal.toFixed(2)}`;
+          document.getElementById("grandTotal").textContent = formatRupiah(grandTotal);
  
           // Also update the hidden input field
-          document.getElementById("grandTotalInput").value = grandTotal.toFixed(2);
+          document.getElementById("grandTotalInput").value = grandTotal.toFixed(0);
        }
  
  
@@ -345,6 +299,4 @@
     });
     
  </script>
-
-
-@endsection
+@endpush

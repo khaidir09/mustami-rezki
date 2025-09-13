@@ -12,7 +12,7 @@
             </div>
 
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-0">
+                <ol class="breadcrumb m-0 py-2">
                      <a href="{{ route('add.purchase') }}" class="btn btn-secondary">Tambah Pembelian Barang</a>
                 </ol>
             </div>
@@ -24,14 +24,15 @@
                 <div class="card">
 
 <div class="card-body">
-    <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+    <div class="table-responsive">
+        <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
         <thead>
         <tr>
             <th>No.</th>
-            <th>Status</th> 
+            <th>Supplier</th>
             <th>Grand Total</th>
-            <th>Pembayaran</th>
             <th>Tanggal</th> 
+            <th>Status</th> 
             <th>Aksi</th>
         </tr>
         </thead>
@@ -39,16 +40,16 @@
     @foreach ($allData as $key=> $item) 
     <tr>
         <td>{{ $key+1 }}</td>
-        <td>{{ $item->status }}</td>
-        <td>${{ $item->grand_total }}</td> 
-        <td>Cash</td>
+        <td>{{ $item->supplier->name }}</td>
+        <td>Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td>
         <td>{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') }}</td>
+        <td>{{ $item->status }}</td>
         <td>
    <a title="Details" href="{{ route('details.purchase',$item->id) }}" class="btn btn-info btn-sm"> <span class="mdi mdi-eye-circle mdi-18px"></span> </a> 
 
    <a title="PDF Invoice" href="{{ route('invoice.purchase',$item->id) }}" class="btn btn-primary btn-sm"> <span class="mdi mdi-download-circle mdi-18px"></span> </a> 
 
-    <a title="Edit" href="{{ route('edit.purchase',$item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>  
+    {{-- <a title="Edit" href="{{ route('edit.purchase',$item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>   --}}
 
     <a title="Delete" href="{{ route('delete.purchase',$item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete-circle  mdi-18px"></span></a>    
         </td> 
@@ -57,6 +58,7 @@
                 
         </tbody>
     </table>
+    </div>
 </div>
 
                 </div>

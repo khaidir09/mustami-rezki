@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/all/purchase', 'AllPurchase')->name('all.purchase');
         Route::get('/add/purchase', 'AddPurchase')->name('add.purchase');
         Route::get('/purchase/product/search', 'PurchaseProductSearch')->name('purchase.product.search');
+        Route::get('/purchase/product-search-for-purchase', 'productSearchForPurchase')->name('purchase.product.search.modal');
 
         Route::post('/store/purchase', 'StorePurchase')->name('store.purchase');
         Route::get('/edit/purchase/{id}', 'EditPurchase')->name('edit.purchase');

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Purchase Invoice</title>
+    <title>Invoice Pembelian Barang</title>
     <style>
         * {
             margin: 0;
@@ -14,15 +14,14 @@
             font-size: 12px;
             line-height: 1.5;
             color: #333;
-            margin: 20mm;
+            margin-left: 10mm;
+            margin-right: 10mm;
             background: #fff;
         }
         .invoice-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
             page-break-inside: avoid;
         }
         .invoice-header {
@@ -98,9 +97,6 @@
             border: none;
             font-size: 12px;
         }
-        @page {
-            margin: 20mm;
-        }
         @media print {
             .invoice-container {
                 border: none;
@@ -116,40 +112,35 @@
 <body>
     <div class="invoice-container">
         <div class="invoice-header">
-            <h5>Purchase Invoice</h5>
+            <h5>Invoice Pembelian Barang</h5>
         </div>
 
         <table class="info-section">
             <tr>
                 <td class="info-box">
-                    <h5>Supplier Info</h5>
-<p><strong>Name:</strong> {{ $purchase->supplier->name }} </p>
-<p><strong>Email:</strong> {{ $purchase->supplier->email }}</p>
-<p><strong>Phone:</strong> {{ $purchase->supplier->phone }} </p>
+                    <h5>Informasi Supplier</h5>
+<p><strong>Nama:</strong> {{ $purchase->supplier->name }} </p>
+<p><strong>Nomor HP/WA:</strong> {{ $purchase->supplier->phone }} </p>
                 </td>
                 <td class="info-box">
-                    <h5>Warehouse</h5>
-                    <p>{{ $purchase->warehouse->name }} </p>
-                </td>
-                <td class="info-box">
-                    <h5>Purchase Info</h5>
-<p><strong>Date:</strong> {{ $purchase->date }} </p>
+                    <h5>Informasi Pembelian Barang</h5>
+<p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($purchase->date)->locale('id')->translatedFormat('d F Y') }} </p>
 <p><strong>Status:</strong> {{ $purchase->status }} </p>
-<p><strong>Grand Total:</strong> ${{ number_format($purchase->grand_total, 2)  }} </p>
+<p><strong>Pengiriman:</strong> Rp {{ number_format($purchase->shipping, 0, ',', '.')  }} </p>
+<p><strong>Grand Total:</strong> Rp {{ number_format($purchase->grand_total, 0, ',', '.')  }} </p>
                 </td>
             </tr>
         </table>
 
-        <h5 style="font-weight: bold; margin: 20px 0 10px;">Order Summary</h5>
+        <h5 style="font-weight: bold; margin: 20px 0 10px;">Ringkasan Pembelian</h5>
         <table class="table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Net Unit Cost</th>
-                    <th>Discount</th>
-                    <th>Subtotal</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Harga Beli</th>
+                    <th>Sub total</th>
                 </tr>
             </thead>
             <tbody>
@@ -158,9 +149,8 @@
                 <td>{{ $key + 1 }}</td>
                 <td>{{ $item->product->name }}</td>
                 <td>{{ $item->quantity }}</td>
-                <td>${{ number_format($item->net_unit_cost,2)  }}</td>
-                <td>${{ number_format($item->discount,2)  }}</td>
-                <td>${{ number_format($item->subtotal,2)  }}</td>
+                <td>Rp {{ number_format($item->net_unit_cost, 0, ',', '.')  }}</td>
+                <td>Rp {{ number_format($item->subtotal, 0, ',', '.')  }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -168,13 +158,10 @@
 
         <table class="summary-table">
             <tr>
-                <td><strong>Total Discount:</strong> ${{ number_format($purchase->discount,2)  }} </td>
+                <td><strong>Biaya Pengiriman:</strong> Rp {{ number_format($purchase->shipping, 0, ',', '.')  }} </td>
             </tr>
             <tr>
-                <td><strong>Shipping Cost:</strong> ${{ number_format($purchase->shipping,2)  }} </td>
-            </tr>
-            <tr>
-                <td><strong>Grand Total:</strong> ${{ number_format($purchase->grand_total,2)  }} </td>
+                <td><strong>Grand Total:</strong> Rp {{ number_format($purchase->grand_total, 0, ',', '.')  }} </td>
             </tr>
         </table>
     </div>

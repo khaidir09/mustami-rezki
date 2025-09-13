@@ -4,12 +4,8 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\ProductCategory;
 use App\Models\Product;
 use App\Models\Supplier;
-use App\Models\WareHouse;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +41,22 @@ class PurchaseController extends Controller
 
         return response()->json($products);
     }
-    // End Method 
+    // End Method
+
+    public function productSearchForPurchase(Request $request)
+    {
+        $query = $request->input('query');
+
+        $products = Product::where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+                ->orwhere('code', 'like', "%{$query}%");
+        })
+            ->select('id', 'name', 'code', 'modal', 'product_qty')
+            ->limit(10)
+            ->get();
+
+        return response()->json($products);
+    }
 
     public function StorePurchase(Request $request)
     {
@@ -75,7 +86,7 @@ class PurchaseController extends Controller
             /// Store Purchase Items & Update Stock 
             foreach ($request->products as $productData) {
                 $product = Product::findOrFail($productData['id']);
-                $netUnitCost = $productData['net_unit_cost'] ?? $product->price;
+                $netUnitCost = $productData['modal'] ?? $product->price;
 
                 if ($netUnitCost === null) {
                     throw new \Exception("Net Unit cost is missing ofr the product id" . $productData['id']);
@@ -208,7 +219,7 @@ class PurchaseController extends Controller
         $purchase = Purchase::with(['supplier', 'warehouse', 'purchaseItems.product'])->find($id);
 
         $pdf = Pdf::loadView('admin.backend.purchase.invoice_pdf', compact('purchase'));
-        return $pdf->download('purchase_' . $id . '.pdf');
+        return $pdf->stream('purchase_' . $id . '.pdf');
     }
     // End Method 
 
