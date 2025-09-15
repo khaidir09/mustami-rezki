@@ -44,12 +44,10 @@
                 <td>{{ $item->name }}</td>
                 <td>{{ $item->phone }}</td>
                 <td>{{ Str::limit($item->address, 50, '...')  }}</td>
-                @if (Auth::user()->hasRole('Super Admin'))
-                    <td> 
-                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#customer" id="{{ $item->id }}" onclick="customerEdit(this.id)"> Edit</button>
-                        <a href="{{ route('delete.customer',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>    
-                    </td> 
-                @endif
+                <td> 
+                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#customer" id="{{ $item->id }}" onclick="customerEdit(this.id)"> Edit</button>
+                    <a href="{{ route('delete.customer',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>    
+                </td> 
             </tr>
             @endforeach 
                 
