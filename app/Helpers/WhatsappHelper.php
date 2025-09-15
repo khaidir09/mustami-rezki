@@ -28,18 +28,19 @@ class WhatsAppHelper
         // 3. Bangun template pesan
         $template = "Assalamualaikum Wr. Wb.\n"
             . "*Yth. Bapak/Ibu " . $transaction->customer->name . "*\n\n"
-            . "Kami dari *Mustami Rezki Tailor* ingin menginformasikan detail nota untuk transaksi jahit Anda:\n\n"
-            . "*No. Nota:* " . $transaction->transaction_code . "\n"
-            . "*Tanggal Masuk:* " . \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') . "\n\n"
+            . "Ijin kami informasikan untuk jahitan dengan:\n\n"
+            . "No. Nota: " . $transaction->transaction_code . "\n"
+            . "Tanggal Masuk: _" . \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') . "_\n\n"
             . "*Rincian Pesanan:*\n"
             . $itemDetails . "\n\n"
-            . "*Ringkasan Pembayaran:*\n"
-            . "*Total Tagihan:* " . 'Rp ' . number_format($transaction->total_price, 0, ',', '.') . "\n"
-            . "*Sudah Dibayar:* " . 'Rp ' . number_format($transaction->paid_amount, 0, ',', '.') . "\n"
+            . "*Status:*\n"
+            . "#$transaction->status\n\n"
+            . "*Total Biaya:* " . 'Rp ' . number_format($transaction->total_price, 0, ',', '.') . "\n"
+            . "*Telah Dibayar:* " . 'Rp ' . number_format($transaction->paid_amount, 0, ',', '.') . "\n"
             . "*Sisa Bayar:* *" . 'Rp ' . number_format($transaction->due_amount, 0, ',', '.') . "*\n\n"
             . "Terima kasih atas kepercayaan Anda.\n\n"
             . "Hormat kami,\n"
-            . "*Mustami Rezki Tailor*";
+            . "_Mustami Rezki Tailorshop_";
 
         // 4. Encode pesan untuk URL
         $encodedMessage = urlencode($template);
