@@ -7,6 +7,7 @@ use App\Models\Salary;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Payroll;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -85,12 +86,13 @@ class AttendanceController extends Controller
 
             // Jika yang absen adalah Kasir, catat gaji hariannya
             if ($user->hasRole('Admin') && $status == 'Hadir') {
-                Salary::create([
+                Payroll::create([
                     'user_id'       => $user->id,
                     'type'          => 'Gaji Harian', // Jenis pembayaran
                     'amount'        => 30000,   // Jumlah gaji
                     'payment_date'  => $today,         // Tanggal pembayaran = tanggal absen
                     'description'   => 'Gaji harian otomatis dari presensi tanggal ' . $today->format('d-m-Y'),
+                    'is_processed'  => false,
                 ]);
             }
             return redirect()->back()->with('success', 'Berhasil absen masuk!');
@@ -140,7 +142,7 @@ class AttendanceController extends Controller
         $attendance->delete();
 
         // Hapus gaji harian terkait jika ada
-        Salary::where('user_id', $attendance->user_id)
+        Payroll::where('user_id', $attendance->user_id)
             ->where('payment_date', $attendance->date)
             ->delete();
 

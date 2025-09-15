@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Backend\AttendanceController;
 use App\Http\Controllers\Backend\ExpenseController;
+use App\Http\Controllers\Backend\PayrollController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\RoleController;
 use App\Http\Controllers\Backend\SaleController;
@@ -236,5 +237,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/admin/{id}', 'EditAdmin')->name('edit.admin');
         Route::post('/update/admin/{id}', 'UpdateAdmin')->name('update.admin');
         Route::get('/delete/admin/{id}', 'DeleteAdmin')->name('delete.admin');
+    });
+
+    Route::controller(PayrollController::class)->group(function () {
+        Route::get('/payroll/generate', 'showGenerateForm')->name('payroll.generate.form');
+        Route::post('/payroll/calculate', 'calculate')->name('payroll.calculate');
+        Route::post('/payroll/store', 'store')->name('payroll.store');
+        Route::get('/payroll/history', 'index')->name('payroll.history');
     });
 });
