@@ -9,6 +9,7 @@ use App\Http\Controllers\Backend\RoleController;
 use App\Http\Controllers\Backend\SaleController;
 use App\Http\Controllers\Backend\ReportController;
 use App\Http\Controllers\Backend\ProductController;
+use App\Http\Controllers\Backend\ProductionController;
 use App\Http\Controllers\Backend\PurchaseController;
 use App\Http\Controllers\Backend\SupplierController;
 use App\Http\Controllers\Backend\TransferController;
@@ -180,6 +181,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/expense/{id}', 'edit')->name('edit.expense');
         Route::post('/update/expense', 'update')->name('update.expense');
         Route::get('/delete/expense/{id}', 'destroy')->name('delete.expense');
+    });
+
+    Route::controller(ProductionController::class)->group(function () {
+        Route::get('/all/production', 'index')->name('all.production');
+        Route::get('/add/production', 'create')->name('add.production');
+        Route::post('/store/production', 'store')->name('store.production');
+        Route::get('/edit/production/{id}', 'edit')->name('edit.production');
+        Route::post('/update/production/{id}', 'update')->name('update.production');
+        Route::get('/delete/production/{id}', 'destroy')->name('delete.production');
     });
 
     Route::controller(AttendanceController::class)->group(function () {

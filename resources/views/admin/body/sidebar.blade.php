@@ -107,6 +107,15 @@
                     </li>
                 @endif
 
+                @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+                <li>
+                    <a href="{{ route('all.production') }}" class="tp-link">
+                        <i data-feather="pen-tool"></i>
+                        Produksi
+                    </a>
+                </li>
+                @endif
+
                 <li>
                     <a href="{{ route('attendances.index') }}" class="tp-link">
                         <i data-feather="check-square"></i>
