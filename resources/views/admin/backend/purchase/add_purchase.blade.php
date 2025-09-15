@@ -94,8 +94,8 @@
          <div class="form-group w-100">
             <label class="form-label" for="formBasic">Status : <span class="text-danger">*</span></label>
             <select name="status" id="status" class="form-control form-select">
-               <option value="">Pilih Status</option>
-               <option value="Diterima">Diterima</option>
+               
+               <option selected value="Diterima">Diterima</option>
                <option value="Tertunda">Tertunda</option>
                <option value="Dipesan">Dipesan</option>
             </select>
