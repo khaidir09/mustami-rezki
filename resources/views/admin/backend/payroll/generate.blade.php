@@ -2,7 +2,7 @@
 @section('admin')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-<div class="content d-flex flex-column flex-column-fluid">
+<div class="content">
     <div class="d-flex flex-column-fluid">
         <div class="container-fluid my-0">
 
@@ -49,7 +49,7 @@
 
                             <div class="col-md-2">
                                 <button class="btn btn-primary w-100" type="button" id="calculate-btn">
-                                    <i class="ri-calculator-line"></i> Tampilkan Rincian
+                                    Tampilkan Rincian
                                 </button>
                             </div>
                         </div>
@@ -97,15 +97,29 @@
                                     </tbody>
                                     <tfoot>
                                         <tr class="table-light">
-                                            <th class="fs-5">TOTAL DITERIMA</th>
+                                            <th class="fs-5">TOTAL PERHITUNGAN</th>
                                             <th class="text-end fs-5" id="grand_total_display">Rp 0</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label for="final_payment_amount" class="form-label">
+                                                    <strong>JUMLAH DIBAYARKAN</strong>
+                                                </label>
+                                            </td>
+                                            <td class="text-end">
+                                                <input type="number" class="form-control text-end" name="final_payment_amount" id="final_payment_amount">
+                                            </td>
+                                        </tr>
+                                        <tr style="background-color: #e6f7ff;">
+                                            <td>Bonus (Pembulatan)</td>
+                                            <td class="text-end fw-bold" id="bonus_display">Rp 0</td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
 
-                            <div class="mt-4 text-end">
-                                <button class="btn btn-success" type="submit"><i class="ri-send-plane-fill"></i> Proses & Bayar Gaji Ini</button>
+                            <div class="mt-2 text-end">
+                                <button class="btn btn-success" type="submit">Proses & Bayar Gaji Ini</button>
                             </div>
                         </form>
                     </div> 
@@ -130,6 +144,17 @@ $(document).ready(function() {
         }).format(angka);
     }
 
+    function calculateBonus() {
+        var calculatedTotal = parseFloat($('#form_grand_total').val()) || 0;
+        var finalPayment = parseFloat($('#final_payment_amount').val()) || 0;
+        var bonus = finalPayment - calculatedTotal;
+
+        if (bonus < 0) {
+            bonus = 0; // Bonus tidak boleh minus
+        }
+        $('#bonus_display').text(formatRupiah(bonus));
+    }
+
     // Event handler saat tombol "Tampilkan Rincian" diklik
     $('#calculate-btn').on('click', function() {
         var employeeId = $('#employee_id').val();
@@ -143,7 +168,7 @@ $(document).ready(function() {
         }
 
         // Tampilkan loading (opsional)
-        $(this).html('<i class="ri-loader-4-line ri-spin"></i> Menghitung...').prop('disabled', true);
+        $(this).html('Menghitung...').prop('disabled', true);
 
         // Kirim request AJAX ke controller
         $.ajax({
@@ -173,15 +198,22 @@ $(document).ready(function() {
                 $('#employee_name_display').text(employeeName);
                 $('#period_display').text(startDate + ' s/d ' + endDate);
 
+                $('#final_payment_amount').val(response.grand_total);
+                calculateBonus();
+
                 // Tampilkan kontainer hasil dan reset tombol
                 $('#payroll-details-container').slideDown();
-                $('#calculate-btn').html('<i class="ri-calculator-line"></i> Tampilkan Rincian').prop('disabled', false);
+                $('#calculate-btn').html('Tampilkan Rincian').prop('disabled', false);
             },
             error: function() {
                 alert('Terjadi kesalahan saat mengambil data. Silakan coba lagi.');
-                $('#calculate-btn').html('<i class="ri-calculator-line"></i> Tampilkan Rincian').prop('disabled', false);
+                $('#calculate-btn').html('Tampilkan Rincian').prop('disabled', false);
             }
         });
+    });
+
+    $(document).on('input', '#final_payment_amount', function() {
+        calculateBonus();
     });
 
     // Sembunyikan pratinjau jika filter diubah

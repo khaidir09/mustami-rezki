@@ -123,26 +123,12 @@
                     </a>
                 </li>
 
-                @if (Auth::user()->hasRole('Super Admin'))
                 <li>
-                    <a href="#Due" data-bs-toggle="collapse">
-                    <i data-feather="briefcase"></i>
-                        <span> Manajemen Gaji </span>
-                        <span class="menu-arrow"></span>
+                    <a href="{{ route('payroll.history') }}" class="tp-link">
+                        <i data-feather="briefcase"></i>
+                        Gaji/Komisi
                     </a>
-                    <div class="collapse" id="Due">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="{{ route('payroll.generate.form') }}" class="tp-link">Bayar Gaji Mingguan</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('payroll.history') }}" class="tp-link">Riwayat Penggajian</a>
-                            </li>
-                            
-                        </ul>
-                    </div>
                 </li>
-                @endif
 
                 {{-- 
                 <li>

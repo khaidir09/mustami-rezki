@@ -244,5 +244,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/payroll/calculate', 'calculate')->name('payroll.calculate');
         Route::post('/payroll/store', 'store')->name('payroll.store');
         Route::get('/payroll/history', 'index')->name('payroll.history');
+        Route::get('/payroll/{payroll}', 'show')->name('payroll.show');
+        Route::get('/delete/payroll/{payroll}', 'destroy')->name('payroll.destroy');
     });
 });
