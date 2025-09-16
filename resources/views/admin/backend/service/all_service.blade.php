@@ -25,7 +25,7 @@
 
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="datatable" class="table table-bordered">
+                            <table id="datatable" class="table table-bordered dt-responsive nowrap">
                             <thead>
                             <tr>
                                 <th>No.</th>
@@ -116,7 +116,7 @@
         $("#datatable").dataTable({
             "columnDefs": [{
                 "sortable": false,
-                "targets": [5]
+                "targets": [4]
             }],
             "order": [[0, "asc"]]
         });

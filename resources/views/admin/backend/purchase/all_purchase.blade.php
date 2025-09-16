@@ -75,3 +75,15 @@
 
 
 @endsection
+
+@push('scripts')
+    <script>
+        $("#datatable").dataTable({
+            "columnDefs": [{
+                "sortable": false,
+                "targets": [5]
+            }],
+            "order": [[0, "asc"]]
+        });
+    </script>
+@endpush

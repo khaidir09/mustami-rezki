@@ -108,7 +108,7 @@
         $("#datatable").dataTable({
             "columnDefs": [{
                 "sortable": false,
-                "targets": [10]
+                "targets": [9]
             }],
             "order": [[0, "asc"]]
         });
