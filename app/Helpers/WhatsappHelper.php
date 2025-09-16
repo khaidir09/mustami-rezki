@@ -26,7 +26,8 @@ class WhatsAppHelper
 
 
         // 3. Bangun template pesan
-        $template = "Assalamualaikum Wr. Wb.\n"
+        $template = "=================\n"
+            . "Assalamualaikum Wr. Wb.\n"
             . "*Yth. Bapak/Ibu " . $transaction->customer->name . "*\n\n"
             . "Ijin kami informasikan untuk jahitan dengan:\n\n"
             . "No. Nota: " . $transaction->transaction_code . "\n"
@@ -40,7 +41,8 @@ class WhatsAppHelper
             . "*Sisa Bayar:* *" . 'Rp ' . number_format($transaction->due_amount, 0, ',', '.') . "*\n\n"
             . "Terima kasih atas kepercayaan Anda.\n\n"
             . "Hormat kami,\n"
-            . "_Mustami Rezki Tailorshop_";
+            . "_Mustami Rezki Tailorshop_\n"
+            . "=================";
 
         // 4. Encode pesan untuk URL
         $encodedMessage = urlencode($template);
