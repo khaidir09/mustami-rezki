@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
+use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -126,6 +127,9 @@ class AdminController extends Controller
             ->value('total_value');
         $data['ongoingJobs'] = TailorTransaction::whereIn('status', ['Antrian', 'Dikerjakan'])->count();
 
+        $data['totalProfit'] = ProfitDistribution::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
         $data['totalModal'] = ProfitDistribution::where('distribution_type', 'pengembangan_modal')
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
@@ -150,6 +154,17 @@ class AdminController extends Controller
         $data['monthlyExpenses'] = Expense::whereYear('date', date('Y'))
             ->whereMonth('date', date('m'))
             ->sum('amount');
+
+        $data['monthlyPurchasesTotal'] = Purchase::whereYear('date', date('Y'))
+            ->whereMonth('date', date('m'))
+            ->sum('grand_total');
+
+        $data['monthlyPayrollTotal'] = Payroll::whereYear('payment_date', date('Y'))
+            ->whereMonth('payment_date', date('m'))
+            ->where('is_processed', 1)
+            ->sum('amount');
+
+        $data['totalMonthlyExpenditure'] = $data['monthlyExpenses'] + $data['monthlyPurchasesTotal'] + $data['monthlyPayrollTotal'];
 
         $data['todayExpenses'] = Expense::whereDate('date', $today)
             ->sum('amount');

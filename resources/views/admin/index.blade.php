@@ -13,73 +13,96 @@
                 </div>
             </div>
         </div>
+
         @if (Auth::user()->hasRole('Super Admin'))
-        <div class="row g-3">
-            <div class="col-md-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="fs-14 mb-1">Pengembangan Modal (Bulan Ini)</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="fs-22 mb-0 me-2 fw-semibold text-success">Rp {{ number_format($totalModal, 0, ',', '.') }}</div>
-                        </div>
-                        <a href="{{ route('profit.distribution.report', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->endOfMonth()->format('Y-m-d')]) }}" class="text-muted fs-12">
-                            Lihat Laporan Lengkap
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">Ringkasan Profit Bulan Ini</h4>
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-light text-success rounded-circle fs-3">
+                                            <i data-feather="arrow-up"></i>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="text-muted mb-1">Total Keseluruhan Profit</p>
+                                        <h2 class="text-success mb-0">@rupiah($totalProfit)</h2>
+                                    </div>
+                                </div>
+                            </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="fs-14 mb-1">Dana Pribadi (Bulan Ini)</div>
+                            <div class="mt-4 pt-2">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Pengembangan Modal</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($totalModal)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Dana Pribadi</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($totalPribadi)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Dana Sedekah</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($totalSedekah)</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="fs-22 mb-0 me-2 fw-semibold text-success">Rp {{ number_format($totalPribadi, 0, ',', '.') }}</div>
-                        </div>
-                        <a href="{{ route('profit.distribution.report', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->endOfMonth()->format('Y-m-d')]) }}" class="text-muted fs-12">
-                            Lihat Laporan Lengkap
-                        </a>
                     </div>
                 </div>
-            </div>
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">Ringkasan Pengeluaran Bulan Ini</h4>
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-light text-danger rounded-circle fs-3">
+                                            <i data-feather="arrow-down"></i>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="text-muted mb-1">Total Keseluruhan Pengeluaran</p>
+                                        <h2 class="text-danger mb-0">@rupiah($totalMonthlyExpenditure)</h2>
+                                    </div>
+                                </div>
+                            </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="fs-14 mb-1">Dana Sedekah (Bulan Ini)</div>
+                            <div class="mt-4 pt-2">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Operasional</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyExpenses)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Pembelian Barang</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyPurchasesTotal)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Gaji & Komisi</p>
+                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyPayrollTotal)</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="fs-22 mb-0 me-2 fw-semibold text-success">Rp {{ number_format($totalSedekah, 0, ',', '.') }}</div>
-                        </div>
-                        <a href="{{ route('profit.distribution.report', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->endOfMonth()->format('Y-m-d')]) }}" class="text-muted fs-12">
-                            Lihat Laporan Lengkap
-                        </a>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="fs-14 mb-1">Pengeluaran (Bulan Ini)</div>
-                        </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="fs-22 mb-0 me-2 fw-semibold text-danger">Rp {{ number_format($monthlyExpenses, 0, ',', '.') }}</div>
-                        </div>
-                        <a href="{{ route('all.expense', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->endOfMonth()->format('Y-m-d')]) }}" class="text-muted fs-12">
-                            Lihat Laporan Lengkap
-                        </a>                                        
-                    </div>
-                </div>
-            </div>
-            
-        </div>
         @endif
         <div class="row">
             <div class="col-12">
