@@ -141,6 +141,92 @@
                 </div>
             </div>
         </div>
+        @if (Auth::user()->hasRole('Super Admin'))
+            <div class="row">
+                <div class="col-12">
+                    <div class="pb-3 d-flex align-items-sm-center flex-sm-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-18 fw-semibold m-0">Produksi</h4>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Produksi Bulan Ini</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">{{ $jumlahProduksi }} Item</div>
+                                    </div>
+                                    <a href="{{ route('all.production') }}" class="text-muted fs-12">
+                                        Lihat Produksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Profit Produksi Bulan Ini</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">Rp {{ number_format($profitProduksi, 0, ',', '.') }}</div>
+                                    </div>
+                                    <a href="{{ route('all.production') }}" class="text-muted fs-12">
+                                        Lihat Produksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @if (Auth::user()->hasRole('Admin'))
+            <div class="row">
+                <div class="col-12">
+                    <div class="pb-3 d-flex align-items-sm-center flex-sm-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-18 fw-semibold m-0">Gaji/Komisi</h4>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Gaji Harian Bulan Ini</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">Rp {{ number_format($gajiHarian, 0, ',', '.') }} ({{ $jumlahPresensi }} Hari)</div>
+                                    </div>
+                                    <a href="{{ route('attendances.index') }}" class="text-muted fs-12">
+                                        Lihat Riwayat Presensi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Komisi Produksi Bulan Ini</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">Rp {{ number_format($komisiProduksi, 0, ',', '.') }} ({{ $jumlahProduksi }} Item)</div>
+                                    </div>
+                                    <a href="{{ route('all.production') }}" class="text-muted fs-12">
+                                        Lihat Produksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
             {{-- Statistik Produk --}}
             <div class="row">

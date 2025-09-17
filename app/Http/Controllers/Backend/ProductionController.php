@@ -53,6 +53,7 @@ class ProductionController extends Controller
             'price' => $request->price,
             'rate' => $rate,
             'total_commission' => $commission,
+            'profit' => $profit
         ]);
 
         $amountPerShare = $profit / 3;
@@ -112,6 +113,7 @@ class ProductionController extends Controller
             'price' => $request->price,
             'rate' => $rate,
             'total_commission' => $commission,
+            'profit' => $profit
         ]);
 
         ProfitDistribution::where('transaction_id', $production->id)

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Expense;
+use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\Attendance;
+use App\Models\Production;
 use Illuminate\Http\Request;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
@@ -176,6 +178,30 @@ class AdminController extends Controller
             ->where('date', $today)
             ->get()
             ->keyBy('user_id');
+
+        $data['gajiHarian'] = Payroll::where('user_id', $user->id)
+            ->where('type', 'Gaji Harian')
+            ->whereMonth('payment_date', date('m'))
+            ->whereYear('payment_date', date('Y'))
+            ->sum('amount');
+
+        $data['jumlahPresensi'] = Payroll::where('user_id', $user->id)
+            ->where('type', 'Gaji Harian')
+            ->whereMonth('payment_date', date('m'))
+            ->whereYear('payment_date', date('Y'))
+            ->count();
+
+        $data['komisiProduksi'] = Production::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('total_commission');
+
+        $data['jumlahProduksi'] = Production::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('quantity');
+
+        $data['profitProduksi'] = Production::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('profit');
 
 
         return view('admin.index', $data);

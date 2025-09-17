@@ -33,6 +33,8 @@
                                 <th>Nama Produksi</th>
                                 <th>Jumlah</th>
                                 <th>Harga</th>
+                                <th>Total</th>
+                                <th>Komisi Karyawan</th>
                                 <th>Aksi</th>
                             </tr>
                             </thead>
@@ -44,6 +46,8 @@
                                     <td>{{ $item->name }}</td>
                                     <td>{{ $item->quantity }}</td>
                                     <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->total_commission, 0, ',', '.') }}</td>
                                     <td>
                                         <a href="{{ route('edit.production',$item->id) }}" class="btn btn-success btn-sm" id="edit">Edit</a>    
                                         <a href="{{ route('delete.production',$item->id) }}" class="btn btn-danger btn-sm" id="delete">Hapus</a>
