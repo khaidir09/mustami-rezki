@@ -15,7 +15,7 @@
         </div>
         @if (Auth::user()->hasRole('Super Admin'))
         <div class="row g-3">
-            <div class="col-md-6 col-xl-3">
+            <div class="col-md-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-xl-3">
+            <div class="col-md-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -47,7 +47,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-xl-3">
+            <div class="col-md-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-xl-3">
+            <div class="col-md-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -227,6 +227,69 @@
                 </div>
             </div>
         @endif
+        {{-- Statistik Jahit --}}
+        @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+        <div class="row">
+                <div class="col-12">
+                    <div class="pb-3 d-flex align-items-sm-center flex-sm-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-18 fw-semibold m-0">Statistik Jahit</h4>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Jahitan Berjalan</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">{{ $ongoingJobs }} Transaksi</div>
+                                    </div>
+                                    <a href="{{ route('all.tailor') }}" class="text-muted fs-12">
+                                        Lihat Daftar Transaksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-14 mb-1">Jahitan Selesai</div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">{{ $completedJobsThisMonth }} Transaksi</div>
+                                    </div>
+                                    <a href="{{ route('all.tailor') }}" class="text-muted fs-12">
+                                        Lihat Daftar Transaksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Auth::user()->hasRole('Super Admin'))
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div class="fs-14 mb-1">Profit Toko</div>
+                                        </div>
+                                        <div class="d-flex align-items-baseline">
+                                            <div class="fs-22 mb-0 me-2 fw-semibold text-success">Rp {{ number_format($tailorOwnerProfit, 0, ',', '.') }}</div>
+                                        </div>
+                                        <a href="{{ route('profit.distribution.report') }}" class="text-muted fs-12">
+                                            Lihat Laporan Profit
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div> 
+                </div>
+            </div
+        @endif>
         @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
             {{-- Statistik Produk --}}
             <div class="row">
@@ -290,67 +353,7 @@
                     </div> 
                 </div>
             </div>
-            {{-- Statistik Jahit --}}
-            <div class="row">
-                <div class="col-12">
-                    <div class="pb-3 d-flex align-items-sm-center flex-sm-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-18 fw-semibold m-0">Statistik Jahit</h4>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="fs-14 mb-1">Jahitan Berjalan</div>
-                                    </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">{{ $ongoingJobs }} Transaksi</div>
-                                    </div>
-                                    <a href="{{ route('all.tailor') }}" class="text-muted fs-12">
-                                        Lihat Daftar Transaksi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="fs-14 mb-1">Jahitan Selesai</div>
-                                    </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">{{ $completedJobsThisMonth }} Transaksi</div>
-                                    </div>
-                                    <a href="{{ route('all.tailor') }}" class="text-muted fs-12">
-                                        Lihat Daftar Transaksi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if (Auth::user()->hasRole('Super Admin'))
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <div class="fs-14 mb-1">Profit Toko</div>
-                                        </div>
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="fs-22 mb-0 me-2 fw-semibold text-success">Rp {{ number_format($tailorOwnerProfit, 0, ',', '.') }}</div>
-                                        </div>
-                                        <a href="{{ route('profit.distribution.report') }}" class="text-muted fs-12">
-                                            Lihat Laporan Profit
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div> 
-                </div>
-            </div>
+            
         @endif
         {{-- Dasboard Penjahit --}}
         @if (Auth::user()->hasRole('Tailor'))
@@ -358,7 +361,7 @@
                 <div class="col-12">
                     <div class="row g-3">
 
-                        <div class="col-md-6 col-xl-4">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
@@ -374,7 +377,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 col-xl-4">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
@@ -390,7 +393,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 col-xl-4">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
@@ -410,130 +413,6 @@
                 </div>
             </div>
         @endif
-
-        <!-- Start Monthly Sales -->
-        {{-- <div class="row">
-            <div class="col-md-6 col-xl-8">
-                <div class="card">
-                    
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <div class="border border-dark rounded-2 me-2 widget-icons-sections">
-                                <i data-feather="bar-chart" class="widgets-icons"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Monthly Sales</h5>
-                        </div>
-                    </div>
-
-                    <div class="card-body">
-                        <div id="monthly-sales" class="apex-charts"></div>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="card overflow-hidden">
-
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <div class="border border-dark rounded-2 me-2 widget-icons-sections">
-                                <i data-feather="tablet" class="widgets-icons"></i>
-                            </div>
-                            <h5 class="card-title mb-0">Best Traffic Source</h5>
-                        </div>
-                    </div>
-
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-traffic mb-0">
-                                <tbody>
-                                    <thead>
-                                        <tr>
-                                            <th>Network</th>
-                                            <th colspan="2">Visitors</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tr>
-                                        <td>Instagram</td>
-                                        <td>3,550</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-danger" style="width: 80.0%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Facebook</td>
-                                        <td>1,245</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-primary" style="width: 55.9%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Twitter</td>
-                                        <td>1,798</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-secondary" style="width: 67.0%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>YouTube</td>
-                                        <td>986</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-success" style="width: 38.72%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Pinterest</td>
-                                        <td>854</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-danger" style="width: 45.08%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Linkedin</td>
-                                        <td>650</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-warning" style="width: 68.0%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Nextdoor</td>
-                                        <td>420</td>
-                                        <td class="w-50">
-                                            <div class="progress progress-md mt-0">
-                                                <div class="progress-bar bg-info" style="width: 56.4%"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div> --}}
-        <!-- End Monthly Sales -->
     </div> <!-- container-fluid -->
 </div>
 
