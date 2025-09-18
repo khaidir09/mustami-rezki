@@ -51,6 +51,7 @@ class ProductionController extends Controller
             'name' => $request->name,
             'quantity' => $request->quantity,
             'price' => $request->price,
+            'total_price' => $total,
             'rate' => $rate,
             'total_commission' => $commission,
             'profit' => $profit
@@ -111,6 +112,7 @@ class ProductionController extends Controller
             'name' => $request->name,
             'quantity' => $request->quantity,
             'price' => $request->price,
+            'total_price' => $total,
             'rate' => $rate,
             'total_commission' => $commission,
             'profit' => $profit

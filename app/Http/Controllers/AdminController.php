@@ -14,6 +14,8 @@ use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
 use App\Models\Purchase;
+use App\Models\Sale;
+use App\Models\SaleItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -142,6 +144,11 @@ class AdminController extends Controller
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
+
+        $data['totalKomisiPenjahit'] = TailorCommission::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+
         $data['completedJobsThisMonth'] = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
@@ -217,6 +224,34 @@ class AdminController extends Controller
         $data['profitProduksi'] = Production::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('profit');
+
+        $data['omzetPenjualan'] = Sale::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('grand_total');
+
+        $data['omzetJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
+            ->whereYear('transaction_date', date('Y'))
+            ->sum('total_price');
+
+        $data['omzetProduksi'] = Production::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('total_price');
+
+        $data['totalSaleItem'] = SaleItem::whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('quantity');
+
+        $data['totalTransaksiPenjualan'] = Sale::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->count();
+
+        $data['totalProfitPenjualan'] = ProfitDistribution::where('transaction_type', 'App\Models\Sale')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->sum('amount');
+
+        $data['totalProfitKotor'] = $data['totalProfit'] + $data['totalKomisiPenjahit'] + $data['komisiProduksi'];
+        $data['uangBersih'] = $data['totalProfitKotor'] - $data['totalMonthlyExpenditure'];
 
 
         return view('admin.index', $data);

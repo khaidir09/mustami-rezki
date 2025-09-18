@@ -16,7 +16,76 @@
 
         @if (Auth::user()->hasRole('Super Admin'))
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">Ringkasan Keuangan Keseluruhan (Bulan Ini)</h4>
+
+                            <div class="row text-center">
+                                
+                                {{-- Angka Utama: Uang Bersih --}}
+                                <div class="col-12 mb-4">
+                                    <p class="text-muted mb-1">Uang Bersih Saat Ini</p>
+                                    <h2 class="mb-0 text-primary">@rupiah($uangBersih)</h2>
+                                    <small class="text-muted">(Profit Kotor - Total Pengeluaran)</small>
+                                </div>
+
+                                <hr>
+
+                                {{-- Rincian Pendapatan & Pengeluaran --}}
+                                <div class="col-12">
+                                    <div class="row">
+
+                                        {{-- Kolom Profit Kotor --}}
+                                        <div class="col-md-3 col-6 border-end">
+                                            <div class="my-3">
+                                                <p class="text-muted mb-2">
+                                                    <i data-feather="arrow-up" class="text-success"></i> Profit Kotor
+                                                </p>
+                                                <div class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalProfitKotor)</div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Kolom Gaji & Komisi --}}
+                                        <div class="col-md-3 col-6 border-end">
+                                            <div class="my-3">
+                                                <p class="text-muted mb-2">
+                                                    <i data-feather="arrow-down" class="text-danger"></i> Total Gaji & Komisi
+                                                </p>
+                                                <div class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($monthlyPayrollTotal)</div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Kolom Pengeluaran Operasional --}}
+                                        <div class="col-md-3 col-6 border-end">
+                                            <div class="my-3">
+                                                <p class="text-muted mb-2">
+                                                    <i data-feather="arrow-down" class="text-danger"></i> Total Pengeluaran
+                                                </p>
+                                                <div class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($monthlyExpenses)</div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Kolom Pembelian Barang --}}
+                                        <div class="col-md-3 col-6">
+                                            <div class="my-3">
+                                                <p class="text-muted mb-2">
+                                                    <i data-feather="arrow-down" class="text-danger"></i> Total Pembelian
+                                                </p>
+                                                <div class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($monthlyPurchasesTotal)</div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
                             <h4 class="card-title mb-4">Ringkasan Profit Bulan Ini</h4>
@@ -39,19 +108,19 @@
                                     <div class="col-4">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Pengembangan Modal</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($totalModal)</h5>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalModal)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Dana Pribadi</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($totalPribadi)</h5>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalPribadi)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Dana Sedekah</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($totalSedekah)</h5>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalSedekah)</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -59,20 +128,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="card-title mb-4">Ringkasan Pengeluaran Bulan Ini</h4>
+                            <h4 class="card-title mb-4">Ringkasan Pendapatan Bulan Ini</h4>
                             <div>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-sm flex-shrink-0">
-                                        <span class="avatar-title bg-light text-danger rounded-circle fs-3">
-                                            <i data-feather="arrow-down"></i>
+                                        <span class="avatar-title bg-light text-success rounded-circle fs-3">
+                                            <i data-feather="arrow-up"></i>
                                         </span>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <p class="text-muted mb-1">Total Keseluruhan Pengeluaran</p>
-                                        <h2 class="text-danger mb-0">@rupiah($totalMonthlyExpenditure)</h2>
+                                        <p class="text-muted mb-1">Total Keseluruhan Pendapatan</p>
+                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualan + $omzetJahit + $omzetProduksi)</h2>
                                     </div>
                                 </div>
                             </div>
@@ -81,20 +150,20 @@
                                 <div class="row">
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Operasional</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyExpenses)</h5>
+                                            <p class="text-muted mb-2">Penjualan</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetPenjualan)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Pembelian Barang</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyPurchasesTotal)</h5>
+                                            <p class="text-muted mb-2">Jasa Jahit</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetJahit)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Gaji & Komisi</p>
-                                            <h5 class="font-size-15 mb-0">@rupiah($monthlyPayrollTotal)</h5>
+                                            <p class="text-muted mb-2">Produksi</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetProduksi)</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -249,6 +318,57 @@
                     </div>
                 </div>
             </div>
+        @endif
+        {{-- Statistik Penjualan --}}
+        @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+            <div class="row">
+                <div class="col-12">
+                    <div class="pb-3 d-flex align-items-sm-center flex-sm-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-18 fw-semibold m-0">Statistik Penjualan</h4>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <p class="text-truncate font-size-14 mb-2">Total Transaksi</p>
+                                            <h4 class="fs-22 me-2 fw-semibold text-black mb-2">{{ $totalSaleItem }} Item</h4>
+                                            <p class="text-muted mb-0">Dari {{ $totalTransaksiPenjualan }} transaksi</p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-light text-primary rounded-3">
+                                                <i data-feather="shopping-cart"></i>  
+                                            </span>
+                                        </div>
+                                    </div>                                            
+                                </div>
+                            </div>
+                        </div>
+                         <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <p class="text-truncate font-size-14 mb-2">Total Profit Penjualan</p>
+                                            <h4 class="fs-22 mb-2 me-2 fw-semibold text-success">@rupiah($totalProfitPenjualan)</h4>
+                                            <p class="text-muted mb-0">Keuntungan bersih dari penjualan</p>
+                                        </div>
+                                        <div class="avatar-sm">
+                                            <span class="avatar-title bg-light text-success rounded-3">
+                                                <i data-feather="bar-chart-2"></i>  
+                                            </span>
+                                        </div>
+                                    </div>                                            
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+            
         @endif
         {{-- Statistik Jahit --}}
         @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
