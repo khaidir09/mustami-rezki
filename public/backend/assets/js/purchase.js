@@ -65,8 +65,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let row = `
-      <tr data-id="${productId}">
+        const newRowElement = document.createElement("tr");
+        newRowElement.setAttribute("data-id", productId);
+
+        newRowElement.innerHTML = `
           <td>
               ${productCode} - ${productName}
               <input type="hidden" name="products[${productId}][id]" value="${productId}">
@@ -81,17 +83,16 @@ document.addEventListener("DOMContentLoaded", function () {
               <div class="input-group">
                   <button class="btn btn-outline-secondary decrement-qty" type="button">−</button>
                   <input type="text" class="form-control text-center qty-input"
-                      name="products[${productId}][quantity]" value="1" min="1" max="${stock}"
+                      name="products[${productId}][quantity]" value="1" min="1"
                       data-cost="${netUnitCost}" style="width: 30px;">
                   <button class="btn btn-outline-secondary increment-qty" type="button">+</button>
               </div>
           </td>
           <td class="subtotal">${netUnitCost.toFixed(0)}</td>
           <td><button class="btn btn-danger btn-sm remove-product"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td>
-      </tr>
   `;
 
-        orderItemsTableBody.innerHTML += row;
+        orderItemsTableBody.append(newRowElement);
         productList.innerHTML = "";
         productSearchInput.value = "";
 
@@ -124,12 +125,9 @@ document.addEventListener("DOMContentLoaded", function () {
             button.addEventListener("click", function () {
                 let input =
                     this.closest(".input-group").querySelector(".qty-input");
-                let max = parseInt(input.getAttribute("max"));
                 let value = parseInt(input.value);
-                if (value < max) {
-                    input.value = value + 1;
-                    updateSubtotal(this.closest("tr"));
-                }
+                input.value = value + 1;
+                updateSubtotal(this.closest("tr"));
             });
         });
 

@@ -65,44 +65,48 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let row = `
-      <tr data-id="${productId}">
-          <td>
-              ${productCode} - ${productName} 
-              <button type="button" class="btn btn-primary btn-sm edit-discount-btn"
-                  data-id="${productId}" 
-                  data-name="${productName}" 
-                  data-cost="${netUnitCost}"
-                  data-bs-toggle="modal">
-                  <span class="mdi mdi-book-edit "></span>
-              </button>
-              <input type="hidden" name="products[${productId}][id]" value="${productId}">
-              <input type="hidden" name="products[${productId}][name]" value="${productName}">
-              <input type="hidden" name="products[${productId}][code]" value="${productCode}">
-          </td>
-          <td>${netUnitCost.toFixed(0)}
-              <input type="hidden" name="products[${productId}][cost]" value="${netUnitCost}">
-          </td>
-          <td style="color:#ffc121">${stock}</td>
-          <td>
-              <div class="input-group">
-                  <button class="btn btn-outline-secondary decrement-qty" type="button">−</button>
-                  <input type="text" class="form-control text-center qty-input"
-                      name="products[${productId}][quantity]" value="1" min="1" max="${stock}"
-                      data-cost="${netUnitCost}" style="width: 30px;">
-                  <button class="btn btn-outline-secondary increment-qty" type="button">+</button>
-              </div>
-          </td>
-          <td>
-              <input type="number" class="form-control discount-input"
-                  name="products[${productId}][discount]" value="0" min="0" style="width:100px">
-          </td>
-          <td class="subtotal">${netUnitCost.toFixed(0)}</td>
-          <td><button class="btn btn-danger btn-sm remove-product"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td>
-      </tr>
-  `;
+        // Buat elemen <tr> baru
+        const newRowElement = document.createElement("tr");
+        newRowElement.setAttribute("data-id", productId);
 
-        orderItemsTableBody.innerHTML += row;
+        // Isi HTML untuk baris baru
+        newRowElement.innerHTML = `
+        <td>
+            ${productCode} - ${productName} 
+            <button type="button" class="btn btn-primary btn-sm edit-discount-btn"
+                data-id="${productId}" 
+                data-name="${productName}" 
+                data-cost="${netUnitCost}"
+                data-bs-toggle="modal">
+                <span class="mdi mdi-book-edit "></span>
+            </button>
+            <input type="hidden" name="products[${productId}][id]" value="${productId}">
+            <input type="hidden" name="products[${productId}][name]" value="${productName}">
+            <input type="hidden" name="products[${productId}][code]" value="${productCode}">
+        </td>
+        <td>${netUnitCost.toFixed(0)}
+            <input type="hidden" name="products[${productId}][cost]" value="${netUnitCost}">
+        </td>
+        <td style="color:#ffc121">${stock}</td>
+        <td>
+            <div class="input-group">
+                <button class="btn btn-outline-secondary decrement-qty" type="button">−</button>
+                <input type="text" class="form-control text-center qty-input"
+                    name="products[${productId}][quantity]" value="1" min="1" max="${stock}"
+                    data-cost="${netUnitCost}" style="width: 30px;">
+                <button class="btn btn-outline-secondary increment-qty" type="button">+</button>
+            </div>
+        </td>
+        <td>
+            <input type="number" class="form-control discount-input"
+                name="products[${productId}][discount]" value="0" min="0" style="width:100px">
+        </td>
+        <td class="subtotal">${netUnitCost.toFixed(0)}</td>
+        <td><button class="btn btn-danger btn-sm remove-product"><span class="mdi mdi-delete-circle mdi-18px"></span></button></td>
+    `;
+
+        orderItemsTableBody.append(newRowElement);
+
         productList.innerHTML = "";
         productSearchInput.value = "";
 
