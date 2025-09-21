@@ -130,6 +130,15 @@
                     </a>
                 </li>
 
+                @if (Auth::user()->hasRole('Super Admin'))
+                    <li>
+                        <a href="{{ route('financial.index') }}" class="tp-link">
+                            <i data-feather="briefcase"></i>
+                            Arus Kas
+                        </a>
+                    </li>
+                @endif
+
                 {{-- 
                 <li>
                     <a href="#Due" data-bs-toggle="collapse">

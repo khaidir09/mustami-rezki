@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Backend\AttendanceController;
 use App\Http\Controllers\Backend\ExpenseController;
+use App\Http\Controllers\Backend\FinancialReportController;
 use App\Http\Controllers\Backend\PayrollController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\RoleController;
@@ -246,5 +247,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/payroll/history', 'index')->name('payroll.history');
         Route::get('/payroll/{payroll}', 'show')->name('payroll.show');
         Route::get('/delete/payroll/{payroll}', 'destroy')->name('payroll.destroy');
+    });
+
+    Route::controller(FinancialReportController::class)->group(function () {
+        Route::get('/arus-kas', [FinancialReportController::class, 'index'])->name('financial.index');
+        Route::get('/arus-kas/create', [FinancialReportController::class, 'create'])->name('financial.create');
+        Route::post('/arus-kas', [FinancialReportController::class, 'store'])->name('financial.store');
     });
 });
