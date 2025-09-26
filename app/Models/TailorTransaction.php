@@ -32,4 +32,9 @@ class TailorTransaction extends Model
     {
         return $this->hasOne(TailorCommission::class, 'tailor_transaction_id');
     }
+
+    public function soldProducts()
+    {
+        return $this->hasMany(TailorTransactionProduct::class);
+    }
 }

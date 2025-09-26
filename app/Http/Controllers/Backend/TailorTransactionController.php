@@ -4,18 +4,20 @@ namespace App\Http\Controllers\Backend;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Product;
 use App\Models\Service;
 use App\Models\Customer;
+use App\Models\Supplier;
+use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\ServiceType;
-use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TailorTransactionItem;
+use App\Models\TailorTransactionProduct;
 
 class TailorTransactionController extends Controller
 {
@@ -68,8 +70,9 @@ class TailorTransactionController extends Controller
             'items.*.price' => 'required|numeric|min:0',
         ]);
 
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
 
             // ## LANGKAH 1: HITUNG TOTAL HARGA DARI ITEM TERLEBIH DAHULU ##
             $total_price = 0;
@@ -134,9 +137,9 @@ class TailorTransactionController extends Controller
                 'due_date' => $request->due_date,
                 'description' => $request->description,
                 'cost_price' => $request->cost_price ?? 0,
-                'total_price' => $total_price, // <- Nilai sudah benar
+                'total_price' => $total_price,
                 'paid_amount' => $request->paid_amount ?? 0,
-                'due_amount' => $due_amount,   // <- Nilai sudah benar
+                'due_amount' => $due_amount,
                 'status' => $request->status,
             ]);
 
@@ -178,6 +181,49 @@ class TailorTransactionController extends Controller
                     }
                 }
             }
+
+            // ## LOGIKA BARU: Simpan produk yang dijual & kurangi stok ##
+            if ($request->has('products')) {
+                foreach ($request->products as $productId => $productData) {
+                    $product = Product::find($productId);
+                    if ($product) {
+                        // Simpan ke tabel pivot baru
+                        $transaction->soldProducts()->create([
+                            'product_id' => $productId,
+                            'product_name' => $product->name,
+                            'quantity' => $productData['quantity'],
+                            'price' => $productData['price'],
+                            'subtotal' => $productData['quantity'] * $productData['price'],
+                        ]);
+
+                        // Kurangi stok produk
+                        $product->decrement('product_qty', $productData['quantity']);
+                    }
+
+                    // ---- KALKULASI PROFIT PER ITEM ----
+                    $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
+
+                    if ($totalProfit > 0) {
+                        // 4. Hitung jumlah untuk setiap bagian (1/3)
+                        $amountPerShare = $totalProfit / 3;
+                        $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
+
+                        // 5. Buat data distribusi untuk setiap jenis
+                        foreach ($distributionTypes as $type) {
+                            ProfitDistribution::create([
+                                'transaction_id'   => $transaction->id,
+                                'transaction_type' => TailorTransactionProduct::class, // Menggunakan class constant lebih aman
+                                'distribution_type' => $type,
+                                'amount'           => $amountPerShare,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Hitung ulang total_price di transaksi utama untuk memastikan akurasi
+            $transaction->total_price = $transaction->items->sum('subtotal') + $transaction->soldProducts->sum('subtotal');
+            $transaction->save();
 
             // Jalankan kembali logika penyimpanan turunan yang butuh ID transaksi
             if ($request->work_type == 'Internal' && isset($tailor_commission) && $tailor_commission > 0) {

@@ -79,7 +79,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 align-items-end p-3 my-3 bg-light rounded">
+                            <div class="row g-3 align-items-end pb-3 px-3 my-3 bg-light rounded">
                                 <div class="col-md-2">
                                     <label for="type_selector" class="form-label">Jenis Jasa <span class="text-danger">*</span></label>
                                     <select id="type_selector" class="form-select">
@@ -139,6 +139,57 @@
                                             <tbody id="transactionItemsTbody">
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-outline-info waves-effect waves-light w-100" id="toggle-product-form-btn">
+                                        <i class="ri-add-circle-line align-middle me-1"></i> 
+                                        Tambah Produk dari Stok Toko (Opsional)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="product-form-container" style="display: none;">
+                                 {{-- ## BAGIAN BARU: FORM PENAMBAHAN PRODUK DARI STOK ## --}}
+                            <div class="row g-3 align-items-end pb-3 px-3 my-3 bg-light rounded">
+                                <div class="col-md-8">
+                                    <label for="product_search_input" class="form-label">Cari & Tambah Produk dari Stok</label>
+                                    <input type="search" id="product_search_input" class="form-control" placeholder="Ketik nama atau kode produk...">
+                                    
+                                    <div id="product_list" class="list-group" style="position: absolute; z-index: 1000; width: 63%;"></div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="product_quantity_input" class="form-label">Jumlah</label>
+                                    <input type="number" class="form-control" id="product_quantity_input" value="1" min="1">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-info w-100" id="addProductBtn">Tambah Produk</button>
+                                </div>
+                            </div>
+
+                            {{-- Tabel untuk menampilkan produk yang ditambahkan --}}
+                            <div class="row">
+                                <div class="col-12">
+                                        <label class="form-label">Produk dari Stok yang Digunakan</label>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nama Produk</th>
+                                                        <th>Jumlah</th>
+                                                        <th>Harga Satuan</th>
+                                                        <th>Subtotal</th>
+                                                        <th>Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="soldProductsTbody">
+                                                    {{-- Produk yang ditambahkan akan muncul di sini --}}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -311,31 +362,180 @@
         updateTotals();
     });
 
+    $('#toggle-product-form-btn').on('click', function() {
+        // Toggle (tampilkan/sembunyikan) container form dengan efek slide
+        $('#product-form-container').slideToggle();
+
+        // (Opsional) Ubah teks tombol setelah diklik
+        var buttonText = $(this).find('.align-middle').nextSibling; 
+        if ($('#product-form-container').is(":visible")) {
+            $(this).html('<i class="ri-subtract-line align-middle me-1"></i> Sembunyikan Form Produk');
+        } else {
+            $(this).html('<i class="ri-add-circle-line align-middle me-1"></i> Tambah Produk dari Stok Toko (Opsional)');
+        }
+    });
+
+    const productSearchInput = document.getElementById("product_search_input");
+    const productList = document.getElementById("product_list");
+    let selectedProduct = null;
+
+    // 1. Event listener saat pengguna mengetik di kolom pencarian
+    productSearchInput.addEventListener("keyup", function () {
+        const query = this.value;
+        if (query.length > 1) {
+            fetchProducts(query);
+        } else {
+            productList.innerHTML = "";
+        }
+    });
+
+    // 2. Fungsi untuk mengambil data produk via Fetch API
+    function fetchProducts(query) {
+        // Anda bisa menggunakan route yang sama dengan penjualan jika output JSON-nya sesuai
+        const url = "{{ route('purchase.product.search') }}" + "?query=" + query; 
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                productList.innerHTML = "";
+                if (data.length > 0) {
+                    data.forEach(product => {
+                        // Perhatikan atribut data: data-price menggunakan harga jual (price)
+                        // dan data-stock menggunakan product_qty
+                        const itemHTML = `
+                            <a href="#" class="list-group-item list-group-item-action product-item"
+                                data-id="${product.id}"
+                                data-name="${product.name}"
+                                data-price="${product.price}" 
+                                data-stock="${product.product_qty}">
+                                ${product.code} - ${product.name} (Stok: ${product.product_qty})
+                            </a>`;
+                        productList.innerHTML += itemHTML;
+                    });
+                } else {
+                    productList.innerHTML = '<p class="list-group-item text-muted">Produk tidak ditemukan</p>';
+                }
+            });
+    }
+
+    // 3. Event listener saat salah satu produk dari hasil pencarian diklik
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.classList.contains("product-item")) {
+            e.preventDefault();
+            
+            // Simpan detail produk yang diklik ke variabel
+            selectedProduct = {
+                id: e.target.dataset.id,
+                name: e.target.dataset.name,
+                price: e.target.dataset.price,
+                stock: e.target.dataset.stock,
+                text: e.target.textContent.trim()
+            };
+
+            // Tampilkan nama produk di input search dan sembunyikan daftar
+            productSearchInput.value = selectedProduct.text;
+            productList.innerHTML = "";
+        }
+    });
+
+    // Event handler untuk tombol "Tambah Produk"
+    $('#addProductBtn').on('click', function() {
+        if (!selectedProduct) {
+            alert('Silakan cari dan pilih produk terlebih dahulu.');
+            return;
+        }
+
+        const quantity = parseInt($('#product_quantity_input').val());
+        if (isNaN(quantity) || quantity <= 0) {
+            alert('Jumlah harus valid.');
+            return;
+        }
+        
+        if (quantity > selectedProduct.stock) {
+            alert('Stok tidak mencukupi! Stok tersisa: ' + selectedProduct.stock);
+            return;
+        }
+        
+        const price = parseFloat(selectedProduct.price);
+        const subtotal = quantity * price;
+
+        const newRow = `
+            <tr class="sold-product-item" data-id="${selectedProduct.id}">
+                <td>
+                    <input type="hidden" name="products[${selectedProduct.id}][id]" value="${selectedProduct.id}">
+                    <input type="hidden" name="products[${selectedProduct.id}][price]" value="${price}">
+                    ${selectedProduct.name}
+                </td>
+                <td>
+                    <input type="hidden" name="products[${selectedProduct.id}][quantity]" value="${quantity}">
+                    ${quantity}
+                </td>
+                <td>${formatRupiah(price)}</td>
+                <td class="product-subtotal">${formatRupiah(subtotal)}</td>
+                <td><button type="button" class="btn btn-sm btn-danger removeProductBtn">Hapus</button></td>
+            </tr>
+        `;
+
+        $('#soldProductsTbody').append(newRow);
+        updateTotals();
+
+        // Reset input dan variabel
+        productSearchInput.value = "";
+        $('#product_quantity_input').val(1);
+        selectedProduct = null;
+    });
+
+    // Event handler untuk menghapus produk
+    $(document).on('click', '.removeProductBtn', function() {
+        $(this).closest('tr').remove();
+        updateTotals();
+    });
+
     // =======================================================
     // ## INI KODE BARU UNTUK TOMBOL LUNAS ##
     $('#btn-lunas').on('click', function() {
-    // 1. Hitung total harga saat ini
-    let currentTotalPrice = 0;
-    $('.item-subtotal').each(function() {
-    currentTotalPrice += parseFloat($(this).val()) || 0;
-    });
+        // 1. Hitung total dari item JASA
+        let serviceTotalPrice = 0;
+        $('.item-subtotal').each(function() {
+            serviceTotalPrice += parseFloat($(this).val()) || 0;
+        });
+        
+        // 2. Hitung total dari item PRODUK
+        let productTotalPrice = 0;
+        $('.sold-product-item').each(function() {
+            let price = parseFloat($(this).find('input[name*="[price]"]').val()) || 0;
+            let qty = parseInt($(this).find('input[name*="[quantity]"]').val()) || 0;
+            productTotalPrice += price * qty;
+        });
 
-    // 2. Masukkan total harga ke dalam input 'paid_amount'
-    $('input[name="paid_amount"]').val(currentTotalPrice);
+        // 3. Jumlahkan keduanya untuk mendapatkan Grand Total
+        let grandTotal = serviceTotalPrice + productTotalPrice;
 
-    // 3. Panggil fungsi updateTotals() agar "Sisa Bayar" ikut ter-update
-    updateTotals();
+        // 4. Masukkan Grand Total ke dalam input 'paid_amount'
+        $('input[name="paid_amount"]').val(grandTotal);
+
+        // 5. Panggil fungsi updateTotals() agar "Sisa Bayar" ikut ter-update menjadi 0
+        updateTotals();
     });
 
     function updateTotals(){
-let totalPrice = 0;
-$('.item-subtotal').each(function(){
-totalPrice += parseFloat($(this).val()) || 0;
-});
+    let serviceTotalPrice = 0;
+    $('.item-subtotal').each(function(){
+    serviceTotalPrice += parseFloat($(this).val()) || 0;
+    });
+
+    let productTotalPrice = 0;
+    $('.sold-product-item').each(function() { // Dari item produk
+        let price = parseFloat($(this).find('input[name*="[price]"]').val());
+        let qty = parseInt($(this).find('input[name*="[quantity]"]').val());
+        productTotalPrice += price * qty;
+    });
+
+    let totalPrice = serviceTotalPrice + productTotalPrice;
 
 const costPrice = parseFloat($('input[name="cost_price"]').val()) || 0;
 const paidAmount = parseFloat($('input[name="paid_amount"]').val()) || 0;
-const profit = totalPrice - costPrice;
+const profit = serviceTotalPrice - costPrice;
 const dueAmount = totalPrice - paidAmount;
 
 $('#display_total_price').text(formatRupiah(totalPrice));
