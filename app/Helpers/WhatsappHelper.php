@@ -15,14 +15,32 @@ class WhatsAppHelper
         }
         $phone = preg_replace('/[^0-9]/', '', $phone); // Hapus karakter selain angka
 
-        // 2. Format rincian item
-        $itemDetails = "";
-        foreach ($transaction->items as $item) {
-            // Format: "- 2 Kemeja Lengan Panjang"
-            $itemDetails .= "- " . $item->quantity . " " . $item->nama_komponen . "\n";
+        $serviceDetails = "";
+        if ($transaction->items->isNotEmpty()) {
+            foreach ($transaction->items as $item) {
+                $serviceDetails .= "- " . $item->quantity . " " . $item->nama_komponen . "\n";
+            }
         }
+
+        // 3. BUAT RINCIAN BARU UNTUK PRODUK/BAHAN
+        $productDetails = "";
+        if ($transaction->soldProducts->isNotEmpty()) {
+            // Tambahkan judul baru jika ada produk
+            $productDetails .= "\n*Produk/Bahan dari Toko:*\n";
+            foreach ($transaction->soldProducts as $productItem) {
+                // Format: - 1 Kain Katun (@ Rp 50.000)
+                $productDetails .= "- " . $productItem->quantity . " " . $productItem->product_name
+                    . " (@ " . 'Rp ' . number_format($productItem->price, 0, ',', '.') . ")\n";
+            }
+        }
+
+        // 4. Hitung ulang total tagihan gabungan
+        $grandTotal = $transaction->items->sum('subtotal') + $transaction->soldProducts->sum('subtotal');
+        // Sisa bayar juga dihitung ulang dari total gabungan
+        $dueAmount = $grandTotal - $transaction->paid_amount;
+
         // Hapus baris baru terakhir
-        $itemDetails = rtrim($itemDetails, "\n");
+        $serviceDetails = rtrim($serviceDetails, "\n");
 
 
         // 3. Bangun template pesan
@@ -33,12 +51,13 @@ class WhatsAppHelper
             . "No. Nota: " . $transaction->transaction_code . "\n"
             . "Tanggal Masuk: _" . \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') . "_\n\n"
             . "*Rincian Pesanan:*\n"
-            . $itemDetails . "\n\n"
+            . $serviceDetails  . "\n"
+            . $productDetails . "\n"
             . "*Status:*\n"
             . "#$transaction->status\n\n"
-            . "*Total Biaya:* " . 'Rp ' . number_format($transaction->total_price, 0, ',', '.') . "\n"
+            . "*Total Biaya:* " . 'Rp ' . number_format($grandTotal, 0, ',', '.') . "\n"
             . "*Telah Dibayar:* " . 'Rp ' . number_format($transaction->paid_amount, 0, ',', '.') . "\n"
-            . "*Sisa Bayar:* *" . 'Rp ' . number_format($transaction->due_amount, 0, ',', '.') . "*\n\n"
+            . "*Sisa Bayar:* *" . 'Rp ' . number_format($dueAmount, 0, ',', '.') . "*\n\n"
             . "Terima kasih atas kepercayaan Anda.\n\n"
             . "Hormat kami,\n"
             . "_Mustami Rezki Tailorshop_\n"

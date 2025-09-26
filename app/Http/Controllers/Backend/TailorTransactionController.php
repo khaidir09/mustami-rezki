@@ -75,12 +75,24 @@ class TailorTransactionController extends Controller
         try {
 
             // ## LANGKAH 1: HITUNG TOTAL HARGA DARI ITEM TERLEBIH DAHULU ##
-            $total_price = 0;
+            $serviceTotal = 0;
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    $total_price += floatval($item['quantity']) * floatval($item['price']);
+                    $serviceTotal += floatval($item['quantity']) * floatval($item['price']);
                 }
             }
+
+            $productTotal = 0;
+            if ($request->has('products')) {
+                foreach ($request->products as $productData) {
+                    // Hitung subtotal di backend
+                    $productTotal += floatval($productData['quantity']) * floatval($productData['price']);
+                }
+            }
+
+            // Total tagihan untuk pelanggan adalah gabungan keduanya
+            $grandTotalForCustomer = $serviceTotal + $productTotal;
+            $due_amount = $grandTotalForCustomer - ($request->paid_amount ?? 0);
 
             // Variabel untuk menyimpan data yang akan disimpan
             $transactionData = [];
@@ -88,7 +100,7 @@ class TailorTransactionController extends Controller
             // ## LANGKAH 2: LAKUKAN PERCABANGAN DAN PERHITUNGAN ##
             if ($request->work_type == 'Internal') {
                 // --- PROSES INTERNAL ---
-                $total_profit = $total_price - ($request->cost_price ?? 0);
+                $total_profit = $serviceTotal - ($request->cost_price ?? 0);
                 $owner_profit = $total_profit * (1 / 3);
                 $tailor_commission = $total_profit * (2 / 3);
 
@@ -110,7 +122,7 @@ class TailorTransactionController extends Controller
                 }
             } else { // Jika pengerjaan Eksternal
                 // --- PROSES EKSTERNAL ---
-                $profit_toko = $total_price - ($request->cost_price ?? 0);
+                $profit_toko = $serviceTotal - ($request->cost_price ?? 0);
 
                 $transactionData = [
                     'work_type' => 'Eksternal',
@@ -125,10 +137,6 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // ## LANGKAH 3: GABUNGKAN DATA & BUAT TRANSAKSI UTAMA ##
-            // Hitung sisa bayar dengan total_price yang sudah benar
-            $due_amount = $total_price - ($request->paid_amount ?? 0);
-
             // Gabungkan data umum dengan data spesifik dari percabangan
             $finalData = array_merge($transactionData, [
                 'transaction_code' => 'JAHIT-' . Carbon::now()->format('dm') . mt_rand(00, 99),
@@ -137,7 +145,7 @@ class TailorTransactionController extends Controller
                 'due_date' => $request->due_date,
                 'description' => $request->description,
                 'cost_price' => $request->cost_price ?? 0,
-                'total_price' => $total_price,
+                'total_price' => $serviceTotal,
                 'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
@@ -221,8 +229,6 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // Hitung ulang total_price di transaksi utama untuk memastikan akurasi
-            $transaction->total_price = $transaction->items->sum('subtotal') + $transaction->soldProducts->sum('subtotal');
             $transaction->save();
 
             // Jalankan kembali logika penyimpanan turunan yang butuh ID transaksi
@@ -265,7 +271,7 @@ class TailorTransactionController extends Controller
      */
     public function show($id)
     {
-        $transaction = TailorTransaction::with(['customer', 'items.service'])->findOrFail($id);
+        $transaction = TailorTransaction::with(['customer', 'items.service', 'soldProducts.product'])->findOrFail($id);
         return view('admin.backend.tailor.show', compact('transaction'));
     }
 

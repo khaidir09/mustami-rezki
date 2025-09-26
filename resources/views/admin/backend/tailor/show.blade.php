@@ -90,6 +90,38 @@
                             </div>
                         </div>
 
+                        @if ($transaction->soldProducts->isNotEmpty())
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="mb-3">Rincian Produk/Bahan dari Toko:</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Nama Produk</th>
+                                                    <th class="text-center">Jumlah</th>
+                                                    <th class="text-end">Harga Satuan</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($transaction->soldProducts as $index => $productItem)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>{{ $productItem->product_name ?? '-' }}</td>
+                                                        <td class="text-center">{{ $productItem->quantity }}</td>
+                                                        <td class="text-end">Rp {{ number_format($productItem->price, 0, ',', '.') }}</td>
+                                                        <td class="text-end">Rp {{ number_format($productItem->subtotal, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <h5>Catatan:</h5>
@@ -99,16 +131,29 @@
                                 <table class="table table-bordered">
                                     <tbody>
                                         <tr>
-                                            <td>Total Harga</td>
+                                            <td>Total Biaya Jasa</td>
                                             <td class="text-end fw-bold">Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</td>
                                         </tr>
-                                        <tr>
+                                        @if ($transaction->soldProducts->isNotEmpty())
+                                            <tr>
+                                                <td>Total Harga Produk</td>
+                                                <td class="text-end fw-bold">Rp {{ number_format($transaction->soldProducts->sum('subtotal'), 0, ',', '.') }}</td>
+                                            </tr>
+                                        @endif
+                                        {{-- <tr>
                                             <td>Biaya Modal</td>
                                             <td class="text-end">Rp {{ number_format($transaction->cost_price, 0, ',', '.') }}</td>
-                                        </tr>
-                                        <tr>
+                                        </tr> --}}
+                                        {{-- <tr>
                                             <td>Profit</td>
                                             <td class="text-end fw-bold text-success">Rp {{ number_format($transaction->profit, 0, ',', '.') }}</td>
+                                        </tr> --}}
+                                        <tr>
+                                            <td>Total Tagihan</td>
+                                            @php
+                                                $grandTotal = $transaction->total_price + $transaction->soldProducts->sum('subtotal');
+                                            @endphp
+                                            <td class="text-end fw-bold">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
                                         </tr>
                                         <tr>
                                             <td>Jumlah Dibayar</td>

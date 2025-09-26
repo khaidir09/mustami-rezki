@@ -7,15 +7,16 @@ use App\Models\Sale;
 use App\Models\Expense;
 use App\Models\Payroll;
 use App\Models\Purchase;
+use App\Models\Acceptance;
 use App\Models\Production;
 use Illuminate\Http\Request;
 use App\Models\FinancialSummary;
 use App\Models\TailorTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Acceptance;
 use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Storage;
+use App\Models\TailorTransactionProduct;
 use Intervention\Image\Drivers\Gd\Driver;
 
 class FinancialReportController extends Controller
@@ -42,6 +43,10 @@ class FinancialReportController extends Controller
 
         // 2. Hitung Rincian Pemasukan (Income)
         $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
+        $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('transaction_date', [$startDate, $endDate]);
+        })->sum('subtotal');
+        $salesIncome += $salesIncomeDariJahit;
         $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
         $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
         $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
@@ -94,6 +99,11 @@ class FinancialReportController extends Controller
 
             // 2. Hitung Total Pemasukan (Income)
             $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
+            $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('transaction_date', [$startDate, $endDate]);
+            })->sum('subtotal');
+            $salesIncome += $salesIncomeDariJahit;
+
             $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
             $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
             $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');

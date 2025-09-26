@@ -18,6 +18,7 @@ use App\Models\FinancialSummary;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
+use App\Models\TailorTransactionProduct;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -227,9 +228,16 @@ class AdminController extends Controller
             ->whereYear('date', date('Y'))
             ->sum('profit');
 
-        $data['omzetPenjualan'] = Sale::whereMonth('date', date('m'))
+        $data['omzetPenjualanLangsung'] = Sale::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('grand_total');
+
+        $data['omzetPenjualanDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
+            $query->whereMonth('transaction_date', date('m'))
+                ->whereYear('transaction_date', date('Y'));
+        })->sum('subtotal');
+
+        $data['omzetPenjualan'] = $data['omzetPenjualanLangsung'] + $data['omzetPenjualanDariJahit'];
 
         $data['omzetJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
             ->whereYear('transaction_date', date('Y'))
@@ -239,15 +247,29 @@ class AdminController extends Controller
             ->whereYear('date', date('Y'))
             ->sum('total_price');
 
-        $data['totalSaleItem'] = SaleItem::whereMonth('created_at', date('m'))
+        $data['totalSaleItemLangsung'] = SaleItem::whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('quantity');
 
-        $data['totalTransaksiPenjualan'] = Sale::whereMonth('date', date('m'))
+        $data['totalSaleItemDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
+            $query->whereMonth('transaction_date', date('m'))
+                ->whereYear('transaction_date', date('Y'));
+        })->sum('quantity');
+
+        $data['totalSaleItem'] = $data['totalSaleItemLangsung'] + $data['totalSaleItemDariJahit'];
+
+        $data['totalTransaksiPenjualanLangsung'] = Sale::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->count();
 
-        $data['totalProfitPenjualan'] = ProfitDistribution::where('transaction_type', 'App\Models\Sale')
+        $data['totalTransaksiPenjualanDariJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
+            ->whereYear('transaction_date', date('Y'))
+            ->whereHas('soldProducts')
+            ->count();
+
+        $data['totalTransaksiPenjualan'] = $data['totalTransaksiPenjualanLangsung'] + $data['totalTransaksiPenjualanDariJahit'];
+
+        $data['totalProfitPenjualan'] = ProfitDistribution::whereIn('transaction_type', ['App\Models\Sale', 'App\Models\TailorTransaction'])
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
@@ -261,7 +283,7 @@ class AdminController extends Controller
 
 
         $data['totalProfitKotor'] = $data['totalProfit'] + $data['totalKomisiPenjahit'] + $data['komisiProduksi'];
-        $data['uangBersih'] = $data['kas'] + $data['totalProfitKotor'] - $data['totalMonthlyExpenditure'];
+        $data['uangBersih'] = $data['kas'] + $data['externalIncome'] + $data['totalProfitKotor'] - $data['totalMonthlyExpenditure'];
 
 
         return view('admin.index', $data);
