@@ -27,7 +27,7 @@
                                 <div class="col-12 mb-4">
                                     <p class="text-muted mb-1">Uang Bersih Saat Ini</p>
                                     <h2 class="mb-0 text-primary">@rupiah($uangBersih)</h2>
-                                    <small class="text-muted">(Profit Kotor - Total Pengeluaran)</small>
+                                    <small class="text-muted">(Kas + Profit Kotor - Total Pengeluaran)</small>
                                 </div>
 
                                 <hr>
@@ -37,7 +37,7 @@
                                     <div class="row">
 
                                         {{-- Kolom Profit Kotor --}}
-                                        <div class="col-md-3 col-6 border-end">
+                                        <div class="col-6 col-lg-3 border-end">
                                             <div class="my-3">
                                                 <p class="text-muted mb-2">
                                                     <i data-feather="arrow-up" class="text-success"></i> Profit Kotor
@@ -46,8 +46,17 @@
                                             </div>
                                         </div>
 
+                                        <div class="col-6 col-lg-3 border-end">
+                                            <div class="my-3">
+                                                <p class="text-muted mb-2">
+                                                    <i data-feather="arrow-up" class="text-success"></i> Penerimaan Eksternal
+                                                </p>
+                                                <div class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($externalIncome)</div>
+                                            </div>
+                                        </div>
+
                                         {{-- Kolom Gaji & Komisi --}}
-                                        <div class="col-md-3 col-6 border-end">
+                                        <div class="col-6 col-lg-2 border-end">
                                             <div class="my-3">
                                                 <p class="text-muted mb-2">
                                                     <i data-feather="arrow-down" class="text-danger"></i> Total Gaji & Komisi
@@ -57,7 +66,7 @@
                                         </div>
 
                                         {{-- Kolom Pengeluaran Operasional --}}
-                                        <div class="col-md-3 col-6 border-end">
+                                        <div class="col-6 col-lg-2 border-end">
                                             <div class="my-3">
                                                 <p class="text-muted mb-2">
                                                     <i data-feather="arrow-down" class="text-danger"></i> Total Pengeluaran
@@ -67,7 +76,7 @@
                                         </div>
 
                                         {{-- Kolom Pembelian Barang --}}
-                                        <div class="col-md-3 col-6">
+                                        <div class="col-6 col-lg-2">
                                             <div class="my-3">
                                                 <p class="text-muted mb-2">
                                                     <i data-feather="arrow-down" class="text-danger"></i> Total Pembelian

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Backend\AcceptanceController;
 use App\Http\Controllers\Backend\AttendanceController;
 use App\Http\Controllers\Backend\ExpenseController;
 use App\Http\Controllers\Backend\FinancialReportController;
@@ -253,5 +254,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/arus-kas', [FinancialReportController::class, 'index'])->name('financial.index');
         Route::get('/arus-kas/create', [FinancialReportController::class, 'create'])->name('financial.create');
         Route::post('/arus-kas', [FinancialReportController::class, 'store'])->name('financial.store');
+    });
+
+    Route::controller(AcceptanceController::class)->group(function () {
+        Route::get('/all/acceptance', 'index')->name('all.acceptance');
+        Route::get('/add/acceptance', 'create')->name('add.acceptance');
+        Route::post('/store/acceptance', 'store')->name('store.acceptance');
+        Route::get('/edit/acceptance/{id}', 'edit')->name('edit.acceptance');
+        Route::post('/update/acceptance', 'update')->name('update.acceptance');
+        Route::get('/delete/acceptance/{id}', 'destroy')->name('delete.acceptance');
     });
 });

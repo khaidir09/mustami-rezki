@@ -132,6 +132,12 @@
 
                 @if (Auth::user()->hasRole('Super Admin'))
                     <li>
+                        <a href="{{ route('all.acceptance') }}" class="tp-link">
+                            <i data-feather="briefcase"></i>
+                            Penerimaan Eksternal
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('financial.index') }}" class="tp-link">
                             <i data-feather="briefcase"></i>
                             Arus Kas

@@ -38,6 +38,9 @@
                                             <p class="card-text">Penjualan Produk: <span class="float-end">@rupiah($salesIncome)</span></p>
                                             <p class="card-text">Jasa Jahit: <span class="float-end">@rupiah($tailorIncome)</span></p>
                                             <p class="card-text">Produksi: <span class="float-end">@rupiah($productionIncome)</span></p>
+                                            @if ($externalIncome)
+                                                <p class="card-text">Penerimaan Eksternal: <span class="float-end">@rupiah($externalIncome)</span></p>
+                                            @endif
                                             <hr>
                                             <h5 class="card-title mt-2">Jumlah Pemasukan: <span class="float-end text-success">@rupiah($totalIncome)</span></h5>
                                         </div>

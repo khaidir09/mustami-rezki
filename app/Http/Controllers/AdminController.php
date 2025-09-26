@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Acceptance;
 use Carbon\Carbon;
+use App\Models\Sale;
 use App\Models\User;
 use App\Models\Expense;
 use App\Models\Payroll;
 use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\SaleItem;
 use App\Models\Attendance;
 use App\Models\Production;
 use Illuminate\Http\Request;
+use App\Models\FinancialSummary;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
-use App\Models\Purchase;
-use App\Models\Sale;
-use App\Models\SaleItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -250,8 +252,16 @@ class AdminController extends Controller
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
 
+        $data['externalIncome'] = Acceptance::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('amount');
+
+        $activeSummary = FinancialSummary::where('status', 'Aktif')->first();
+        $data['kas'] = $activeSummary->opening_balance;
+
+
         $data['totalProfitKotor'] = $data['totalProfit'] + $data['totalKomisiPenjahit'] + $data['komisiProduksi'];
-        $data['uangBersih'] = $data['totalProfitKotor'] - $data['totalMonthlyExpenditure'];
+        $data['uangBersih'] = $data['kas'] + $data['totalProfitKotor'] - $data['totalMonthlyExpenditure'];
 
 
         return view('admin.index', $data);

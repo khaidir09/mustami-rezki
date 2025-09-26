@@ -13,6 +13,7 @@ use App\Models\FinancialSummary;
 use App\Models\TailorTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Acceptance;
 use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -43,7 +44,8 @@ class FinancialReportController extends Controller
         $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
         $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
         $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
-        $totalIncome = $salesIncome + $tailorIncome + $productionIncome;
+        $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
+        $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
 
         // 3. Hitung Rincian Pengeluaran (Expenditure)
         $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
@@ -60,6 +62,7 @@ class FinancialReportController extends Controller
             'salesIncome',
             'tailorIncome',
             'productionIncome',
+            'externalIncome',
             'totalIncome',
             'purchaseExpense',
             'operationalExpense',
@@ -93,7 +96,8 @@ class FinancialReportController extends Controller
             $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
             $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
             $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
-            $totalIncome = $salesIncome + $tailorIncome + $productionIncome;
+            $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
+            $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
 
             // 3. Hitung Total Pengeluaran (Expenditure)
             $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
