@@ -14,10 +14,8 @@ use App\Models\FinancialSummary;
 use App\Models\TailorTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Intervention\Image\ImageManager;
-use Illuminate\Support\Facades\Storage;
 use App\Models\TailorTransactionProduct;
-use Intervention\Image\Drivers\Gd\Driver;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FinancialReportController extends Controller
 {
@@ -155,5 +153,39 @@ class FinancialReportController extends Controller
             ];
             return redirect()->back()->with($notification);
         }
+    }
+
+    public function cetak($year, $month)
+    {
+        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::create($year, $month, 1)->endOfMonth();
+
+        // 1. Ambil Ringkasan Utama
+        $summary = FinancialSummary::where('year', $year)->where('month', $month)->firstOrFail();
+
+        // 2. Ambil Rincian Pemasukan
+        $sales = Sale::whereBetween('date', [$startDate, $endDate])->get();
+        $tailorTransactions = TailorTransaction::with('soldProducts')
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->get();
+        $productions = Production::whereBetween('date', [$startDate, $endDate])->get();
+        $acceptances = Acceptance::whereBetween('date', [$startDate, $endDate])->get();
+
+        // 3. Ambil Rincian Pengeluaran
+        $purchases = Purchase::whereBetween('date', [$startDate, $endDate])->get();
+        $expenses = Expense::whereBetween('date', [$startDate, $endDate])->get();
+        $payrolls = Payroll::whereBetween('payment_date', [$startDate, $endDate])->get();
+
+        $pdf = Pdf::loadView('admin.backend.financial.report', compact(
+            'summary',
+            'sales',
+            'tailorTransactions',
+            'productions',
+            'acceptances',
+            'purchases',
+            'expenses',
+            'payrolls',
+        ));
+        return $pdf->stream('Laporan Arus Kas' . $month . $year . '.pdf');
     }
 }

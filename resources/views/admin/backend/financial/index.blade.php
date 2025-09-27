@@ -34,6 +34,7 @@
             <th>Total Pengeluaran</th>
             <th>Saldo Akhir</th>
             <th>Status</th>
+            <th>Aksi</th>
         </tr>
         </thead>
         <tbody>
@@ -50,6 +51,14 @@
             @else
                 <span class="badge bg-danger">Tutup</span>
             @endif
+        </td>
+        <td>
+            <a href="{{ route('financial.report.show', ['year' => $item->year, 'month' => $item->month]) }}" 
+            class="btn btn-primary btn-sm" 
+            title="Lihat & Cetak Laporan"
+            target="_blank">
+                <span class="mdi mdi-printer mdi-18px"></span>
+            </a>
         </td>
     </tr>
     @endforeach 

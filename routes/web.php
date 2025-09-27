@@ -254,6 +254,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/arus-kas', [FinancialReportController::class, 'index'])->name('financial.index');
         Route::get('/arus-kas/create', [FinancialReportController::class, 'create'])->name('financial.create');
         Route::post('/arus-kas', [FinancialReportController::class, 'store'])->name('financial.store');
+        Route::get('/laporan-arus-kas/{year}/{month}', [FinancialReportController::class, 'cetak'])->name('financial.report.show');
     });
 
     Route::controller(AcceptanceController::class)->group(function () {
