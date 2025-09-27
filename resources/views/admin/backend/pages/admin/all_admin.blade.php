@@ -46,7 +46,7 @@
                 <td>{{ $item->email }}</td> 
                 <td> 
                 @foreach ($item->roles as $role)
-                    <span class="badge badge-pill bg-danger">{{ $role->name ?? 'N/A' }}</span>
+                    <span class="badge badge-pill bg-primary">{{ $role->name ?? 'N/A' }}</span>
                 @endforeach
                 </td>
                 <td>
