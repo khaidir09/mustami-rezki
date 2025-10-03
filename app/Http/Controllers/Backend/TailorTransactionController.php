@@ -220,7 +220,11 @@ class TailorTransactionController extends Controller
             $transaction->save();
 
             // Jalankan kembali logika penyimpanan turunan yang butuh ID transaksi
-            if ($request->work_type == 'Internal' && $tailor_commission > 0) {
+            if (
+                $request->work_type == 'Internal' &&
+                $tailor_commission > 0 &&
+                in_array($request->status, ['Selesai', 'Diambil'])
+            ) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
                     'user_id' => $request->tailor_id,
@@ -290,11 +294,21 @@ class TailorTransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            DB::beginTransaction();
+        // Validasi input
+        $request->validate([
+            'customer_id' => 'required',
+            'transaction_date' => 'required|date',
+            'work_type' => 'required|in:Internal,Eksternal',
+            'items' => 'sometimes|array', // 'sometimes' berarti tidak wajib ada jika user hanya ganti status
+            'tailor_id' => 'required_if:work_type,Internal',
+            'supplier_id' => 'required_if:work_type,Eksternal',
+        ]);
 
+        DB::beginTransaction();
+        try {
             $transaction = TailorTransaction::findOrFail($id);
 
+            // ## LANGKAH 1: KALKULASI ULANG SEMUA NILAI DARI REQUEST ##
             $total_price = 0;
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
@@ -302,40 +316,34 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // Variabel untuk menyimpan data spesifik berdasarkan tipe pengerjaan
             $transactionData = [];
-            $tailor_commission = 0; // Inisialisasi komisi
+            $owner_profit = 0;
+            $tailor_commission = 0;
+            $profit_toko = 0;
 
-            // 3. Lakukan percabangan logika berdasarkan tipe pengerjaan
             if ($request->work_type == 'Internal') {
-                // ## PERBAIKAN LOGIKA PROFIT INTERNAL ##
-                $cost_price = $request->cost_price ?? 0;
-                $total_profit = $total_price - $cost_price;
-                $tailor_commission = $total_profit * (2 / 3); // Hitung komisi di sini
+                $total_profit = $total_price - ($request->cost_price ?? 0);
+                $owner_profit = $total_profit * (1 / 3);
+                $tailor_commission = $total_profit * (2 / 3);
 
                 $transactionData = [
                     'work_type' => 'Internal',
                     'tailor_id' => $request->tailor_id,
                     'supplier_id' => null,
-                    'cost_price' => $cost_price, // Gunakan cost_price dari request
                     'profit' => $total_profit,
                 ];
             } else { // Eksternal
-                // ... (Logika profit eksternal Anda)
-                $cost_price = $request->cost_price ?? 0;
-                $profit_toko = $total_price - $cost_price;
+                $profit_toko = $total_price - ($request->cost_price ?? 0);
                 $transactionData = [
                     'work_type' => 'Eksternal',
                     'tailor_id' => null,
                     'supplier_id' => $request->supplier_id,
-                    'cost_price' => $cost_price,
                     'profit' => $profit_toko,
                 ];
             }
 
-            // 4. Update data transaksi utama
+            // ## LANGKAH 2: UPDATE TRANSAKSI UTAMA ##
             $due_amount = $total_price - ($request->paid_amount ?? 0);
-
             $finalData = array_merge($transactionData, [
                 'customer_id' => $request->customer_id,
                 'transaction_date' => $request->transaction_date,
@@ -347,56 +355,42 @@ class TailorTransactionController extends Controller
                 'due_amount' => $due_amount,
                 'status' => $request->status,
             ]);
-
             $transaction->update($finalData);
 
-            // ## LANGKAH 4: SINKRONISASI ITEM (LOGIKA BARU) ##
-            $submittedItemIds = []; // Untuk menampung ID item yang dikirim
+            // ## LANGKAH 3: SINKRONISASI ITEMS ##
+            $submittedItemIds = [];
             if ($request->has('items')) {
-                foreach ($request->items as $key => $itemData) {
-                    $item_id = $itemData['id'] ?? null; // Ambil ID item jika ada
-
-                    $namaKomponen = '';
-                    $serviceId = null;
-
-                    if (isset($itemData['manual_service_name']) && !empty($itemData['manual_service_name'])) {
-                        $namaKomponen = $itemData['manual_service_name'];
-                        $serviceId = null;
-                    } else if (isset($itemData['service_id'])) {
-                        $serviceId = $itemData['service_id'];
-                        $service = Service::find($serviceId);
-                        $namaKomponen = $service ? $service->name : 'Komponen Dihapus';
-                    }
-
-                    $itemDetails = [
-                        'service_type_id' => $itemData['service_type_id'],
-                        'service_id' => $serviceId,
-                        'nama_komponen' => $namaKomponen,
-                        'quantity' => $itemData['quantity'],
-                        'price' => $itemData['price'],
-                        'subtotal' => floatval($itemData['quantity']) * floatval($itemData['price']),
-                    ];
-
-                    // Update jika ada ID, atau buat baru jika tidak ada ID
+                foreach ($request->items as $itemData) {
+                    $item_id = $itemData['id'] ?? null;
+                    // ... (Logika updateOrCreate item Anda sudah benar)
                     $item = TailorTransactionItem::updateOrCreate(
                         ['id' => $item_id, 'tailor_transaction_id' => $transaction->id],
-                        $itemDetails
+                        [
+                            // ... detail item
+                            'service_type_id' => $itemData['service_type_id'],
+                            'service_id' => $itemData['service_id'] ?? null,
+                            'nama_komponen' => $itemData['manual_service_name'] ?? Service::find($itemData['service_id'])->name,
+                            'quantity' => $itemData['quantity'],
+                            'price' => $itemData['price'],
+                            'subtotal' => floatval($itemData['quantity']) * floatval($itemData['price']),
+                        ]
                     );
-
-                    $submittedItemIds[] = $item->id; // Kumpulkan ID yang sudah diproses
+                    $submittedItemIds[] = $item->id;
                 }
             }
-
-            // Hapus item dari database yang tidak ada dalam daftar kiriman
             $transaction->items()->whereNotIn('id', $submittedItemIds)->delete();
 
-            // ## LANGKAH 5: HAPUS DAN BUAT ULANG DATA TURUNAN (KOMISI & DISTRIBUSI PROFIT) ##
+            // ## LANGKAH 4: HAPUS DATA TURUNAN LAMA DAN BUAT YANG BARU JIKA PERLU ##
             TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
 
-            if ($request->work_type == 'Internal' && isset($tailor_commission) && $tailor_commission > 0) {
+            // Cek apakah status 'Selesai' atau 'Diambil'
+            $isCompleted = in_array($request->status, ['Selesai', 'Diambil']);
+
+            // Buat ulang komisi HANYA JIKA pekerjaan internal & sudah selesai
+            if ($request->work_type == 'Internal' && $tailor_commission > 0 && $isCompleted) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
                     'user_id' => $request->tailor_id,
@@ -404,11 +398,13 @@ class TailorTransactionController extends Controller
                 ]);
             }
 
-            if ($transaction->profit > 0) {
-                $profitToDistribute = ($request->work_type == 'Internal') ? ($transaction->profit * (1 / 3)) : $transaction->profit;
+            // Tentukan profit yang akan didistribusikan
+            $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
+
+            // Buat ulang distribusi profit HANYA JIKA ada profit & sudah selesai
+            if ($profitToDistribute > 0 && $isCompleted) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
                 foreach ($distributionTypes as $type) {
                     ProfitDistribution::create([
                         'transaction_id'   => $transaction->id,
@@ -425,9 +421,8 @@ class TailorTransactionController extends Controller
             return redirect()->route('all.tailor')->with($notification);
         } catch (\Exception $e) {
             DB::rollBack();
-            $errorMessage = 'Gagal memperbarui: ' . $e->getMessage();
-            $notification = ['message' => $errorMessage, 'alert-type' => 'error'];
-            return redirect()->back()->with($notification)->withInput();
+            $notification = ['message' => 'Terjadi kesalahan: ' . $e->getMessage(), 'alert-type' => 'error'];
+            return redirect()->back()->withInput();
         }
     }
 
