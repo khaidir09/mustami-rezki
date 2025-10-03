@@ -96,6 +96,9 @@ class TailorTransactionController extends Controller
 
             // Variabel untuk menyimpan data yang akan disimpan
             $transactionData = [];
+            $owner_profit = 0;
+            $tailor_commission = 0;
+            $profit_toko = 0;
 
             // ## LANGKAH 2: LAKUKAN PERCABANGAN DAN PERHITUNGAN ##
             if ($request->work_type == 'Internal') {
@@ -110,16 +113,6 @@ class TailorTransactionController extends Controller
                     'supplier_id' => null,
                     'profit' => $total_profit,
                 ];
-
-                // Simpan komisi jika ada
-                if ($tailor_commission > 0) {
-                    // Kita simpan setelah transaksi dibuat untuk mendapatkan ID
-                }
-
-                // Distribusikan profit owner jika ada
-                if ($owner_profit > 0) {
-                    // Kita distribusikan setelah transaksi dibuat
-                }
             } else { // Jika pengerjaan Eksternal
                 // --- PROSES EKSTERNAL ---
                 $profit_toko = $serviceTotal - ($request->cost_price ?? 0);
@@ -130,11 +123,6 @@ class TailorTransactionController extends Controller
                     'supplier_id' => $request->supplier_id,
                     'profit' => $profit_toko, // Profit toko adalah profit utama di kasus ini
                 ];
-
-                // Distribusikan profit toko jika ada
-                if ($profit_toko > 0) {
-                    // Kita distribusikan setelah transaksi dibuat
-                }
             }
 
             // Gabungkan data umum dengan data spesifik dari percabangan
@@ -232,7 +220,7 @@ class TailorTransactionController extends Controller
             $transaction->save();
 
             // Jalankan kembali logika penyimpanan turunan yang butuh ID transaksi
-            if ($request->work_type == 'Internal' && isset($tailor_commission) && $tailor_commission > 0) {
+            if ($request->work_type == 'Internal' && $tailor_commission > 0) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
                     'user_id' => $request->tailor_id,
@@ -240,8 +228,15 @@ class TailorTransactionController extends Controller
                 ]);
             }
 
-            if ($transaction->profit > 0) {
-                $profitToDistribute = ($request->work_type == 'Internal') ? ($transaction->profit * (1 / 3)) : $transaction->profit;
+            // Tentukan profit mana yang akan didistribusikan
+            $profitToDistribute = 0;
+            if ($request->work_type == 'Internal') {
+                $profitToDistribute = $owner_profit;
+            } else {
+                $profitToDistribute = $profit_toko;
+            }
+
+            if ($profitToDistribute > 0) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
 
@@ -450,6 +445,18 @@ class TailorTransactionController extends Controller
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
+
+            TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
+
+            // Hapus produk yang dijual dan kembalikan stok
+            foreach ($transaction->soldProducts as $soldProduct) {
+                $product = Product::find($soldProduct->product_id);
+                if ($product) {
+                    // Kembalikan stok produk
+                    $product->increment('product_qty', $soldProduct->quantity);
+                }
+            }
+            $transaction->soldProducts()->delete();
 
             // Hapus transaksi utama (item akan terhapus otomatis karena onDelete('cascade'))
             $transaction->delete();
