@@ -219,11 +219,14 @@ class TailorTransactionController extends Controller
 
             $transaction->save();
 
-            // Jalankan kembali logika penyimpanan turunan yang butuh ID transaksi
+            $isCommissionable = in_array($request->status, ['Selesai', 'Diambil']);
+            $isProfitDistributable = ($request->status == 'Diambil');
+
+
             if (
                 $request->work_type == 'Internal' &&
                 $tailor_commission > 0 &&
-                in_array($request->status, ['Selesai', 'Diambil'])
+                $isCommissionable
             ) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
@@ -232,15 +235,10 @@ class TailorTransactionController extends Controller
                 ]);
             }
 
-            // Tentukan profit mana yang akan didistribusikan
-            $profitToDistribute = 0;
-            if ($request->work_type == 'Internal') {
-                $profitToDistribute = $owner_profit;
-            } else {
-                $profitToDistribute = $profit_toko;
-            }
+            $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
 
-            if ($profitToDistribute > 0) {
+            // 4. Distribusikan profit HANYA JIKA ada profit & statusnya 'Diambil'
+            if ($profitToDistribute > 0 && $isProfitDistributable) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
 
@@ -386,11 +384,12 @@ class TailorTransactionController extends Controller
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
 
-            // Cek apakah status 'Selesai' atau 'Diambil'
-            $isCompleted = in_array($request->status, ['Selesai', 'Diambil']);
+            // Definisikan kondisi status secara terpisah
+            $isCommissionable = in_array($request->status, ['Selesai', 'Diambil']);
+            $isProfitDistributable = ($request->status == 'Diambil');
 
             // Buat ulang komisi HANYA JIKA pekerjaan internal & sudah selesai
-            if ($request->work_type == 'Internal' && $tailor_commission > 0 && $isCompleted) {
+            if ($request->work_type == 'Internal' && $tailor_commission > 0 && $isCommissionable) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
                     'user_id' => $request->tailor_id,
@@ -398,11 +397,11 @@ class TailorTransactionController extends Controller
                 ]);
             }
 
-            // Tentukan profit yang akan didistribusikan
+            // Tentukan profit mana yang akan didistribusikan
             $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
 
-            // Buat ulang distribusi profit HANYA JIKA ada profit & sudah selesai
-            if ($profitToDistribute > 0 && $isCompleted) {
+            // 5. Buat ulang distribusi profit HANYA JIKA ada profit & statusnya 'Diambil'
+            if ($profitToDistribute > 0 && $isProfitDistributable) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
                 foreach ($distributionTypes as $type) {

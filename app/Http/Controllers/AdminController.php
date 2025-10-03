@@ -236,13 +236,15 @@ class AdminController extends Controller
 
         $data['omzetPenjualanDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
             $query->whereMonth('transaction_date', date('m'))
-                ->whereYear('transaction_date', date('Y'));
+                ->whereYear('transaction_date', date('Y'))
+                ->where('status', 'Diambil');
         })->sum('subtotal');
 
         $data['omzetPenjualan'] = $data['omzetPenjualanLangsung'] + $data['omzetPenjualanDariJahit'];
 
         $data['omzetJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
             ->whereYear('transaction_date', date('Y'))
+            ->where('status', 'Diambil')
             ->sum('total_price');
 
         $data['omzetProduksi'] = Production::whereMonth('date', date('m'))
@@ -255,7 +257,8 @@ class AdminController extends Controller
 
         $data['totalSaleItemDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
             $query->whereMonth('transaction_date', date('m'))
-                ->whereYear('transaction_date', date('Y'));
+                ->whereYear('transaction_date', date('Y'))
+                ->where('status', 'Diambil');
         })->sum('quantity');
 
         $data['totalSaleItem'] = $data['totalSaleItemLangsung'] + $data['totalSaleItemDariJahit'];
@@ -266,6 +269,7 @@ class AdminController extends Controller
 
         $data['totalTransaksiPenjualanDariJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
             ->whereYear('transaction_date', date('Y'))
+            ->where('status', 'Diambil')
             ->whereHas('soldProducts')
             ->count();
 
