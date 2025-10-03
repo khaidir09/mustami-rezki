@@ -309,16 +309,20 @@ class TailorTransactionController extends Controller
 
             // Variabel untuk menyimpan data spesifik berdasarkan tipe pengerjaan
             $transactionData = [];
+            $tailor_commission = 0; // Inisialisasi komisi
 
             // 3. Lakukan percabangan logika berdasarkan tipe pengerjaan
             if ($request->work_type == 'Internal') {
-                // ... (Logika profit internal Anda)
-                $total_profit = $total_price;
+                // ## PERBAIKAN LOGIKA PROFIT INTERNAL ##
+                $cost_price = $request->cost_price ?? 0;
+                $total_profit = $total_price - $cost_price;
+                $tailor_commission = $total_profit * (2 / 3); // Hitung komisi di sini
+
                 $transactionData = [
                     'work_type' => 'Internal',
                     'tailor_id' => $request->tailor_id,
                     'supplier_id' => null,
-                    'cost_price' => 0,
+                    'cost_price' => $cost_price, // Gunakan cost_price dari request
                     'profit' => $total_profit,
                 ];
             } else { // Eksternal
