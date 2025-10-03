@@ -192,6 +192,8 @@ class AdminController extends Controller
                 ->count();
 
             $data['pendapatanPenjahit'] = TailorCommission::where('user_id', $user->id)
+                ->whereMonth('created_at', date('m'))
+                ->whereYear('created_at', date('Y'))
                 ->sum('amount');
         }
 
