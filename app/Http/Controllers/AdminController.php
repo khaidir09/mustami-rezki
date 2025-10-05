@@ -187,8 +187,8 @@ class AdminController extends Controller
 
             $data['completedJobsThisMonth'] = TailorTransaction::where('tailor_id', $user->id)
                 ->whereIn('status', ['Selesai', 'Diambil'])
-                ->whereYear('created_at', date('Y'))
-                ->whereMonth('created_at', date('m'))
+                ->whereYear('updated_at', date('Y'))
+                ->whereMonth('updated_at', date('m'))
                 ->count();
 
             $data['pendapatanPenjahit'] = TailorCommission::where('user_id', $user->id)
