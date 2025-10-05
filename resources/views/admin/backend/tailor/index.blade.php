@@ -30,7 +30,7 @@
                                         <th>Pelanggan</th>
                                         <th>Penjahit</th>
                                         <th>Tgl. Masuk</th>
-                                        <th>Tgl. Selesai</th>
+                                        <th>Estimasi Selesai</th>
                                         <th>Total Harga</th>
                                         <th>Total Komponen</th>
                                         <th>Status</th>
@@ -65,10 +65,10 @@
                                                     <span class="badge text-bg-primary">Dikerjakan</span>
                                                     @break
                                                 @case('Selesai')
-                                                    <span class="badge text-bg-success">Selesai</span>
+                                                    <span class="badge text-bg-success">Selesai {{ \Carbon\Carbon::parse($item->updated_at)->format('d-m-Y') }}</span>
                                                     @break
                                                 @case('Diambil')
-                                                    <span class="badge text-bg-dark">Diambil</span>
+                                                    <span class="badge text-bg-dark">Diambil {{ \Carbon\Carbon::parse($item->updated_at)->format('d-m-Y') }}</span>
                                                     @break
                                                 @default
                                                     <span class="badge text-bg-secondary">{{ $item->status }}</span>
