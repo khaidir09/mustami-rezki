@@ -298,6 +298,7 @@ class TailorTransactionController extends Controller
             'transaction_date' => 'required|date',
             'work_type' => 'required|in:Internal,Eksternal',
             'items' => 'sometimes|array', // 'sometimes' berarti tidak wajib ada jika user hanya ganti status
+            'products' => 'sometimes|array',
             'tailor_id' => 'required_if:work_type,Internal',
             'supplier_id' => 'required_if:work_type,Eksternal',
         ]);
@@ -307,12 +308,22 @@ class TailorTransactionController extends Controller
             $transaction = TailorTransaction::findOrFail($id);
 
             // ## LANGKAH 1: KALKULASI ULANG SEMUA NILAI DARI REQUEST ##
-            $total_price = 0;
+            $serviceTotal = 0;
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    $total_price += floatval($item['quantity']) * floatval($item['price']);
+                    $serviceTotal  += floatval($item['quantity']) * floatval($item['price']);
                 }
             }
+
+            $productTotal = 0;
+            if ($request->has('products')) {
+                foreach ($request->products as $productData) {
+                    $productTotal += floatval($productData['quantity']) * floatval($productData['price']);
+                }
+            }
+
+            $grandTotalForCustomer = $serviceTotal + $productTotal;
+            $due_amount = $grandTotalForCustomer - ($request->paid_amount ?? 0);
 
             $transactionData = [];
             $owner_profit = 0;
@@ -320,7 +331,7 @@ class TailorTransactionController extends Controller
             $profit_toko = 0;
 
             if ($request->work_type == 'Internal') {
-                $total_profit = $total_price - ($request->cost_price ?? 0);
+                $total_profit = $serviceTotal - ($request->cost_price ?? 0);
                 $owner_profit = $total_profit * (1 / 3);
                 $tailor_commission = $total_profit * (2 / 3);
 
@@ -331,7 +342,7 @@ class TailorTransactionController extends Controller
                     'profit' => $total_profit,
                 ];
             } else { // Eksternal
-                $profit_toko = $total_price - ($request->cost_price ?? 0);
+                $profit_toko = $serviceTotal - ($request->cost_price ?? 0);
                 $transactionData = [
                     'work_type' => 'Eksternal',
                     'tailor_id' => null,
@@ -341,14 +352,13 @@ class TailorTransactionController extends Controller
             }
 
             // ## LANGKAH 2: UPDATE TRANSAKSI UTAMA ##
-            $due_amount = $total_price - ($request->paid_amount ?? 0);
             $finalData = array_merge($transactionData, [
                 'customer_id' => $request->customer_id,
                 'transaction_date' => $request->transaction_date,
                 'due_date' => $request->due_date,
                 'description' => $request->description,
                 'cost_price' => $request->cost_price ?? 0,
-                'total_price' => $total_price,
+                'total_price' => $serviceTotal,
                 'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
@@ -360,14 +370,13 @@ class TailorTransactionController extends Controller
             if ($request->has('items')) {
                 foreach ($request->items as $itemData) {
                     $item_id = $itemData['id'] ?? null;
-                    // ... (Logika updateOrCreate item Anda sudah benar)
+                    $namaKomponen = $itemData['manual_service_name'] ?? (isset($itemData['service_id']) ? Service::find($itemData['service_id'])->name : 'Error');
                     $item = TailorTransactionItem::updateOrCreate(
                         ['id' => $item_id, 'tailor_transaction_id' => $transaction->id],
                         [
-                            // ... detail item
                             'service_type_id' => $itemData['service_type_id'],
                             'service_id' => $itemData['service_id'] ?? null,
-                            'nama_komponen' => $itemData['manual_service_name'] ?? Service::find($itemData['service_id'])->name,
+                            'nama_komponen' => $namaKomponen,
                             'quantity' => $itemData['quantity'],
                             'price' => $itemData['price'],
                             'subtotal' => floatval($itemData['quantity']) * floatval($itemData['price']),
@@ -378,17 +387,87 @@ class TailorTransactionController extends Controller
             }
             $transaction->items()->whereNotIn('id', $submittedItemIds)->delete();
 
-            // ## LANGKAH 4: HAPUS DATA TURUNAN LAMA DAN BUAT YANG BARU JIKA PERLU ##
+
+            // ## LANGKAH 5: SINKRONISASI PRODUK, STOK & PROFIT PRODUK ##
+            $oldSoldProducts = $transaction->soldProducts->keyBy('product_id');
+            $submittedProductIds = [];
+            $newProductsData = $request->input('products', []);
+
+            // 5.1. Proses produk yang disubmit
+            foreach ($newProductsData as $productId => $productData) {
+                $submittedProductIds[] = $productId;
+                $product = Product::find($productId);
+                if (!$product) continue;
+
+                $oldSoldProduct = $oldSoldProducts->get($productId);
+                $oldQuantity = $oldSoldProduct ? $oldSoldProduct->quantity : 0;
+                $newQuantity = $productData['quantity'];
+                $quantityDifference = $oldQuantity - $newQuantity; // Stok dikembalikan jika positif, dikurangi jika negatif
+
+                // Sesuaikan stok
+                $product->increment('product_qty', $quantityDifference);
+
+                // Update atau buat data produk terjual
+                $transaction->soldProducts()->updateOrCreate(
+                    ['product_id' => $productId],
+                    [
+                        'product_name' => $product->name,
+                        'quantity' => $newQuantity,
+                        'price' => $productData['price'],
+                        'subtotal' => $newQuantity * $productData['price'],
+                    ]
+                );
+            }
+
+            // 5.2. Proses produk yang dihapus
+            $productIdsToDelete = $oldSoldProducts->keys()->diff($submittedProductIds);
+            foreach ($productIdsToDelete as $productId) {
+                $soldProductToDelete = $oldSoldProducts->get($productId);
+                $product = Product::find($productId);
+                if ($product) {
+                    // Kembalikan stok
+                    $product->increment('product_qty', $soldProductToDelete->quantity);
+                }
+                // Hapus record
+                $soldProductToDelete->delete();
+            }
+
+            // 5.3 Sinkronisasi profit produk
+            ProfitDistribution::where('transaction_id', $transaction->id)
+                ->where('transaction_type', TailorTransactionProduct::class)
+                ->delete();
+
+            if ($request->status == 'Diambil' && !empty($newProductsData)) {
+                foreach ($newProductsData as $productId => $productData) {
+                    $product = Product::find($productId);
+                    if ($product) {
+                        $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
+                        if ($totalProfit > 0) {
+                            $amountPerShare = $totalProfit / 3;
+                            $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
+                            foreach ($distributionTypes as $type) {
+                                ProfitDistribution::create([
+                                    'transaction_id'   => $transaction->id,
+                                    'transaction_type' => TailorTransactionProduct::class,
+                                    'distribution_type' => $type,
+                                    'amount'           => $amountPerShare,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // ## LANGKAH 6: SINKRONISASI KOMISI & PROFIT JASA ##
             TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
 
-            // Definisikan kondisi status secara terpisah
             $isCommissionable = in_array($request->status, ['Selesai', 'Diambil']);
             $isProfitDistributable = ($request->status == 'Diambil');
 
-            // Buat ulang komisi HANYA JIKA pekerjaan internal & sudah selesai
             if ($request->work_type == 'Internal' && $tailor_commission > 0 && $isCommissionable) {
                 TailorCommission::create([
                     'tailor_transaction_id' => $transaction->id,
@@ -397,10 +476,8 @@ class TailorTransactionController extends Controller
                 ]);
             }
 
-            // Tentukan profit mana yang akan didistribusikan
             $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
 
-            // 5. Buat ulang distribusi profit HANYA JIKA ada profit & statusnya 'Diambil'
             if ($profitToDistribute > 0 && $isProfitDistributable) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];

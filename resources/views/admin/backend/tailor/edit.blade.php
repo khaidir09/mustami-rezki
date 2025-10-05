@@ -162,6 +162,73 @@
                                 </div>
                             </div>
 
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-outline-info waves-effect waves-light w-100" id="toggle-product-form-btn">
+                                        <i class="ri-add-circle-line align-middle me-1"></i> 
+                                        Tambah / Edit Produk dari Stok Toko (Opsional)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="product-form-container" style="display: none;">
+                                 {{-- Form Pencarian Produk --}}
+                                <div class="row g-3 align-items-end pb-3 px-3 my-3 bg-light rounded">
+                                    <div class="col-md-8">
+                                        <label for="product_search_input" class="form-label">Cari & Tambah Produk dari Stok</label>
+                                        <input type="search" id="product_search_input" class="form-control" placeholder="Ketik nama atau kode produk...">
+                                        <div id="product_list" class="list-group" style="position: absolute; z-index: 1000; width: 63%;"></div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="product_quantity_input" class="form-label">Jumlah</label>
+                                        <input type="number" class="form-control" id="product_quantity_input" value="1" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-info w-100" id="addProductBtn">Tambah Produk</button>
+                                    </div>
+                                </div>
+
+                                {{-- Tabel untuk produk yang sudah ditambahkan --}}
+                                <div class="row">
+                                    <div class="col-12">
+                                            <label class="form-label">Produk dari Stok yang Digunakan</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nama Produk</th>
+                                                            <th>Jumlah</th>
+                                                            <th>Harga Satuan</th>
+                                                            <th>Subtotal</th>
+                                                            <th>Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="soldProductsTbody">
+                                                        {{-- Loop untuk menampilkan produk yang sudah ada di transaksi ini --}}
+                                                        @foreach($transaction->soldProducts as $soldProduct)
+                                                        <tr class="sold-product-item" data-id="{{ $soldProduct->product->id }}">
+                                                            <td>
+                                                                <input type="hidden" name="products[{{ $soldProduct->product->id }}][id]" value="{{ $soldProduct->product->id }}">
+                                                                <input type="hidden" name="products[{{ $soldProduct->product->id }}][price]" value="{{ $soldProduct->price }}">
+                                                                {{ $soldProduct->product->name }}
+                                                            </td>
+                                                            <td>
+                                                                <input type="hidden" name="products[{{ $soldProduct->product->id }}][quantity]" value="{{ $soldProduct->quantity }}">
+                                                                {{ $soldProduct->quantity }}
+                                                            </td>
+                                                            <td>@rupiah($soldProduct->price)</td>
+                                                            <td class="product-subtotal">@rupiah($soldProduct->price * $soldProduct->quantity)</td>
+                                                            <td><button type="button" class="btn btn-sm btn-danger removeProductBtn">Hapus</button></td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row g-3">
                                 <div class="col-md-6">
                                      <label for="description" class="form-label">Deskripsi / Catatan</label>
@@ -344,27 +411,161 @@
         updateTotals();
     });
 
-    // 5. Fungsi Kalkulasi Total yang Diperbaiki
+    // Toggle Form Produk
+    $('#toggle-product-form-btn').on('click', function() {
+        $('#product-form-container').slideToggle();
+        if ($('#product-form-container').is(":visible")) {
+            $(this).html('<i class="ri-subtract-line align-middle me-1"></i> Sembunyikan Form Produk');
+        } else {
+            $(this).html('<i class="ri-add-circle-line align-middle me-1"></i> Tambah / Edit Produk dari Stok Toko (Opsional)');
+        }
+    });
+
+    // Pencarian Produk
+    const productSearchInput = document.getElementById("product_search_input");
+    const productList = document.getElementById("product_list");
+    let selectedProduct = null;
+
+    productSearchInput.addEventListener("keyup", function () {
+        const query = this.value;
+        if (query.length > 1) {
+            fetchProducts(query);
+        } else {
+            productList.innerHTML = "";
+        }
+    });
+
+    function fetchProducts(query) {
+        const url = "{{ route('purchase.product.search') }}" + "?query=" + query; 
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                productList.innerHTML = "";
+                if (data.length > 0) {
+                    data.forEach(product => {
+                        const itemHTML = `
+                            <a href="#" class="list-group-item list-group-item-action product-item"
+                                data-id="${product.id}" data-name="${product.name}"
+                                data-price="${product.price}" data-stock="${product.product_qty}">
+                                ${product.code} - ${product.name} (Stok: ${product.product_qty})
+                            </a>`;
+                        productList.innerHTML += itemHTML;
+                    });
+                } else {
+                    productList.innerHTML = '<p class="list-group-item text-muted">Produk tidak ditemukan</p>';
+                }
+            });
+    }
+
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.classList.contains("product-item")) {
+            e.preventDefault();
+            selectedProduct = {
+                id: e.target.dataset.id, name: e.target.dataset.name,
+                price: e.target.dataset.price, stock: e.target.dataset.stock,
+                text: e.target.textContent.trim()
+            };
+            productSearchInput.value = selectedProduct.text;
+            productList.innerHTML = "";
+        }
+    });
+
+    // Tombol Tambah Produk ke Tabel
+    $('#addProductBtn').on('click', function() {
+        if (!selectedProduct) {
+            alert('Silakan cari dan pilih produk terlebih dahulu.');
+            return;
+        }
+        const quantity = parseInt($('#product_quantity_input').val());
+        if (isNaN(quantity) || quantity <= 0) {
+            alert('Jumlah harus valid.');
+            return;
+        }
+        if (quantity > selectedProduct.stock) {
+            alert('Stok tidak mencukupi! Stok tersisa: ' + selectedProduct.stock);
+            return;
+        }
+        const price = parseFloat(selectedProduct.price);
+        const subtotal = quantity * price;
+        const newRow = `
+            <tr class="sold-product-item" data-id="${selectedProduct.id}">
+                <td>
+                    <input type="hidden" name="products[${selectedProduct.id}][id]" value="${selectedProduct.id}">
+                    <input type="hidden" name="products[${selectedProduct.id}][price]" value="${price}">
+                    ${selectedProduct.name}
+                </td>
+                <td>
+                    <input type="hidden" name="products[${selectedProduct.id}][quantity]" value="${quantity}">
+                    ${quantity}
+                </td>
+                <td>${formatRupiah(price)}</td>
+                <td class="product-subtotal">${formatRupiah(subtotal)}</td>
+                <td><button type="button" class="btn btn-sm btn-danger removeProductBtn">Hapus</button></td>
+            </tr>
+        `;
+        $('#soldProductsTbody').append(newRow);
+        updateTotals();
+        productSearchInput.value = "";
+        $('#product_quantity_input').val(1);
+        selectedProduct = null;
+    });
+
+    // Tombol Hapus Produk dari Tabel
+    $(document).on('click', '.removeProductBtn', function() {
+        $(this).closest('tr').remove();
+        updateTotals();
+    });
+
+    $(document).on('input', '.item-price', function() { updateTotals(); });
+    $('input[name="cost_price"], input[name="paid_amount"]').on('input', function() { updateTotals(); });
+
+    // 2. Tombol Lunas (Logika diperbarui untuk mencakup produk)
+    $('#btn-lunas').on('click', function() {
+        let serviceTotalPrice = 0;
+        $('#transactionItemsTbody tr').each(function() {
+            const quantity = parseFloat($(this).find('input[name*="[quantity]"]').val()) || 0;
+            const price = parseFloat($(this).find('.item-price').val()) || 0;
+            serviceTotalPrice += quantity * price;
+        });
+
+        let productTotalPrice = 0;
+        $('#soldProductsTbody .sold-product-item').each(function() {
+            let price = parseFloat($(this).find('input[name*="[price]"]').val()) || 0;
+            let qty = parseInt($(this).find('input[name*="[quantity]"]').val()) || 0;
+            productTotalPrice += price * qty;
+        });
+
+        let grandTotal = serviceTotalPrice + productTotalPrice;
+        $('input[name="paid_amount"]').val(grandTotal).trigger('input');
+    });
+    
+    // 3. Fungsi Kalkulasi Total (Logika diperbarui untuk mencakup produk)
     function updateTotals() {
-        let totalPrice = 0;
-        
-        // Loop melalui setiap baris item yang ada di tabel
+        let serviceTotalPrice = 0;
         $('#transactionItemsTbody tr').each(function() {
             const row = $(this);
             const quantity = parseFloat(row.find('input[name*="[quantity]"]').val()) || 0;
             const price = parseFloat(row.find('.item-price').val()) || 0;
             const subtotal = quantity * price;
-
-            // Update nilai hidden subtotal dan tampilan subtotal
             row.find('.item-subtotal').val(subtotal);
             row.find('.subtotal-display').text(formatRupiah(subtotal));
-
-            totalPrice += subtotal;
+            serviceTotalPrice += subtotal;
         });
 
+        let productTotalPrice = 0;
+        $('#soldProductsTbody .sold-product-item').each(function() {
+            const row = $(this);
+            const price = parseFloat(row.find('input[name*="[price]"]').val()) || 0;
+            const quantity = parseInt(row.find('input[name*="[quantity]"]').val()) || 0;
+            const subtotal = price * quantity;
+            row.find('.product-subtotal').text(formatRupiah(subtotal));
+            productTotalPrice += subtotal;
+        });
+
+        const totalPrice = serviceTotalPrice + productTotalPrice;
         const costPrice = parseFloat($('input[name="cost_price"]').val()) || 0;
         const paidAmount = parseFloat($('input[name="paid_amount"]').val()) || 0;
-        const profit = totalPrice - costPrice;
+        const profit = serviceTotalPrice - costPrice; // Profit hanya dari jasa
         const dueAmount = totalPrice - paidAmount;
 
         $('#display_total_price').text(formatRupiah(totalPrice));
@@ -372,16 +573,15 @@
         $('#display_due_amount').text(formatRupiah(dueAmount));
     }
 
-    // 6. Fungsi format Rupiah (tetap sama)
+    // 4. Fungsi format Rupiah (tetap sama)
     function formatRupiah(angka) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
     }
     
-    // 7. Logika Toggle Penjahit (tetap sama)
-    const workTypeRadios = document.querySelectorAll('input[name="work_type"]');
-    // ... (salin sisa kode toggleTailorSelection Anda di sini)
+    // 5. Logika Toggle Penjahit (tetap sama)
+    // ... (salin kode toggleTailorSelection Anda yang sudah ada di sini jika ada)
     
-    // ## PENTING: Panggil updateTotals() sekali di awal saat halaman dimuat ##
+    // ## PENTING: Panggil updateTotals() sekali saat halaman dimuat ##
     updateTotals(); 
 });
 </script>
