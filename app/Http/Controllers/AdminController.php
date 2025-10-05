@@ -187,13 +187,13 @@ class AdminController extends Controller
 
             $data['completedJobsThisMonth'] = TailorTransaction::where('tailor_id', $user->id)
                 ->whereIn('status', ['Selesai', 'Diambil'])
-                ->whereMonth('created_at', date('m'))
                 ->whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('m'))
                 ->count();
 
             $data['pendapatanPenjahit'] = TailorCommission::where('user_id', $user->id)
-                ->whereMonth('created_at', date('m'))
                 ->whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('m'))
                 ->sum('amount');
         }
 
@@ -208,18 +208,18 @@ class AdminController extends Controller
 
         $data['gajiHarian'] = Payroll::where('user_id', $user->id)
             ->where('type', 'Gaji Harian')
-            ->whereMonth('payment_date', date('m'))
             ->whereYear('payment_date', date('Y'))
+            ->whereMonth('payment_date', date('m'))
             ->sum('amount');
 
         $data['jumlahPresensi'] = Payroll::where('user_id', $user->id)
             ->where('type', 'Gaji Harian')
-            ->whereMonth('payment_date', date('m'))
             ->whereYear('payment_date', date('Y'))
+            ->whereMonth('payment_date', date('m'))
             ->count();
 
-        $data['komisiProduksi'] = Production::whereMonth('date', date('m'))
-            ->whereYear('date', date('Y'))
+        $data['komisiProduksi'] = Production::whereYear('date', date('Y'))
+            ->whereMonth('date', date('m'))
             ->sum('total_commission');
 
         $data['jumlahProduksi'] = Production::whereMonth('date', date('m'))
