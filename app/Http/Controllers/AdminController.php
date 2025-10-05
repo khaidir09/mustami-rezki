@@ -153,8 +153,8 @@ class AdminController extends Controller
             ->sum('amount');
 
         $data['completedJobsThisMonth'] = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
+            ->whereMonth('updated_at', date('m'))
+            ->whereYear('updated_at', date('Y'))
             ->count();
         $data['tailorOwnerProfit'] = ProfitDistribution::where('transaction_type', 'App\Models\TailorTransaction')
             ->whereMonth('created_at', date('m'))
