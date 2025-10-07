@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TailorTransactionItem;
 use App\Models\TailorTransactionProduct;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TailorTransactionController extends Controller
 {
@@ -272,6 +273,18 @@ class TailorTransactionController extends Controller
         return view('admin.backend.tailor.show', compact('transaction'));
     }
 
+    public function cetak($id)
+    {
+        $transaction = TailorTransaction::with(['customer', 'items.service', 'soldProducts.product'])->findOrFail($id);
+        $imagePath = public_path('backend/assets/images/lunas.png');
+
+        $pdf = Pdf::loadView('admin.backend.tailor.print', compact(
+            'transaction',
+            'imagePath'
+        ));
+        return $pdf->stream('Nota Jahit ' . $transaction->transaction_code . $transaction->customer->name . '.pdf');
+    }
+
     public function edit($id)
     {
         // Ambil data transaksi beserta item dan relasi servicenya
@@ -460,25 +473,44 @@ class TailorTransactionController extends Controller
 
 
             // ## LANGKAH 6: SINKRONISASI KOMISI & PROFIT JASA ##
-            TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
+            $shouldHaveCommission = $request->work_type == 'Internal' && $tailor_commission > 0 && in_array($request->status, ['Selesai', 'Diambil']);
+            $existingCommission = TailorCommission::where('tailor_transaction_id', $transaction->id)->first();
+
+            if ($shouldHaveCommission) {
+                if ($existingCommission) {
+                    // Jika komisi seharusnya ada & sudah ada -> UPDATE
+                    $existingCommission->update(['amount' => $tailor_commission]);
+                } else {
+                    // Jika komisi seharusnya ada & belum ada -> CREATE
+                    TailorCommission::create([
+                        'tailor_transaction_id' => $transaction->id,
+                        'user_id' => $request->tailor_id,
+                        'amount' => $tailor_commission,
+                    ]);
+                }
+            } else {
+                if ($existingCommission) {
+                    // Jika komisi seharusnya TIDAK ada tapi di DB ada
+                    if ($existingCommission->payroll_id) {
+                        // PENTING: Jangan hapus komisi yang sudah dibayar!
+                        throw new \Exception('Tidak dapat mengubah status karena komisi untuk transaksi ini sudah dibayarkan.');
+                    }
+                    // Jika belum dibayar, aman untuk dihapus
+                    $existingCommission->delete();
+                }
+            }
+
+            // --- SINKRONISASI DISTRIBUSI PROFIT ---
+            $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
+            $shouldDistributeProfit = $profitToDistribute > 0 && ($request->status == 'Diambil');
+
+            // Hapus distribusi profit lama, karena ini tidak memiliki status pembayaran tersendiri
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
                 ->delete();
 
-            $isCommissionable = in_array($request->status, ['Selesai', 'Diambil']);
-            $isProfitDistributable = ($request->status == 'Diambil');
-
-            if ($request->work_type == 'Internal' && $tailor_commission > 0 && $isCommissionable) {
-                TailorCommission::create([
-                    'tailor_transaction_id' => $transaction->id,
-                    'user_id' => $request->tailor_id,
-                    'amount' => $tailor_commission,
-                ]);
-            }
-
-            $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
-
-            if ($profitToDistribute > 0 && $isProfitDistributable) {
+            // Buat ulang HANYA jika kondisi terpenuhi
+            if ($shouldDistributeProfit) {
                 $amountPerShare = $profitToDistribute / 3;
                 $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
                 foreach ($distributionTypes as $type) {

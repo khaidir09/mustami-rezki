@@ -41,7 +41,9 @@
                                     @foreach ($transactions as $key => $item)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $item->transaction_code }}</td>
+                                        <td>
+                                            <a title="Lihat Detail" href="{{ route('details.tailor', $item->id) }}">{{ $item->transaction_code }}</a>
+                                        </td>
                                         <td>{{ $item->customer->name ?? 'N/A' }}</td>
                                         <td>
                                             @if($item->work_type == 'Internal' && $item->tailor)
@@ -75,11 +77,9 @@
                                             @endswitch
                                         </td>
                                         <td>
-                                            <a title="Details" href="{{ route('details.tailor', $item->id) }}" class="btn btn-info btn-sm"> <span class="mdi mdi-eye mdi-18px"></span> </a>
+                                            
                                             @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
-                                            <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete mdi-18px"></span></a>
-                                            @endif
                                             @if($item->customer->phone)
                                                 <a title="Kirim Nota via WA" 
                                                 href="{{ \App\Helpers\WhatsAppHelper::generateTailorInvoiceLink($item) }}" 
@@ -87,6 +87,8 @@
                                                 class="btn btn-primary btn-sm">
                                                     <span class="mdi mdi-message-text mdi-18px"></span>
                                                 </a>
+                                            @endif
+                                            <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete mdi-18px"></span></a>
                                             @endif
                                         </td>
                                     </tr>

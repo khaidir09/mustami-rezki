@@ -174,6 +174,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/update/tailor/{id}', 'update')->name('update.tailor');
         Route::get('/delete/tailor/{id}', 'destroy')->name('delete.tailor');
         Route::get('/details/tailor/{id}', 'show')->name('details.tailor');
+        Route::get('/invoice/tailor/{id}', 'cetak')->name('invoice.tailor');
         // Route::get('/invoice/tailor/{id}', 'InvoiceSales')->name('invoice.tailor');
     });
 

@@ -10,6 +10,7 @@
             </div>
             <div class="text-end">
                 {{-- Tambahkan tombol aksi lain di sini jika perlu, misal Print --}}
+                <a href="{{ route('invoice.tailor', $transaction->id) }}" class="btn btn-primary me-2"><span class="mdi mdi-printer mdi-12px"></span> Cetak</a>
                 <a href="{{ route('all.tailor') }}" class="btn btn-dark">Kembali</a>
             </div>
         </div>
