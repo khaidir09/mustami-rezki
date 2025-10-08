@@ -31,7 +31,7 @@
                                         <th>Penjahit</th>
                                         <th>Tgl. Masuk</th>
                                         <th>Estimasi Selesai</th>
-                                        <th>Total Harga</th>
+                                        <th>Total Biaya</th>
                                         <th>Total Komponen</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
@@ -56,7 +56,9 @@
                                         </td>
                                         <td>{{ \Carbon\Carbon::parse($item->transaction_date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('d-m-Y') : '-' }}</td>
-                                        <td>Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                        {{-- Hitung total biaya keseluruhan jasa jahit dan harga produk yang digunakan dari stok toko --}}
+                                        <td>Rp {{ number_format($item->total_price + $item->soldProducts->sum('subtotal'), 0, ',', '.') }}</td>
+                                        {{-- Hitung total komponen dari jasa jahit --}}
                                         <td>{{ $item->items->count() }}</td>
                                         <td>
                                             @switch($item->status)
