@@ -171,6 +171,7 @@ class AdminController extends Controller
 
         $data['monthlyPayrollTotal'] = Payroll::whereYear('payment_date', date('Y'))
             ->whereMonth('payment_date', date('m'))
+            ->where('type', 'Gaji/Komisi Mingguan')
             ->where('is_processed', 1)
             ->sum('amount');
 

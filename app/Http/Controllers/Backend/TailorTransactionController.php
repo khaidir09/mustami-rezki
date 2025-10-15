@@ -547,6 +547,7 @@ class TailorTransactionController extends Controller
             // Hapus distribusi profit terkait
             ProfitDistribution::where('transaction_id', $transaction->id)
                 ->where('transaction_type', TailorTransaction::class)
+                ->orWhere('transaction_type', TailorTransactionProduct::class)
                 ->delete();
 
             TailorCommission::where('tailor_transaction_id', $transaction->id)->delete();
@@ -567,7 +568,7 @@ class TailorTransactionController extends Controller
             DB::commit();
 
             $notification = ['message' => 'Transaksi Jasa Jahit Berhasil Dihapus', 'alert-type' => 'success'];
-            return redirect()->route('tailor.index')->with($notification);
+            return redirect()->route('all.tailor')->with($notification);
         } catch (\Exception $e) {
             DB::rollBack();
             $notification = ['message' => 'Gagal menghapus data!', 'alert-type' => 'error'];

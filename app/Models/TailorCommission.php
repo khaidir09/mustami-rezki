@@ -12,4 +12,9 @@ class TailorCommission extends Model
     {
         return $this->belongsTo(TailorTransaction::class, 'tailor_transaction_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'tailor_id');
+    }
 }

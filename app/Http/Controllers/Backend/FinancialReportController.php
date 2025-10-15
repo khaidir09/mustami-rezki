@@ -53,7 +53,7 @@ class FinancialReportController extends Controller
         // 3. Hitung Rincian Pengeluaran (Expenditure)
         $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
         $operationalExpense = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
-        $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+        $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')->where('is_processed', 1)->sum('amount');
         $totalExpense = $purchaseExpense + $operationalExpense + $payrollExpense;
 
         // 4. Hitung Saldo Akhir
@@ -110,7 +110,9 @@ class FinancialReportController extends Controller
             // 3. Hitung Total Pengeluaran (Expenditure)
             $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
             $operationalExpense = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
-            $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')
+                ->where('is_processed', 1)
+                ->sum('amount');
             $totalExpense = $purchaseExpense + $operationalExpense + $payrollExpense;
 
             // 4. Hitung Saldo Akhir
@@ -174,7 +176,7 @@ class FinancialReportController extends Controller
         // 3. Ambil Rincian Pengeluaran
         $purchases = Purchase::whereBetween('date', [$startDate, $endDate])->get();
         $expenses = Expense::whereBetween('date', [$startDate, $endDate])->get();
-        $payrolls = Payroll::whereBetween('payment_date', [$startDate, $endDate])->get();
+        $payrolls = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')->where('is_processed', 1)->get();
 
         $pdf = Pdf::loadView('admin.backend.financial.report', compact(
             'summary',

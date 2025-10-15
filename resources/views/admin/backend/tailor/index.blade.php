@@ -30,9 +30,9 @@
                                         <th>Pelanggan</th>
                                         <th>Penjahit</th>
                                         <th>Tgl. Masuk</th>
-                                        <th>Estimasi Selesai</th>
+                                        <th>Est. Selesai</th>
                                         <th>Total Biaya</th>
-                                        <th>Total Komponen</th>
+                                        <th>Komponen</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -79,19 +79,18 @@
                                             @endswitch
                                         </td>
                                         <td>
-                                            
                                             @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
-                                            @if($item->customer->phone)
-                                                <a title="Kirim Nota via WA" 
-                                                href="{{ \App\Helpers\WhatsAppHelper::generateTailorInvoiceLink($item) }}" 
-                                                target="_blank" 
-                                                class="btn btn-primary btn-sm">
-                                                    <span class="mdi mdi-message-text mdi-18px"></span>
-                                                </a>
+                                                @if($item->customer->phone)
+                                                    <a title="Kirim Nota via WA" 
+                                                    href="{{ \App\Helpers\WhatsAppHelper::generateTailorInvoiceLink($item) }}" 
+                                                    target="_blank" 
+                                                    class="btn btn-primary btn-sm">
+                                                        <span class="mdi mdi-message-text mdi-18px"></span>
+                                                    </a>
+                                                @endif
                                             @endif
                                             <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete mdi-18px"></span></a>
-                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach

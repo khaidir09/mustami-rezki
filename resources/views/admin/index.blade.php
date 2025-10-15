@@ -564,6 +564,71 @@
                     </div>
                 </div>
             </div>
+            {{-- Filter Section --}}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Filter Periode Penggajian</h4>
+                            <p class="card-title-desc">Pilih rentang tanggal untuk menghitung total gaji dan komisi yang belum dibayar.</p>
+                            
+                            <div class="row g-3 align-items-end">
+                                <input type="hidden" id="employee_id" name="employee_id" value="{{ Auth::user()->id }}">
+                                <div class="col-md-5">
+                                    <label for="start_date" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="start_date">
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label for="end_date" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="end_date">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" type="button" id="calculate-btn">
+                                        Tampilkan Rincian
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Results Section --}}
+            <div id="payroll-details-container" class="row" style="display: none;">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Pratinjau Slip Gaji</h4>
+                            <p class="card-title-desc">Berikut adalah rincian pendapatan pada periode <strong id="period_display"></strong>.</p>
+                            
+                             <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr class="table-light">
+                                            <th>Jenis Pendapatan</th>
+                                            <th class="text-end">Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Bagi Hasil Jahit</td>
+                                            <td class="text-end" id="total_tailor_commission_display">Rp 0</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-light">
+                                            <th class="fs-5">TOTAL PERHITUNGAN</th>
+                                            <th class="text-end fs-5" id="grand_total_display">Rp 0</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div> 
+                    </div> 
+                </div> 
+            </div>
         @endif
     </div> <!-- container-fluid -->
 </div>
@@ -571,3 +636,86 @@
 
 
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Fungsi untuk format mata uang Rupiah
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(angka);
+    }
+
+    function calculateBonus() {
+        var calculatedTotal = parseFloat($('#form_grand_total').val()) || 0;
+    }
+
+    // Event handler saat tombol "Tampilkan Rincian" diklik
+    $('#calculate-btn').on('click', function() {
+        var employeeId = $('#employee_id').val();
+        var startDate = $('#start_date').val();
+        var endDate = $('#end_date').val();
+
+        // Validasi input
+        if (!employeeId || !startDate || !endDate) {
+            alert('Silakan pilih karyawan dan tentukan periode tanggal dengan lengkap.');
+            return;
+        }
+
+        // Tampilkan loading (opsional)
+        $(this).html('Menghitung...').prop('disabled', true);
+
+        // Kirim request AJAX ke controller
+        $.ajax({
+            url: "{{ route('payroll.calculate') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                user_id: employeeId,
+                start_date: startDate,
+                end_date: endDate
+            },
+            success: function(response) {
+                // Tampilkan hasil di area pratinjau
+                $('#total_tailor_commission_display').text(formatRupiah(response.total_tailor_commission));
+                $('#grand_total_display').text(formatRupiah(response.grand_total));
+
+                // Isi data untuk form submission
+                $('#form_user_id').val(employeeId);
+                $('#form_start_date').val(startDate);
+                $('#form_end_date').val(endDate);
+                $('#form_grand_total').val(response.grand_total);
+                
+                // Tampilkan nama dan periode
+                var employeeName = $('#employee_id option:selected').text();
+                $('#employee_name_display').text(employeeName);
+                $('#period_display').text(startDate + ' s/d ' + endDate);
+
+                $('#final_payment_amount').val(response.grand_total);
+                calculateBonus();
+
+                // Tampilkan kontainer hasil dan reset tombol
+                $('#payroll-details-container').slideDown();
+                $('#calculate-btn').html('Tampilkan Rincian').prop('disabled', false);
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat mengambil data. Silakan coba lagi.');
+                $('#calculate-btn').html('Tampilkan Rincian').prop('disabled', false);
+            }
+        });
+    });
+
+    $(document).on('input', '#final_payment_amount', function() {
+        calculateBonus();
+    });
+
+    // Sembunyikan pratinjau jika filter diubah
+    $('#employee_id, #start_date, #end_date').on('change', function(){
+        $('#payroll-details-container').slideUp();
+    });
+});
+</script>
+@endpush
