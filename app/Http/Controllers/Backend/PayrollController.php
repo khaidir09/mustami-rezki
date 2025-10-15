@@ -18,7 +18,7 @@ class PayrollController extends Controller
     {
         $user = Auth::user();
 
-        $query = Payroll::with('user')->where('type', 'Gaji/Komisi Mingguan')->latest('payment_date');
+        $query = Payroll::with('user')->latest('payment_date');
 
         if (!$user->hasRole('Super Admin')) {
             // Jika ya, tambahkan kondisi where untuk memfilter berdasarkan ID penjahit
