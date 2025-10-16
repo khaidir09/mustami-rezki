@@ -625,6 +625,24 @@
                                     </tfoot>
                                 </table>
                             </div>
+
+                            <div class="mt-3">
+                                <h5 class="card-title">Rincian Komisi Jahit</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Tanggal</th>
+                                                <th>Kode Transaksi</th>
+                                                <th class="text-end">Jumlah Komisi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="commission-details-tbody">
+                                            {{-- Data akan diisi oleh JavaScript --}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div> 
                     </div> 
                 </div> 
@@ -639,6 +657,7 @@
 
 @push('scripts')
 <script>
+    const detailUrlTemplate = "{{ route('details.tailor', '__ID__') }}";
 $(document).ready(function() {
     // Fungsi untuk format mata uang Rupiah
     function formatRupiah(angka) {
@@ -649,26 +668,17 @@ $(document).ready(function() {
         }).format(angka);
     }
 
-    function calculateBonus() {
-        var calculatedTotal = parseFloat($('#form_grand_total').val()) || 0;
-    }
-
-    // Event handler saat tombol "Tampilkan Rincian" diklik
     $('#calculate-btn').on('click', function() {
         var employeeId = $('#employee_id').val();
         var startDate = $('#start_date').val();
         var endDate = $('#end_date').val();
 
-        // Validasi input
         if (!employeeId || !startDate || !endDate) {
-            alert('Silakan pilih karyawan dan tentukan periode tanggal dengan lengkap.');
+            alert('Silakan tentukan periode tanggal dengan lengkap.');
             return;
         }
-
-        // Tampilkan loading (opsional)
         $(this).html('Menghitung...').prop('disabled', true);
 
-        // Kirim request AJAX ke controller
         $.ajax({
             url: "{{ route('payroll.calculate') }}",
             type: "POST",
@@ -679,23 +689,58 @@ $(document).ready(function() {
                 end_date: endDate
             },
             success: function(response) {
-                // Tampilkan hasil di area pratinjau
+                // Tampilkan hasil total di area pratinjau (tidak berubah)
                 $('#total_tailor_commission_display').text(formatRupiah(response.total_tailor_commission));
                 $('#grand_total_display').text(formatRupiah(response.grand_total));
-
-                // Isi data untuk form submission
-                $('#form_user_id').val(employeeId);
-                $('#form_start_date').val(startDate);
-                $('#form_end_date').val(endDate);
-                $('#form_grand_total').val(response.grand_total);
-                
-                // Tampilkan nama dan periode
-                var employeeName = $('#employee_id option:selected').text();
-                $('#employee_name_display').text(employeeName);
                 $('#period_display').text(startDate + ' s/d ' + endDate);
 
-                $('#final_payment_amount').val(response.grand_total);
-                calculateBonus();
+                // ===============================================
+                // ## LOGIKA BARU UNTUK MENGISI TABEL RINCIAN ##
+                // ===============================================
+                var commissionTbody = $('#commission-details-tbody');
+                commissionTbody.empty(); // Kosongkan isi tabel sebelumnya
+
+                var commissions = response.details.tailor_commissions;
+
+                if (commissions.length > 0) {
+                    $.each(commissions, function(index, item) {
+                        // Format tanggal dari created_at
+                        var date = new Date(item.created_at);
+                        var formattedDate = date.toLocaleDateString('id-ID', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        
+                        let transactionCellContent; // Variabel untuk menyimpan isi sel <td>
+
+                        // Pastikan item.transaction tidak null
+                        if (item.transaction) {
+                            // Ganti placeholder __ID__ dengan ID transaksi yang sebenarnya
+                            const finalUrl = detailUrlTemplate.replace('__ID__', item.transaction.id);
+                            
+                            // Buat tag <a> dengan URL yang sudah jadi
+                            transactionCellContent = `<a href="${finalUrl}" target="_blank">${item.transaction.transaction_code}</a>`;
+                        } else {
+                            transactionCellContent = 'N/A'; // Jika tidak ada data transaksi
+                        }
+
+                        var row = `
+                            <tr>
+                                <td>${formattedDate}</td>
+                                <td>${transactionCellContent}</td> // <-- GUNAKAN VARIABEL BARU DI SINI
+                                <td class="text-end">${formatRupiah(item.amount)}</td>
+                            </tr>
+                        `;
+                        commissionTbody.append(row);
+                    });
+                } else {
+                    var noDataRow = `
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Tidak ada data komisi pada periode ini.</td>
+                        </tr>
+                    `;
+                    commissionTbody.append(noDataRow);
+                }
+                // ## AKHIR DARI LOGIKA BARU ##
 
                 // Tampilkan kontainer hasil dan reset tombol
                 $('#payroll-details-container').slideDown();
@@ -708,12 +753,8 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('input', '#final_payment_amount', function() {
-        calculateBonus();
-    });
-
-    // Sembunyikan pratinjau jika filter diubah
-    $('#employee_id, #start_date, #end_date').on('change', function(){
+    // Sembunyikan pratinjau jika filter diubah (tidak berubah)
+    $('#start_date, #end_date').on('change', function(){
         $('#payroll-details-container').slideUp();
     });
 });

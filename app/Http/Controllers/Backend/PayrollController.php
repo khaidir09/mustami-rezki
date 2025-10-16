@@ -52,7 +52,7 @@ class PayrollController extends Controller
             ->get();
 
         // 2. Hitung Komisi Jahit (untuk Penjahit)
-        $tailor_commissions = TailorCommission::where('user_id', $user_id)
+        $tailor_commissions = TailorCommission::with('transaction')->where('user_id', $user_id)
             ->whereNull('payroll_id')
             ->whereBetween('created_at', [$start_date, $end_date])
             ->get();
