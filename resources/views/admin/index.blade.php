@@ -634,6 +634,7 @@
                                             <tr>
                                                 <th>Tanggal</th>
                                                 <th>Kode Transaksi</th>
+                                                <th>Pelanggan</th>
                                                 <th class="text-end">Jumlah Komisi</th>
                                             </tr>
                                         </thead>
@@ -727,6 +728,7 @@ $(document).ready(function() {
                             <tr>
                                 <td>${formattedDate}</td>
                                 <td>${transactionCellContent}</td> // <-- GUNAKAN VARIABEL BARU DI SINI
+                                <td>${item.transaction.customer.name || 'N/A'}</td>
                                 <td class="text-end">${formatRupiah(item.amount)}</td>
                             </tr>
                         `;

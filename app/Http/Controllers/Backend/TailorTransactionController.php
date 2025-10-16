@@ -539,10 +539,14 @@ class TailorTransactionController extends Controller
      */
     public function destroy($id)
     {
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
 
-            $transaction = TailorTransaction::findOrFail($id);
+            $transaction = TailorTransaction::with('commission')->findOrFail($id);
+
+            if ($transaction->commission && $transaction->commission->payroll_id) {
+                throw new \Exception('Transaksi ini tidak dapat dihapus karena komisinya sudah dibayarkan.');
+            }
 
             // Hapus distribusi profit terkait
             ProfitDistribution::where('transaction_id', $transaction->id)
@@ -571,7 +575,7 @@ class TailorTransactionController extends Controller
             return redirect()->route('all.tailor')->with($notification);
         } catch (\Exception $e) {
             DB::rollBack();
-            $notification = ['message' => 'Gagal menghapus data!', 'alert-type' => 'error'];
+            $notification = ['message' => $e->getMessage(), 'alert-type' => 'error'];
             return redirect()->back()->with($notification);
         }
     }
