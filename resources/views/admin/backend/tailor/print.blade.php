@@ -1,223 +1,203 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <title>Nota Transaksi {{ $transaction->transaction_code }}</title>
     <style>
-        /* CSS untuk tampilan cetak nota */
+        /* -- CSS Global yang Dirapikan -- */
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
             font-size: 12px;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            background-color: #fff;
-        }
-
-        .nota-container {
-            width: 100%;
-            border: 1px solid #eee;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-left {
-            text-align: left;
-        }
-
-        .w-100 {
-            width: 100%;
-        }
-
-        .w-50 {
-            width: 50%;
-        }
-
-        .w-75 {
-            width: 75%;
-        }
-
-        .w-25 {
-            width: 25%;
-        }
-
-        .header-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #ccc;
-        }
-
-        .header-info .info-kanan {
-            text-align: right;
-        }
-
-        h5 {
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #000;
-            text-decoration: underline;
-        }
-
-        p {
-            margin: 0 0 5px 0;
             line-height: 1.6;
+            color: #333;
+            background: #fff;
+            margin: 0;
+            padding: 0;
         }
-
-        strong {
-            font-weight: bold;
+        .nota-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
         }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
 
-        .header-tabel {
+        /* -- 1. Header Baru dengan Logo (Menggunakan Tabel) -- */
+        .header-section {
             width: 100%;
-            border: none;
-            margin-bottom: 20px;
+            border-collapse: collapse;
+            border-bottom: 2px solid #0d6efd;
+        }
+        .header-logo {
+            width: 40%;
+            vertical-align: top;
+        }
+        .header-details {
+            width: 60%;
+            text-align: right;
+            vertical-align: top;
+        }
+        .logo {
+            max-width: 100px;
+            height: auto;
+        }
+        .header-details h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #0d6efd;
+        }
+        .header-details p {
+            margin: 2px 0;
+            font-size: 11px;
+            color: #555;
         }
 
+        /* -- 2. Info Section (Menggunakan Tabel) -- */
+        .info-section-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-box {
+            width: 50%;
+            vertical-align: top;
+        }
+        .info-box h5 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .info-box p {
+            margin: 4px 0;
+        }
+
+        /* -- 3. Tabel Rincian Item (Styling Disesuaikan) -- */
         .rincian-tabel {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
-
         .rincian-tabel th,
         .rincian-tabel td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 8px;
             text-align: left;
         }
-
-        .rincian-tabel thead {
-            background-color: #f2f2f2;
+        .rincian-tabel th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            border-top: 1px solid #ddd;
+        }
+        
+        /* -- 4. Ringkasan & Catatan (Menggunakan Tabel) -- */
+        .summary-wrapper {
+            width: 100%;
+            margin-top: 10px;
+        }
+        /* -- Tambahan untuk Stempel Lunas -- */
+        .notes-column {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 20px;
+            position: relative; /* Diperlukan agar stempel bisa diposisikan */
         }
 
-        .rincian-tabel .rata-tengah {
+        .stamp-container {
             text-align: center;
-        }
-
-        .rincian-tabel .rata-kanan {
-            text-align: right;
-        }
-
-        .section {
             margin-top: 20px;
         }
 
-        .ringkasan {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+        .stamp-image {
+            max-width: 140px;
+            height: auto;
+            opacity: 0.8;
+            transform: rotate(-15deg);
         }
-
-        .ringkasan .catatan {
+        .summary-column {
             width: 50%;
+            vertical-align: top;
         }
-
-        .ringkasan .total-tabel-wrapper {
-            width: 50%;
+        .notes-column h5 {
+            font-size: 14px;
+            margin-bottom: 10px;
         }
-
-        .total-tabel {
+        .summary-table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        .total-tabel td {
-            border: 1px solid #ddd;
+        .summary-table td {
             padding: 8px;
+            border-bottom: 1px solid #eee;
         }
-
-        .total-tabel .label {
-            font-weight: normal;
+        .summary-table tr:last-child td {
+            border-bottom: none;
         }
-
-        .total-tabel .nilai {
-            text-align: right;
+        .summary-table .total {
             font-weight: bold;
+            font-size: 14px;
+            color: #0d6efd;
         }
-
-        .total-tabel .sisa-bayar {
-            color: #D32F2F;
-            /* Merah */
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
+        
+        /* -- Footer -- */
+        .invoice-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
             font-size: 11px;
-            font-weight: bold;
-            border-radius: 4px;
-            color: #fff;
-        }
-
-        .badge-warning {
-            background-color: #FFC107;
-            color: #000;
-        }
-
-        .badge-primary {
-            background-color: #0D6EFD;
-        }
-
-        .badge-success {
-            background-color: #198754;
-        }
-
-        .badge-dark {
-            background-color: #212529;
-        }
-
-        .badge-secondary {
-            background-color: #6C757D;
+            color: #888;
         }
     </style>
 </head>
-
 <body>
-
     <div class="nota-container">
-        <table class="header-tabel">
-            <tbody>
-                <tr>
-                    <th style="text-align: left;">Info Pelanggan</th>
-                    <th style="text-align: left;">Info Transaksi</th>
-                </tr>
-                <tr>
-                    <td><strong>Nama:</strong> {{ $transaction->customer->name ?? 'N/A' }}</td>
-                    <td><strong>Kode:</strong> {{ $transaction->transaction_code }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Telepon:</strong> {{ $transaction->customer->phone ?? 'N/A' }}</td>
-                    <td><strong>Tgl. Masuk:</strong> {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Alamat:</strong> {{ $transaction->customer->address ?? 'N/A' }}</td>
-                    <td><strong>Tgl. Diambil:</strong> {{ $transaction->updated_at ? \Carbon\Carbon::parse($transaction->updated_at)->format('d F Y') : '-' }}</td>
-            </tbody>
+        <table class="header-section">
+            <tr>
+                <td class="header-logo">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logo)) }}" alt="Logo Perusahaan" class="logo">
+                </td>
+                <td class="header-details">
+                   <h3>Mustami Rezki Tailor Shop</h3>
+                    <p>Menjual Bahan Menjahit dan Menerima Jasa Jahit Pakaian</p>
+                    <p>Jl. Saberan Effendi RT.03 No.064 Kel.Sungai Malang</p>
+                    <p>0811-5185-665</p>
+                </td>
+            </tr>
         </table>
 
+        <table class="info-section-table">
+            <tr>
+                <td class="info-box">
+                    <h5>Info Pelanggan</h5>
+                    <p><strong>Nama:</strong> {{ $transaction->customer->name ?? 'N/A' }}</p>
+                    <p><strong>Telepon:</strong> {{ $transaction->customer->phone ?? 'N/A' }}</p>
+                    <p><strong>Alamat:</strong> {{ $transaction->customer->address ?? 'N/A' }}</p>
+                </td>
+                <td class="info-box" style="text-align: right;">
+                    <h5>Info Transaksi</h5>
+                    <p><strong>Kode:</strong> {{ $transaction->transaction_code }}</p>
+                    <p><strong>Tgl. Masuk:</strong> {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') }}</p>
+                    <p><strong>Tgl. Ambil:</strong> {{ $transaction->status == 'Diambil' ? \Carbon\Carbon::parse($transaction->updated_at)->format('d F Y') : '-' }}</p>
+                </td>
+            </tr>
+        </table>
+        
         <div class="section">
-            <h5>Rincian Jasa:</h5>
+            <h5 style="font-weight: bold;">Rincian Jasa</h5>
             <table class="rincian-tabel">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Jenis</th>
                         <th>Komponen</th>
-                        <th class="rata-tengah">Jumlah</th>
-                        <th class="rata-kanan">Harga Satuan</th>
-                        <th class="rata-kanan">Subtotal</th>
+                        <th class="text-center">Jumlah</th>
+                        <th class="text-right">Harga</th>
+                        <th class="text-right">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -226,13 +206,13 @@
                         <td>{{ $key + 1 }}</td>
                         <td>{{ $item->type->name ?? '-' }}</td>
                         <td>{{ $item->nama_komponen }}</td>
-                        <td class="rata-tengah">{{ $item->quantity }}</td>
-                        <td class="rata-kanan">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
-                        <td class="rata-kanan">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $item->quantity }}</td>
+                        <td class="text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="rata-tengah">Tidak ada item jasa pada transaksi ini.</td>
+                        <td colspan="6" class="text-center">Tidak ada item jasa.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -241,15 +221,15 @@
 
         @if ($transaction->soldProducts->isNotEmpty())
         <div class="section">
-            <h5>Rincian Produk/Bahan dari Toko:</h5>
+            <h5 style="font-weight: bold;">Rincian Produk/Bahan</h5>
             <table class="rincian-tabel">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Nama Produk</th>
-                        <th class="rata-tengah">Jumlah</th>
-                        <th class="rata-kanan">Harga Satuan</th>
-                        <th class="rata-kanan">Subtotal</th>
+                        <th class="text-center">Jumlah</th>
+                        <th class="text-right">Harga</th>
+                        <th class="text-right">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -257,9 +237,9 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $productItem->product_name ?? '-' }}</td>
-                        <td class="rata-tengah">{{ $productItem->quantity }}</td>
-                        <td class="rata-kanan">Rp {{ number_format($productItem->price, 0, ',', '.') }}</td>
-                        <td class="rata-kanan">Rp {{ number_format($productItem->subtotal, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $productItem->quantity }}</td>
+                        <td class="text-right">Rp {{ number_format($productItem->price, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($productItem->subtotal, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -267,60 +247,57 @@
         </div>
         @endif
 
-    <div class="ringkasan">
-        <table class="w-100">
-            <tbody>
-                <tr>
-                    <th class="w-50 text-left">Catatan</th>
-                    <td class="text-left">Total Biaya Jasa</td>
-                    <th class="nilai text-left">: Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</th>
-                </tr>
-                @php
+        <table class="summary-wrapper">
+            @php
                 $grandTotal = $transaction->total_price + $transaction->soldProducts->sum('subtotal');
-                @endphp
-                @if ($transaction->soldProducts->isNotEmpty())
-                    <tr>
-                        <td>{{ $transaction->description ?: 'Tidak ada catatan.' }}</td>
-                        <td class="text-left">Total Harga Produk</td>
-                        <th class="nilai text-left">: Rp {{ number_format($transaction->soldProducts->sum('subtotal'), 0, ',', '.') }}</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="text-left">Total Tagihan</td>
-                        <th class="nilai text-left">: Rp {{ number_format($grandTotal, 0, ',', '.') }}</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="text-left">Jumlah Dibayar</td>
-                        <th class="nilai text-left">: Rp {{ number_format($transaction->paid_amount, 0, ',', '.') }}</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="text-left">Sisa Bayar</td>
-                        <th class="nilai text-left">: Rp {{ number_format($transaction->due_amount, 0, ',', '.') }}</th>
-                    </tr>
-                @else
-                    <tr>
-                        <td>{{ $transaction->description ?: 'Tidak ada catatan.' }}</td>
-                        <td class="text-left">Total Tagihan</td>
-                        <th class="nilai text-left">: Rp {{ number_format($grandTotal, 0, ',', '.') }}</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="text-left">Jumlah Dibayar</td>
-                        <th class="nilai text-left">: Rp {{ number_format($transaction->paid_amount, 0, ',', '.') }}</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="text-left">Sisa Bayar</td>
-                        <th class="nilai text-left">: Rp {{ number_format($transaction->due_amount, 0, ',', '.') }}</th>
-                    </tr>
-                @endif
-            </tbody>
+            @endphp
+            <tr>
+                <td class="notes-column">
+                    <h5>Catatan</h5>
+                    <p>{{ $transaction->description ?: 'Tidak ada catatan.' }}</p>
+
+                    @if($transaction->due_amount <= 0)
+                        <div class="stamp-container">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents($imagePath)) }}" alt="LUNAS" class="stamp-image">
+                        </div>
+                    @endif
+                </td>
+
+                <td class="summary-column">
+                    <table class="summary-table">
+                        @if ($transaction->soldProducts->isNotEmpty())
+                        <tr>
+                            <td>Total Biaya Jasa</td>
+                            <td class="text-right">Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Harga Produk</td>
+                            <td class="text-right">Rp {{ number_format($transaction->soldProducts->sum('subtotal'), 0, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                        <tr class="total">
+                            <td>Total Tagihan</td>
+                            <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Jumlah Dibayar</td>
+                            <td class="text-right">Rp {{ number_format($transaction->paid_amount, 0, ',', '.') }}</td>
+                        </tr>
+                        @if($transaction->due_amount > 0)
+                        <tr>
+                            <td>Sisa Bayar</td>
+                            <td class="text-right">Rp {{ number_format($transaction->due_amount, 0, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                    </table>
+                </td>
+            </tr>
         </table>
-        <img src="{{ $imagePath }}" alt="" style="width: 200px;">
+        
+        <div class="invoice-footer">
+            <p>Terima kasih atas kepercayaan Anda.</p>
+        </div>
+
     </div>
-
 </body>
-
 </html>

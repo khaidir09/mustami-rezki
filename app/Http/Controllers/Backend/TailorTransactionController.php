@@ -277,10 +277,12 @@ class TailorTransactionController extends Controller
     {
         $transaction = TailorTransaction::with(['customer', 'items.service', 'soldProducts.product'])->findOrFail($id);
         $imagePath = public_path('backend/assets/images/lunas.png');
+        $logo = public_path('backend/assets/images/logo.png');
 
         $pdf = Pdf::loadView('admin.backend.tailor.print', compact(
             'transaction',
-            'imagePath'
+            'imagePath',
+            'logo'
         ));
         return $pdf->stream('Nota Jahit ' . $transaction->transaction_code . $transaction->customer->name . '.pdf');
     }

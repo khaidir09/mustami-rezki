@@ -266,8 +266,10 @@ class SaleController extends Controller
     public function InvoiceSales($id)
     {
         $sales = Sale::with('saleItems.product')->find($id);
+        $imagePath = public_path('backend/assets/images/lunas.png');
+        $logo = public_path('backend/assets/images/logo.png');
 
-        $pdf = Pdf::loadView('admin.backend.sales.invoice_pdf', compact('sales'));
+        $pdf = Pdf::loadView('admin.backend.sales.invoice_pdf', compact('sales', 'imagePath', 'logo'));
         return $pdf->stream('sales_' . $id . '.pdf');
     }
     // End Method 
