@@ -18,6 +18,11 @@
             </div>
         </div>
 
+        <div class="d-flex gap-2 mb-3">
+            <a href="{{ route('all.sale') }}" class="badge bg-primary fs-12 py-2">Penjualan Langsung</a>
+            <a href="{{ route('indirect.sale') }}" class="badge bg-dark fs-12 py-2">Penjualan dari Jahit</a>
+        </div>
+
         <!-- Datatables  -->
         <div class="row">
             <div class="col-12">

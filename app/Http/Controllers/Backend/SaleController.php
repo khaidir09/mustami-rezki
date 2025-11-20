@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ProfitDistribution;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\TailorTransactionProduct;
 
 class SaleController extends Controller
 {
@@ -274,5 +275,9 @@ class SaleController extends Controller
     }
     // End Method 
 
-
+    public function IndirectSales()
+    {
+        $allData = TailorTransactionProduct::orderBy('id', 'desc')->get();
+        return view('admin.backend.sales.indirect_sales', compact('allData'));
+    }
 }

@@ -110,6 +110,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete/sale/{id}', 'DeleteSales')->name('delete.sale');
         Route::get('/details/sale/{id}', 'DetailsSales')->name('details.sale');
         Route::get('/invoice/sale/{id}', 'InvoiceSales')->name('invoice.sale');
+        Route::get('/all/indirect-sale', 'IndirectSales')->name('indirect.sale');
     });
 
     Route::controller(SaleReturnController::class)->group(function () {
