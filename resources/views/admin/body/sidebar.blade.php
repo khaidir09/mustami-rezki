@@ -92,13 +92,16 @@
                     </li>
                 @endif
 
-                @if (Auth::user()->hasRole('Super Admin'))
+                @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
                     <li>
                         <a href="{{ route('all.expense') }}" class="tp-link">
                             <i data-feather="dollar-sign"></i>
                             Pengeluaran
                         </a>
                     </li>
+                @endif
+
+                @if (Auth::user()->hasRole('Super Admin'))
                     <li>
                     <a href="{{ route('all.purchase') }}" class="tp-link">
                         <i data-feather="aperture"></i>
