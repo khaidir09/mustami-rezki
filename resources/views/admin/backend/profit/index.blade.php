@@ -15,27 +15,16 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Pengembangan Modal</h5>
-                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalModal, 0, ',', '.') }}</h3>
-                        <p class="text-muted mb-0">Total dana terkumpul</p>
+                        <h5 class="card-title">Total Omzet</h5>
+                        <h3 class="fs-22 fw-bold">Rp</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Pribadi</h5>
-                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalPribadi, 0, ',', '.') }}</h3>
-                        <p class="text-muted mb-0">Total dana terkumpul</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Sedekah</h5>
-                        <h3 class="fs-22 fw-bold">Rp {{ number_format($totalSedekah, 0, ',', '.') }}</h3>
-                        <p class="text-muted mb-0">Total dana terkumpul</p>
+                        <h5 class="card-title">Total Profit</h5>
+                        <h3 class="fs-22 fw-bold">Rp</h3>
                     </div>
                 </div>
             </div>
