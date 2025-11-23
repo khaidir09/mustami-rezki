@@ -11,12 +11,12 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-content-center">
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Total Omzet</h5>
-                        <h3 class="fs-22 fw-bold">Rp</h3>
+                        <h3 class="fs-22 fw-bold text-primary">@rupiah($totalOmzet)</h3>
                     </div>
                 </div>
             </div>
@@ -24,7 +24,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Total Profit</h5>
-                        <h3 class="fs-22 fw-bold">Rp</h3>
+                        <h3 class="fs-22 fw-bold text-success">@rupiah($totalProfit)</h3>
                     </div>
                 </div>
             </div>
@@ -39,11 +39,11 @@
                             <div class="row align-items-end">
                                 <div class="col-md-4">
                                     <label for="start_date" class="form-label">Tanggal Mulai</label>
-                                    <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                                    <input type="date" name="start_date" class="form-control" value="{{ $startDate }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="end_date" class="form-label">Tanggal Selesai</label>
-                                    <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                                     <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
                                 </div>
                                 <div class="col-md-4">
                                     <button type="submit" class="btn btn-primary">Filter</button>
