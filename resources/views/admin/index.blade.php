@@ -97,7 +97,7 @@
                 <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="card-title mb-4">Ringkasan Profit Bulan Ini</h4>
+                            <h4 class="card-title mb-4">Ringkasan Pendapatan Hari Ini</h4>
                             <div>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-sm flex-shrink-0">
@@ -106,8 +106,8 @@
                                         </span>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <p class="text-muted mb-1">Total Keseluruhan Profit</p>
-                                        <h2 class="text-success mb-0">@rupiah($totalProfit)</h2>
+                                        <p class="text-muted mb-1">Total Keseluruhan Pendapatan</p>
+                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualanHari + $omzetJahitHari + $omzetProduksiHari)</h2>
                                     </div>
                                 </div>
                             </div>
@@ -116,20 +116,20 @@
                                 <div class="row">
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Pengembangan Modal</p>
-                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalModal)</h5>
+                                            <p class="text-muted mb-2">Penjualan</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetPenjualanHari)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Dana Pribadi</p>
-                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalPribadi)</h5>
+                                            <p class="text-muted mb-2">Jasa Jahit</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetJahitHari)</h5>
                                         </div>
                                     </div>
                                     <div class="col-4">
                                         <div class="text-center">
-                                            <p class="text-muted mb-2">Dana Sedekah</p>
-                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($totalSedekah)</h5>
+                                            <p class="text-muted mb-2">Produksi</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetProduksiHari)</h5>
                                         </div>
                                     </div>
                                 </div>

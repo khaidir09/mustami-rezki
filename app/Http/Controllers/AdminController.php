@@ -135,18 +135,6 @@ class AdminController extends Controller
         $data['totalProfit'] = ProfitDistribution::whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
-        $data['totalModal'] = ProfitDistribution::where('distribution_type', 'pengembangan_modal')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
-        $data['totalPribadi'] = ProfitDistribution::where('distribution_type', 'pribadi')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
-        $data['totalSedekah'] = ProfitDistribution::where('distribution_type', 'sedekah')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
 
         $data['totalKomisiPenjahit'] = TailorCommission::whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
@@ -230,6 +218,22 @@ class AdminController extends Controller
         $data['profitProduksi'] = Production::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('profit');
+
+        $data['omzetPenjualanLangsungHari'] = Sale::whereDate('date', $today)->sum('grand_total');
+
+        $data['omzetPenjualanDariJahitHari'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
+            $today = Carbon::today();
+            $query->whereDate('transaction_date', $today)->where('status', 'Diambil');
+        })->sum('subtotal');
+
+        $data['omzetPenjualanHari'] = $data['omzetPenjualanLangsungHari'] + $data['omzetPenjualanDariJahitHari'];
+
+        $data['omzetJahitHari'] = TailorTransaction::whereDate('transaction_date', $today)
+            ->where('status', 'Diambil')
+            ->sum('total_price');
+
+        $data['omzetProduksiHari'] = Production::whereDate('date', $today)
+            ->sum('total_price');
 
         $data['omzetPenjualanLangsung'] = Sale::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
