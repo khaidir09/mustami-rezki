@@ -16,6 +16,7 @@ use App\Models\Payroll;
 use App\Models\TailorTransactionProduct;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DailyFinancialReportController extends Controller
 {
@@ -210,5 +211,59 @@ class DailyFinancialReportController extends Controller
             ->sum('amount');
 
         return $purchaseExpense + $operationalExpense + $payrollExpense;
+    }
+
+    public function cetak($id)
+    {
+        $summary = DailyFinancialSummary::findOrFail($id);
+        $date = $summary->date;
+
+        // 1. Ambil Rincian Pemasukan
+        $sales = Sale::whereDate('date', $date)->get();
+        $tailorTransactions = TailorTransaction::with('soldProducts')
+            ->whereDate('transaction_date', $date)
+            ->get();
+        $productions = Production::whereDate('date', $date)->get();
+        $acceptances = Acceptance::whereDate('date', $date)->get();
+
+        // 2. Ambil Rincian Pengeluaran
+        $purchases = Purchase::whereDate('date', $date)->get();
+        $expenses = Expense::whereDate('date', $date)->get();
+        $payrolls = Payroll::whereDate('payment_date', $date)
+            ->where('type', 'Gaji/Komisi Mingguan')
+            ->where('is_processed', 1)
+            ->get();
+
+        // Hitung Total Per Kategori
+        $totalSales = $sales->sum('grand_total');
+        $totalTailor = $tailorTransactions->sum(function ($tailor) {
+            return $tailor->total_price + $tailor->soldProducts->sum('subtotal');
+        });
+        $totalProduction = $productions->sum('total_price');
+        $totalAcceptance = $acceptances->sum('amount');
+
+        $totalPurchase = $purchases->sum('grand_total');
+        $totalOperational = $expenses->sum('amount');
+        $totalPayroll = $payrolls->sum('amount');
+
+        $pdf = Pdf::loadView('admin.backend.daily_financial.report', compact(
+            'summary',
+            'sales',
+            'tailorTransactions',
+            'productions',
+            'acceptances',
+            'purchases',
+            'expenses',
+            'payrolls',
+            'totalSales',
+            'totalTailor',
+            'totalProduction',
+            'totalAcceptance',
+            'totalPurchase',
+            'totalOperational',
+            'totalPayroll'
+        ));
+
+        return $pdf->stream('Laporan Arus Kas Harian ' . $date->format('d-m-Y') . '.pdf');
     }
 }
