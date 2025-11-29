@@ -49,7 +49,7 @@
                                         <td>Rp {{ number_format($item->closing_balance, 0, ',', '.') }}</td>
                                         <td>{{ $item->notes ?? '-' }}</td>
                                         <td>
-                                            <a href="" 
+                                            <a href="{{ route('daily.financial.print', $item->id) }}"
                                             class="btn btn-primary btn-sm" 
                                             title="Lihat & Cetak Laporan"
                                             target="_blank">
