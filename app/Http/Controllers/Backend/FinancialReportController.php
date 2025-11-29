@@ -165,6 +165,18 @@ class FinancialReportController extends Controller
         $expenses = Expense::whereBetween('date', [$startDate, $endDate])->get();
         $payrolls = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')->where('is_processed', 1)->get();
 
+        // Hitung Total Per Kategori
+        $totalSales = $sales->sum('grand_total');
+        $totalTailor = $tailorTransactions->sum(function ($tailor) {
+            return $tailor->total_price + $tailor->soldProducts->sum('subtotal');
+        });
+        $totalProduction = $productions->sum('total_price');
+        $totalAcceptance = $acceptances->sum('amount');
+
+        $totalPurchase = $purchases->sum('grand_total');
+        $totalOperational = $expenses->sum('amount');
+        $totalPayroll = $payrolls->sum('amount');
+
         $pdf = Pdf::loadView('admin.backend.financial.report', compact(
             'summary',
             'sales',
@@ -174,6 +186,13 @@ class FinancialReportController extends Controller
             'purchases',
             'expenses',
             'payrolls',
+            'totalSales',
+            'totalTailor',
+            'totalProduction',
+            'totalAcceptance',
+            'totalPurchase',
+            'totalOperational',
+            'totalPayroll'
         ));
         return $pdf->stream('Laporan Arus Kas' . $month . $year . '.pdf');
     }

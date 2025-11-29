@@ -15,7 +15,6 @@
         th { background-color: #f2f2f2; }
         .text-right { text-align: right; }
         .summary-table { font-size: 14px; }
-        .summary-table td { font-weight: bold; }
         .no-print { display: none; }
         @media print {
             body { -webkit-print-color-adjust: exact; }
@@ -37,8 +36,8 @@
     <h3>Ringkasan Keuangan</h3>
     <table class="summary-table">
         <tr>
-            <td width="50%">Saldo Awal</td>
-            <td class="text-right">@rupiah($summary->opening_balance)</td>
+            <th width="50%">Saldo Awal</th>
+            <th class="text-right">@rupiah($summary->opening_balance)</th>
         </tr>
         <tr>
             <td>(+) Total Pemasukan</td>
@@ -49,13 +48,78 @@
             <td class="text-right" style="color: red;">(@rupiah($summary->total_expense))</td>
         </tr>
         <tr>
-            <td style="background-color: #f2f2f2;">Saldo Akhir</td>
-            <td class="text-right" style="background-color: #f2f2f2;">@rupiah($summary->closing_balance)</td>
+            <th style="background-color: #f2f2f2;">Saldo Akhir</th>
+            <th class="text-right" style="background-color: #f2f2f2;">@rupiah($summary->closing_balance)</th>
         </tr>
     </table>
 
+    {{-- Tabel Total Pemasukan per Kategori --}}
+    <h3>Rincian Total Pemasukan</h3>
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>Kategori Transaksi</th>
+                <th class="text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Penjualan Produk</td>
+                <td class="text-right">@rupiah($totalSales)</td>
+            </tr>
+            <tr>
+                <td>Jasa Jahit</td>
+                <td class="text-right">@rupiah($totalTailor)</td>
+            </tr>
+            <tr>
+                <td>Produksi</td>
+                <td class="text-right">@rupiah($totalProduction)</td>
+            </tr>
+            <tr>
+                <td>Penerimaan Lainnya</td>
+                <td class="text-right">@rupiah($totalAcceptance)</td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold; background-color: #f9f9f9;">Total Pemasukan</td>
+                <td class="text-right" style="font-weight: bold; background-color: #f9f9f9;">@rupiah($totalSales + $totalTailor + $totalProduction + $totalAcceptance)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {{-- Tabel Total Pengeluaran per Kategori --}}
+    <h3>Rincian Total Pengeluaran</h3>
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>Kategori Pengeluaran</th>
+                <th class="text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Pembelian Barang</td>
+                <td class="text-right">@rupiah($totalPurchase)</td>
+            </tr>
+            <tr>
+                <td>Biaya Operasional</td>
+                <td class="text-right">@rupiah($totalOperational)</td>
+            </tr>
+            <tr>
+                <td>Gaji & Komisi</td>
+                <td class="text-right">@rupiah($totalPayroll)</td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold; background-color: #f9f9f9;">Total Pengeluaran</td>
+                <td class="text-right" style="font-weight: bold; background-color: #f9f9f9;">@rupiah($totalPurchase + $totalOperational + $totalPayroll)</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    {{-- Break page --}}
+    <div style="page-break-after: always;"></div>
+
     {{-- Rincian Pemasukan --}}
-    <h3>Rincian Pemasukan</h3>
+    <h3>Detail Transaksi Pemasukan</h3>
     <table>
         <thead>
             <tr>
@@ -68,7 +132,7 @@
             @foreach($sales as $sale)
             <tr>
                 <td>Penjualan Produk</td>
-                <td>Nota #{{ $sale->invoice_no }}</td>
+                <td>{{ $sale->note ?? '-' }}</td>
                 <td class="text-right">@rupiah($sale->grand_total)</td>
             </tr>
             @endforeach
@@ -93,7 +157,7 @@
                 <td class="text-right">@rupiah($acceptance->amount)</td>
             </tr>
             @endforeach
-
+            
             @if($sales->isEmpty() && $tailorTransactions->isEmpty() && $productions->isEmpty() && $acceptances->isEmpty())
             <tr>
                 <td colspan="3" style="text-align: center;">Tidak ada pemasukan untuk tanggal ini.</td>
@@ -103,7 +167,7 @@
     </table>
 
     {{-- Rincian Pengeluaran --}}
-    <h3>Rincian Pengeluaran</h3>
+    <h3>Detail Transaksi Pengeluaran</h3>
      <table>
         <thead>
             <tr>
@@ -117,7 +181,7 @@
             <tr>
                 <td>Pembelian Barang</td>
                 <td>Nota #{{ $purchase->purchase_no }}</td>
-                <td class="text-right">@rupiah($purchase->total_amount)</td>
+                <td class="text-right">@rupiah($purchase->grand_total)</td>
             </tr>
             @endforeach
             @foreach($expenses as $expense)
@@ -142,7 +206,7 @@
             @endif
         </tbody>
     </table>
-
+    
     @if($summary->notes)
     <h3>Catatan</h3>
     <div style="border: 1px solid #ddd; padding: 10px;">
