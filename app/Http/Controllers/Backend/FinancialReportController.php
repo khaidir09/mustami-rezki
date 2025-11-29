@@ -11,6 +11,7 @@ use App\Models\Acceptance;
 use App\Models\Production;
 use Illuminate\Http\Request;
 use App\Models\FinancialSummary;
+use App\Models\DailyFinancialSummary;
 use App\Models\TailorTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -39,22 +40,14 @@ class FinancialReportController extends Controller
         $startDate = Carbon::create($year, $month, 1)->startOfMonth();
         $endDate = Carbon::create($year, $month, 1)->endOfMonth();
 
-        // 2. Hitung Rincian Pemasukan (Income)
-        $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
-        $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('transaction_date', [$startDate, $endDate]);
-        })->sum('subtotal');
-        $salesIncome += $salesIncomeDariJahit;
-        $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
-        $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
-        $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
-        $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
+        // Calculate Totals from Daily Financial Summaries
+        $totalIncome = DailyFinancialSummary::whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->sum('total_income');
 
-        // 3. Hitung Rincian Pengeluaran (Expenditure)
-        $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
-        $operationalExpense = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
-        $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')->where('is_processed', 1)->sum('amount');
-        $totalExpense = $purchaseExpense + $operationalExpense + $payrollExpense;
+        $totalExpense = DailyFinancialSummary::whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->sum('total_expense');
 
         // 4. Hitung Saldo Akhir
         $openingBalance = $activeSummary->opening_balance;
@@ -62,14 +55,7 @@ class FinancialReportController extends Controller
 
         return view('admin.backend.financial.create', compact(
             'activeSummary',
-            'salesIncome',
-            'tailorIncome',
-            'productionIncome',
-            'externalIncome',
             'totalIncome',
-            'purchaseExpense',
-            'operationalExpense',
-            'payrollExpense',
             'totalExpense',
             'openingBalance',
             'closingBalance'
@@ -95,25 +81,14 @@ class FinancialReportController extends Controller
             $startDate = Carbon::create($year, $month, 1)->startOfMonth();
             $endDate = Carbon::create($year, $month, 1)->endOfMonth();
 
-            // 2. Hitung Total Pemasukan (Income)
-            $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
-            $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('transaction_date', [$startDate, $endDate]);
-            })->sum('subtotal');
-            $salesIncome += $salesIncomeDariJahit;
+            // Calculate Totals from Daily Financial Summaries
+            $totalIncome = DailyFinancialSummary::whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->sum('total_income');
 
-            $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
-            $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
-            $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
-            $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
-
-            // 3. Hitung Total Pengeluaran (Expenditure)
-            $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
-            $operationalExpense = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
-            $payrollExpense = Payroll::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'Gaji/Komisi Mingguan')
-                ->where('is_processed', 1)
-                ->sum('amount');
-            $totalExpense = $purchaseExpense + $operationalExpense + $payrollExpense;
+            $totalExpense = DailyFinancialSummary::whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->sum('total_expense');
 
             // 4. Hitung Saldo Akhir
             $openingBalance = $summaryToClose->opening_balance;

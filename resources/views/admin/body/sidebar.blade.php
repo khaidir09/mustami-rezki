@@ -146,6 +146,12 @@
                             Arus Kas
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('daily.financial.index') }}" class="tp-link">
+                            <i data-feather="briefcase"></i>
+                            Arus Kas Harian
+                        </a>
+                    </li>
                 @endif
 
                 {{-- 
