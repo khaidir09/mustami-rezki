@@ -35,6 +35,7 @@
                                 <th>Total Pengeluaran</th>
                                 <th>Saldo Akhir</th>
                                 <th>Catatan</th>
+                                <th>Aksi</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -46,7 +47,15 @@
                                         <td>Rp {{ number_format($item->total_income, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($item->total_expense, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($item->closing_balance, 0, ',', '.') }}</td>
-                                        <td>{{ $item->notes }}</td>
+                                        <td>{{ $item->notes ?? '-' }}</td>
+                                        <td>
+                                            <a href="" 
+                                            class="btn btn-primary btn-sm" 
+                                            title="Lihat & Cetak Laporan"
+                                            target="_blank">
+                                                <span class="mdi mdi-printer mdi-18px"></span>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
