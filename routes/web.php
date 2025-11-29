@@ -263,6 +263,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/arus-kas-harian', 'index')->name('daily.financial.index');
         Route::get('/arus-kas-harian/create', 'create')->name('daily.financial.create');
         Route::post('/arus-kas-harian', 'store')->name('daily.financial.store');
+        Route::get('/arus-kas-harian/cetak/{id}', 'cetak')->name('daily.financial.print');
     });
 
     Route::controller(AcceptanceController::class)->group(function () {
