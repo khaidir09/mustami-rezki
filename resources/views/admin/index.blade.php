@@ -27,7 +27,7 @@
                                 <div class="col-12 mb-4">
                                     <p class="text-muted mb-1">Uang Bersih Saat Ini</p>
                                     <h2 class="mb-0 text-primary">@rupiah($uangBersih)</h2>
-                                    <small class="text-muted">(Kas + Profit Kotor - Total Pengeluaran)</small>
+                                    <small class="text-muted">(Berdasarkan Saldo Akhir & Arus Kas Berjalan)</small>
                                 </div>
 
                                 <hr>
