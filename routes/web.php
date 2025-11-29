@@ -259,6 +259,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan-arus-kas/{year}/{month}', [FinancialReportController::class, 'cetak'])->name('financial.report.show');
     });
 
+    Route::controller(App\Http\Controllers\Backend\DailyFinancialReportController::class)->group(function () {
+        Route::get('/arus-kas-harian', 'index')->name('daily.financial.index');
+        Route::get('/arus-kas-harian/create', 'create')->name('daily.financial.create');
+        Route::post('/arus-kas-harian', 'store')->name('daily.financial.store');
+    });
+
     Route::controller(AcceptanceController::class)->group(function () {
         Route::get('/all/acceptance', 'index')->name('all.acceptance');
         Route::get('/add/acceptance', 'create')->name('add.acceptance');
