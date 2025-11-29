@@ -38,14 +38,27 @@ class DailyFinancialReportController extends Controller
         // Check if already closed
         $existing = DailyFinancialSummary::whereDate('date', $date)->first();
         if ($existing) {
-             $notification = [
+            $notification = [
                 'message' => 'Laporan harian untuk tanggal ' . $date->format('d-m-Y') . ' sudah ditutup.',
                 'alert-type' => 'warning'
             ];
             // You might want to allow viewing the report instead, but for now redirect or show warning
             // For now, let's redirect to index with warning
-             return redirect()->route('daily.financial.index')->with($notification);
+            return redirect()->route('daily.financial.index')->with($notification);
         }
+
+        // Hitung Rincian Pemasukan (Income)
+        $salesIncome = Sale::whereDate('date', $date)->sum('grand_total');
+        $tailorIncome = TailorTransaction::whereDate('transaction_date', $date)->sum('total_price');
+        $productionIncome = Production::whereDate('date', $date)->sum('total_price');
+        $externalIncome = Acceptance::whereDate('date', $date)->sum('amount');
+        $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
+
+        // Hitung Rincian Pengeluaran (Expenditure)
+        $purchaseExpense = Purchase::whereDate('date', $date)->sum('grand_total');
+        $operationalExpense = Expense::whereDate('date', $date)->sum('amount');
+        $payrollExpense = Payroll::whereDate('payment_date', $date)->where('type', 'Gaji/Komisi Mingguan')->where('is_processed', 1)->sum('amount');
+        $totalExpense = $purchaseExpense + $operationalExpense + $payrollExpense;
 
         // --- Calculate Opening Balance ---
         $openingBalance = 0;
@@ -63,8 +76,8 @@ class DailyFinancialReportController extends Controller
             // Get active or closed monthly summary for this month
             // Note: If we are in October, we look for October Summary.
             $monthlySummary = FinancialSummary::where('year', $date->year)
-                                              ->where('month', $date->month)
-                                              ->first();
+                ->where('month', $date->month)
+                ->first();
 
             if ($monthlySummary) {
                 $monthlyOpening = $monthlySummary->opening_balance;
@@ -105,7 +118,14 @@ class DailyFinancialReportController extends Controller
             'openingBalance',
             'totalIncome',
             'totalExpense',
-            'closingBalance'
+            'closingBalance',
+            'salesIncome',
+            'tailorIncome',
+            'productionIncome',
+            'externalIncome',
+            'purchaseExpense',
+            'operationalExpense',
+            'payrollExpense',
         ));
     }
 
@@ -127,7 +147,7 @@ class DailyFinancialReportController extends Controller
 
         // Double check existence
         if (DailyFinancialSummary::whereDate('date', $date)->exists()) {
-             $notification = [
+            $notification = [
                 'message' => 'Laporan harian untuk tanggal ini sudah ada.',
                 'alert-type' => 'error'
             ];
@@ -151,7 +171,8 @@ class DailyFinancialReportController extends Controller
         return redirect()->route('daily.financial.index')->with($notification);
     }
 
-    private function calculateIncome($startDate, $endDate) {
+    private function calculateIncome($startDate, $endDate)
+    {
         // 1. Sale
         $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
 
@@ -174,7 +195,8 @@ class DailyFinancialReportController extends Controller
         return $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
     }
 
-    private function calculateExpense($startDate, $endDate) {
+    private function calculateExpense($startDate, $endDate)
+    {
         // 1. Purchase
         $purchaseExpense = Purchase::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
 

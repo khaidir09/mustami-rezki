@@ -35,13 +35,9 @@
                                             <h5 class="my-0 text-success"><i data-feather="arrow-up" class="me-2"></i>Total Pemasukan</h5>
                                         </div>
                                         <div class="card-body">
-                                            <p class="card-text">Penjualan Produk: <span class="float-end">@rupiah($salesIncome)</span></p>
-                                            <p class="card-text">Jasa Jahit: <span class="float-end">@rupiah($tailorIncome)</span></p>
-                                            <p class="card-text">Produksi: <span class="float-end">@rupiah($productionIncome)</span></p>
-                                            @if ($externalIncome)
-                                                <p class="card-text">Penerimaan Eksternal: <span class="float-end">@rupiah($externalIncome)</span></p>
-                                            @endif
-                                            <hr>
+                                            <div class="alert alert-info">
+                                                Total Pemasukan dihitung dari akumulasi <strong>Laporan Arus Kas Harian</strong> bulan ini.
+                                            </div>
                                             <h5 class="card-title mt-2">Jumlah Pemasukan: <span class="float-end text-success">@rupiah($totalIncome)</span></h5>
                                         </div>
                                     </div>
@@ -54,10 +50,9 @@
                                             <h5 class="my-0 text-danger"><i data-feather="arrow-down" class="me-2"></i>Total Pengeluaran</h5>
                                         </div>
                                         <div class="card-body">
-                                            <p class="card-text">Pembelian Barang: <span class="float-end">@rupiah($purchaseExpense)</span></p>
-                                            <p class="card-text">Biaya Operasional: <span class="float-end">@rupiah($operationalExpense)</span></p>
-                                            <p class="card-text">Gaji & Komisi: <span class="float-end">@rupiah($payrollExpense)</span></p>
-                                            <hr>
+                                            <div class="alert alert-info">
+                                                Total Pengeluaran dihitung dari akumulasi <strong>Laporan Arus Kas Harian</strong> bulan ini.
+                                            </div>
                                             <h5 class="card-title mt-2">Jumlah Pengeluaran: <span class="float-end text-danger">@rupiah($totalExpense)</span></h5>
                                         </div>
                                     </div>
