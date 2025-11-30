@@ -60,7 +60,6 @@
                                         <th>Tanggal</th>
                                         <th>ID Transaksi</th>
                                         <th>Tipe Transaksi</th>
-                                        <th>Jenis Distribusi</th>
                                         <th>Jumlah</th>
                                     </tr>
                                 </thead>
@@ -81,15 +80,11 @@
                                             {{-- Menampilkan nama model yang lebih ramah dibaca --}}
                                             {{ str_replace('App\Models\\', '', $item->transaction_type) }}
                                         </td>
-                                        <td>
-                                            {{-- Mengubah snake_case menjadi Title Case --}}
-                                            {{ ucwords(str_replace('_', ' ', $item->distribution_type)) }}
-                                        </td>
                                         <td>Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">Tidak ada data ditemukan.</td>
+                                        <td colspan="5" class="text-center">Tidak ada data ditemukan.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>

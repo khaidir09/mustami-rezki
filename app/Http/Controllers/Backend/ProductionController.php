@@ -116,17 +116,11 @@ class ProductionController extends Controller
             ->where('transaction_type', Production::class)
             ->delete();
 
-        $amountPerShare = $profit / 3;
-        $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
-        foreach ($distributionTypes as $type) {
-            ProfitDistribution::create([
-                'transaction_id'   => $production->id,
-                'transaction_type' => Production::class,
-                'distribution_type' => $type,
-                'amount'           => $amountPerShare,
-            ]);
-        }
+        ProfitDistribution::create([
+            'transaction_id'   => $production->id,
+            'transaction_type' => Production::class,
+            'amount'           => $profit,
+        ]);
 
         $notification = array(
             'message' => 'Produksi Berhasil Diperbarui',
