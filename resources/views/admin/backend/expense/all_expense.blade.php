@@ -30,6 +30,7 @@
                             <tr>
                                 <th>No.</th>
                                 <th>Tanggal</th>
+                                <th>Kategori</th>
                                 <th>Jumlah</th>
                                 <th>Deskripsi</th>
                                 <th>Aksi</th>
@@ -40,6 +41,7 @@
                                 <tr>
                                     <td>{{ $key+1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->date)->format('d-m-Y') }}</td>
+                                    <td>{{ $item->category ?? '-' }}</td>
                                     <td>Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
                                     <td>{{ $item->description }}</td>
                                     <td>
@@ -93,6 +95,20 @@
                     </div>
 
                     <div class="form-group mb-3 col-md-12">
+                        <label class="form-label">Kategori</label>
+                        <select class="form-select" name="category" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="Sedekah">Sedekah</option>
+                            <option value="Kasbon karyawan">Kasbon karyawan</option>
+                            <option value="Alat & bahan jahitan">Alat & bahan jahitan</option>
+                            @if(auth()->user()->hasRole('Super Admin'))
+                                <option value="Keluarga">Keluarga</option>
+                            @endif
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3 col-md-12">
                         <label class="form-label">Deskripsi</label>
                         <input type="text" class="form-control" name="description" required>
                     </div>
@@ -141,7 +157,7 @@
         $("#datatable").dataTable({
             "columnDefs": [{
                 "sortable": false,
-                "targets": [4]
+                "targets": [5]
             }],
             "order": [[0, "asc"]]
         });

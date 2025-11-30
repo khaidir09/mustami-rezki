@@ -27,6 +27,19 @@
          <input type="date" class="form-control" name="date" value="{{ $editData->date }}"> 
       </div>
       <div class="col-md-6 mb-3">
+         <label class="form-label">Kategori</label>
+         <select class="form-select" name="category" required>
+            <option value="">Pilih Kategori</option>
+            <option value="Operasional" {{ $editData->category == 'Operasional' ? 'selected' : '' }}>Operasional</option>
+            <option value="Sedekah" {{ $editData->category == 'Sedekah' ? 'selected' : '' }}>Sedekah</option>
+            <option value="Kasbon karyawan" {{ $editData->category == 'Kasbon karyawan' ? 'selected' : '' }}>Kasbon karyawan</option>
+            <option value="Alat & bahan jahitan" {{ $editData->category == 'Alat & bahan jahitan' ? 'selected' : '' }}>Alat & bahan jahitan</option>
+            @if(auth()->user()->hasRole('Super Admin'))
+                <option value="Keluarga" {{ $editData->category == 'Keluarga' ? 'selected' : '' }}>Keluarga</option>
+            @endif
+         </select>
+      </div>
+      <div class="col-md-6 mb-3">
          <label class="form-label">Deskripsi</label>
          <input type="text" name="description" class="form-control" value="{{ $editData->description }}">
       </div>
