@@ -9,7 +9,6 @@ class ProfitDistribution extends Model
     protected $fillable = [
         'transaction_id',
         'transaction_type',
-        'distribution_type',
         'amount',
     ];
 }

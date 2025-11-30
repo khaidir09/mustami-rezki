@@ -201,19 +201,11 @@ class TailorTransactionController extends Controller
                     $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
 
                     if ($totalProfit > 0) {
-                        // 4. Hitung jumlah untuk setiap bagian (1/3)
-                        $amountPerShare = $totalProfit / 3;
-                        $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
-                        // 5. Buat data distribusi untuk setiap jenis
-                        foreach ($distributionTypes as $type) {
-                            ProfitDistribution::create([
-                                'transaction_id'   => $transaction->id,
-                                'transaction_type' => TailorTransactionProduct::class, // Menggunakan class constant lebih aman
-                                'distribution_type' => $type,
-                                'amount'           => $amountPerShare,
-                            ]);
-                        }
+                        ProfitDistribution::create([
+                            'transaction_id'   => $transaction->id,
+                            'transaction_type' => TailorTransactionProduct::class, // Menggunakan class constant lebih aman
+                            'amount'           => $totalProfit,
+                        ]);
                     }
                 }
             }
@@ -240,17 +232,11 @@ class TailorTransactionController extends Controller
 
             // 4. Distribusikan profit HANYA JIKA ada profit & statusnya 'Diambil'
             if ($profitToDistribute > 0 && $isProfitDistributable) {
-                $amountPerShare = $profitToDistribute / 3;
-                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
-                foreach ($distributionTypes as $type) {
-                    ProfitDistribution::create([
-                        'transaction_id'   => $transaction->id,
-                        'transaction_type' => TailorTransaction::class,
-                        'distribution_type' => $type,
-                        'amount'           => $amountPerShare,
-                    ]);
-                }
+                ProfitDistribution::create([
+                    'transaction_id'   => $transaction->id,
+                    'transaction_type' => TailorTransaction::class,
+                    'amount'           => $profitToDistribute,
+                ]);
             }
 
             DB::commit();
@@ -458,16 +444,11 @@ class TailorTransactionController extends Controller
                     if ($product) {
                         $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
                         if ($totalProfit > 0) {
-                            $amountPerShare = $totalProfit / 3;
-                            $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-                            foreach ($distributionTypes as $type) {
-                                ProfitDistribution::create([
-                                    'transaction_id'   => $transaction->id,
-                                    'transaction_type' => TailorTransactionProduct::class,
-                                    'distribution_type' => $type,
-                                    'amount'           => $amountPerShare,
-                                ]);
-                            }
+                            ProfitDistribution::create([
+                                'transaction_id'   => $transaction->id,
+                                'transaction_type' => TailorTransactionProduct::class,
+                                'amount'           => $totalProfit,
+                            ]);
                         }
                     }
                 }
@@ -513,16 +494,11 @@ class TailorTransactionController extends Controller
 
             // Buat ulang HANYA jika kondisi terpenuhi
             if ($shouldDistributeProfit) {
-                $amountPerShare = $profitToDistribute / 3;
-                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-                foreach ($distributionTypes as $type) {
-                    ProfitDistribution::create([
-                        'transaction_id'   => $transaction->id,
-                        'transaction_type' => TailorTransaction::class,
-                        'distribution_type' => $type,
-                        'amount'           => $amountPerShare,
-                    ]);
-                }
+                ProfitDistribution::create([
+                    'transaction_id'   => $transaction->id,
+                    'transaction_type' => TailorTransaction::class,
+                    'amount'           => $profitToDistribute,
+                ]);
             }
 
             DB::commit();
