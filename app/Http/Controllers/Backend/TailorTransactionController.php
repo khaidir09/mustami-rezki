@@ -481,7 +481,7 @@ class TailorTransactionController extends Controller
             if ($shouldHaveCommission) {
                 if ($existingCommission) {
                     // Jika komisi seharusnya ada & sudah ada -> UPDATE
-                    $existingCommission->update(['amount' => $tailor_commission]);
+                    $existingCommission->update(['amount' => $tailor_commission, 'user_id' => $request->tailor_id]);
                 } else {
                     // Jika komisi seharusnya ada & belum ada -> CREATE
                     TailorCommission::create([
