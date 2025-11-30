@@ -188,7 +188,7 @@
             @foreach($expenses as $expense)
             <tr>
                 <td>{{ $expense->date }}</td>
-                <td>Biaya Operasional</td>
+                <td>{{ $expense->category }}</td>
                 <td>{{ $expense->description }}</td>
                 <td class="text-right">@rupiah($expense->amount)</td>
             </tr>
