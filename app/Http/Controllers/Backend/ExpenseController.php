@@ -35,10 +35,19 @@ class ExpenseController extends Controller
     {
         $request->validate([
             'date' => 'required|date',
+            'category' => 'required|string',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:1000',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        if ($request->category == 'Keluarga' && !auth()->user()->hasRole('Super Admin')) {
+            $notification = array(
+                'message' => 'Anda tidak memiliki akses untuk memilih kategori Keluarga',
+                'alert-type' => 'error'
+            );
+            return redirect()->back()->with($notification);
+        }
 
         $image = $request->file('photo');
         $save_url = null;
@@ -55,6 +64,7 @@ class ExpenseController extends Controller
 
         Expense::create([
             'date' => $request->date,
+            'category' => $request->category,
             'amount' => $request->amount,
             'description' => $request->description,
             'photo' => $save_url,
@@ -107,12 +117,21 @@ class ExpenseController extends Controller
             $save_url = 'upload/expense/' . $name_gen;
         }
 
+        if ($request->category == 'Keluarga' && !auth()->user()->hasRole('Super Admin')) {
+            $notification = array(
+                'message' => 'Anda tidak memiliki akses untuk memilih kategori Keluarga',
+                'alert-type' => 'error'
+            );
+            return redirect()->back()->with($notification);
+        }
+
         if ($image && $expense->photo) {
             // Hapus file lama jika ada
             unlink($expense->photo);
         }
 
         $expense->date = $request->date;
+        $expense->category = $request->category;
         $expense->amount = $request->amount;
         $expense->description = $request->description;
         $expense->photo = $save_url;
