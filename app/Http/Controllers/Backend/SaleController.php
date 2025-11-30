@@ -85,19 +85,11 @@ class SaleController extends Controller
             $editdatas->update(['grand_total' => $grandTotal + $request->shipping - $request->discount]);
 
             if ($totalProfit > 0) {
-                // 4. Hitung jumlah untuk setiap bagian (1/3)
-                $amountPerShare = $totalProfit / 3;
-                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
-                // 5. Buat data distribusi untuk setiap jenis
-                foreach ($distributionTypes as $type) {
-                    ProfitDistribution::create([
-                        'transaction_id'   => $editdatas->id,
-                        'transaction_type' => Sale::class, // Menggunakan class constant lebih aman
-                        'distribution_type' => $type,
-                        'amount'           => $amountPerShare,
-                    ]);
-                }
+                ProfitDistribution::create([
+                    'transaction_id'   => $editdatas->id,
+                    'transaction_type' => Sale::class, // Menggunakan class constant lebih aman
+                    'amount'           => $totalProfit,
+                ]);
             }
 
             DB::commit();
@@ -192,17 +184,11 @@ class SaleController extends Controller
 
             // === 5. BUAT ULANG DISTRIBUSI PROFIT ===
             if ($totalProfit > 0) {
-                $amountPerShare = $totalProfit / 3;
-                $distributionTypes = ['pengembangan_modal', 'pribadi', 'sedekah'];
-
-                foreach ($distributionTypes as $type) {
-                    ProfitDistribution::create([
-                        'transaction_id'   => $sale->id,
-                        'transaction_type' => Sale::class,
-                        'distribution_type' => $type,
-                        'amount'           => $amountPerShare,
-                    ]);
-                }
+                ProfitDistribution::create([
+                    'transaction_id'   => $sale->id,
+                    'transaction_type' => Sale::class,
+                    'amount'           => $totalProfit,
+                ]);
             }
 
             DB::commit(); // Simpan semua perubahan jika tidak ada error
