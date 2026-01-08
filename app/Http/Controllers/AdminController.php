@@ -137,10 +137,6 @@ class AdminController extends Controller
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
 
-        $data['totalKomisiPenjahit'] = TailorCommission::whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->sum('amount');
-
         $data['completedJobsThisMonth'] = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
             ->whereMonth('updated_at', date('m'))
             ->whereYear('updated_at', date('Y'))
@@ -281,7 +277,7 @@ class AdminController extends Controller
 
         $data['totalTransaksiPenjualan'] = $data['totalTransaksiPenjualanLangsung'] + $data['totalTransaksiPenjualanDariJahit'];
 
-        $data['totalProfitPenjualan'] = ProfitDistribution::whereIn('transaction_type', ['App\Models\Sale', 'App\Models\TailorTransaction'])
+        $data['totalProfitPenjualan'] = ProfitDistribution::whereIn('transaction_type', ['App\Models\Sale', 'App\Models\TailorTransactionProduct'])
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
             ->sum('amount');
@@ -294,7 +290,7 @@ class AdminController extends Controller
         $data['kas'] = $activeSummary->opening_balance;
 
 
-        $data['totalProfitKotor'] = $data['totalProfit'] + $data['totalKomisiPenjahit'] + $data['komisiProduksi'];
+        $data['totalProfitKotor'] = $data['totalProfit'] + $data['komisiProduksi'];
 
         // --- Perbaikan Perhitungan Uang Bersih (Berdasarkan Arus Kas Harian) ---
         $latestDailySummary = DailyFinancialSummary::orderBy('date', 'desc')->first();
