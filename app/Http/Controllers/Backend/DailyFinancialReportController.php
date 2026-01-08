@@ -64,18 +64,20 @@ class DailyFinancialReportController extends Controller
         // --- Calculate Opening Balance ---
         $openingBalance = 0;
 
-        // 1. Try to get yesterday's closing balance
-        $yesterday = $date->copy()->subDay();
-        $previousSummary = DailyFinancialSummary::whereDate('date', $yesterday)->first();
+        // 1. Coba ambil data penutupan TERAKHIR yang ada (bukan cuma kemarin)
+        // Logika: Cari tanggal < hari ini, urutkan dari tanggal terbaru, ambil satu.
+        $lastSummary = DailyFinancialSummary::where('date', '<', $date->format('Y-m-d'))
+            ->orderBy('date', 'desc')
+            ->first();
 
-        if ($previousSummary) {
-            $openingBalance = $previousSummary->closing_balance;
+        if ($lastSummary) {
+            // Jika ketemu (misal: data hari Kamis, sedangkan hari ini Sabtu),
+            // maka closing balance Kamis otomatis jadi opening balance Sabtu.
+            $openingBalance = $lastSummary->closing_balance;
         } else {
-            // 2. If no daily summary for yesterday, try to calculate from Monthly Summary
-            // Logic: Monthly Opening + Income(MonthStart -> Yesterday) - Expense(MonthStart -> Yesterday)
+            // 2. Jika SAMA SEKALI tidak ada data hari sebelumnya (misal: penggunaan pertama kali)
+            // Maka hitung mundur dari Monthly Summary (seperti logika awal Anda)
 
-            // Get active or closed monthly summary for this month
-            // Note: If we are in October, we look for October Summary.
             $monthlySummary = FinancialSummary::where('year', $date->year)
                 ->where('month', $date->month)
                 ->first();
@@ -83,24 +85,24 @@ class DailyFinancialReportController extends Controller
             if ($monthlySummary) {
                 $monthlyOpening = $monthlySummary->opening_balance;
 
-                $monthStart = $date->copy()->startOfMonth();
-                // Range from MonthStart to Yesterday (End of Day)
-                $calcStart = $monthStart;
-                $calcEnd = $yesterday->endOfDay();
-
-                // If date is 1st of month, yesterday is prev month.
-                // If date is 1st, we just take Monthly Opening.
+                // Jika tanggal 1, langsung ambil Monthly Opening
                 if ($date->day == 1) {
                     $openingBalance = $monthlyOpening;
                 } else {
-                    // Calculate accumulated flows
-                    $accIncome = $this->calculateIncome($calcStart, $calcEnd);
-                    $accExpense = $this->calculateExpense($calcStart, $calcEnd);
+                    // Jika tanggal pertengahan tapi belum ada daily summary sebelumnya
+                    // Hitung akumulasi dari awal bulan sampai sebelum hari ini
+                    $monthStart = $date->copy()->startOfMonth();
+
+                    // Akhir perhitungan adalah "kemarin" (karena hari ini belum dihitung)
+                    $calcEnd = $date->copy()->subDay()->endOfDay();
+
+                    $accIncome = $this->calculateIncome($monthStart, $calcEnd);
+                    $accExpense = $this->calculateExpense($monthStart, $calcEnd);
 
                     $openingBalance = $monthlyOpening + $accIncome - $accExpense;
                 }
             } else {
-                // Fallback: No monthly summary found? Maybe start with 0.
+                // Fallback terakhir: Benar-benar data baru/kosong
                 $openingBalance = 0;
             }
         }
