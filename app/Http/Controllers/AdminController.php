@@ -295,10 +295,10 @@ class AdminController extends Controller
 
 
         $data['totalProfitKotor'] = $data['totalProfit'] + $data['totalKomisiPenjahit'] + $data['komisiProduksi'];
-        
+
         // --- Perbaikan Perhitungan Uang Bersih (Berdasarkan Arus Kas Harian) ---
         $latestDailySummary = DailyFinancialSummary::orderBy('date', 'desc')->first();
-        
+
         $openingCash = 0;
         $startDate = null;
 
@@ -308,7 +308,7 @@ class AdminController extends Controller
             // Hitung akumulasi mulai dari BESOKNYA laporan terakhir s/d SEKARANG
             $startDate = $latestDailySummary->date->addDay()->startOfDay();
         } else {
-             // Fallback ke Laporan Bulanan (jika belum ada laporan harian sama sekali)
+            // Fallback ke Laporan Bulanan (jika belum ada laporan harian sama sekali)
             $activeSummary = FinancialSummary::where('status', 'Aktif')->first();
             if ($activeSummary) {
                 $openingCash = $activeSummary->opening_balance;
@@ -318,18 +318,18 @@ class AdminController extends Controller
                 $startDate = Carbon::today()->startOfMonth();
             }
         }
-        
+
         // Hitung Akumulasi Pemasukan sejak $startDate
         $salesIncome = Sale::where('date', '>=', $startDate)->sum('grand_total');
-        
+
         $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate) {
             $query->where('transaction_date', '>=', $startDate);
         })->sum('subtotal');
-        
-        $tailorIncome = TailorTransaction::where('transaction_date', '>=', $startDate)->sum('total_price');
+
+        $tailorIncome = TailorTransaction::where('transaction_date', '>=', $startDate)->where('status', 'Diambil')->sum('paid_amount');
         $productionIncome = Production::where('date', '>=', $startDate)->sum('total_price');
         $externalIncomeNew = Acceptance::where('date', '>=', $startDate)->sum('amount');
-        
+
         $totalIncomeNew = $salesIncome + $salesIncomeDariJahit + $tailorIncome + $productionIncome + $externalIncomeNew;
 
         // Hitung Akumulasi Pengeluaran sejak $startDate
@@ -339,7 +339,7 @@ class AdminController extends Controller
             ->where('type', 'Gaji/Komisi Mingguan')
             ->where('is_processed', 1)
             ->sum('amount');
-            
+
         $totalExpenseNew = $purchaseExpense + $operationalExpense + $payrollExpense;
 
         // Uang Bersih = Saldo Awal (dari closing terakhir) + Pemasukan Baru - Pengeluaran Baru
