@@ -185,7 +185,7 @@ class DailyFinancialReportController extends Controller
         $salesIncome += $salesIncomeDariJahit;
 
         // 3. Tailor Transaction (Service)
-        $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
+        $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->where('status', 'Diambil')->sum('total_price');
 
         // 4. Production
         $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
