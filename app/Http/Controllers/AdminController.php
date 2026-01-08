@@ -322,15 +322,11 @@ class AdminController extends Controller
         // Hitung Akumulasi Pemasukan sejak $startDate
         $salesIncome = Sale::where('date', '>=', $startDate)->sum('grand_total');
 
-        $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate) {
-            $query->where('transaction_date', '>=', $startDate);
-        })->sum('subtotal');
-
         $tailorIncome = TailorTransaction::where('transaction_date', '>=', $startDate)->where('status', 'Diambil')->sum('paid_amount');
         $productionIncome = Production::where('date', '>=', $startDate)->sum('total_price');
         $externalIncomeNew = Acceptance::where('date', '>=', $startDate)->sum('amount');
 
-        $totalIncomeNew = $salesIncome + $salesIncomeDariJahit + $tailorIncome + $productionIncome + $externalIncomeNew;
+        $totalIncomeNew = $salesIncome + $tailorIncome + $productionIncome + $externalIncomeNew;
 
         // Hitung Akumulasi Pengeluaran sejak $startDate
         $purchaseExpense = Purchase::where('date', '>=', $startDate)->sum('grand_total');
