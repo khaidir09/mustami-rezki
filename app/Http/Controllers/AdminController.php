@@ -212,6 +212,16 @@ class AdminController extends Controller
             ->whereYear('date', date('Y'))
             ->sum('quantity');
 
+        $data['personalProductionCommission'] = Production::where('user_id', $user->id)
+            ->whereYear('date', date('Y'))
+            ->whereMonth('date', date('m'))
+            ->sum('total_commission');
+
+        $data['personalProductionCount'] = Production::where('user_id', $user->id)
+            ->whereYear('date', date('Y'))
+            ->whereMonth('date', date('m'))
+            ->sum('quantity');
+
         $data['profitProduksi'] = Production::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('profit');

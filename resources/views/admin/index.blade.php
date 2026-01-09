@@ -316,11 +316,118 @@
                                         <div class="fs-14 mb-1">Komisi Produksi Bulan Ini</div>
                                     </div>
                                     <div class="d-flex align-items-baseline">
-                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">Rp {{ number_format($komisiProduksi, 0, ',', '.') }} ({{ $jumlahProduksi }} Item)</div>
+                                        <div class="fs-22 mb-0 me-2 fw-semibold text-black">Rp {{ number_format($personalProductionCommission, 0, ',', '.') }} ({{ $personalProductionCount }} Item)</div>
                                     </div>
                                     <a href="{{ route('all.production') }}" class="text-muted fs-12">
                                         Lihat Produksi
                                     </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Filter Section (Admin) --}}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Filter Periode Penggajian</h4>
+                            <p class="card-title-desc">Pilih rentang tanggal untuk menghitung total gaji dan komisi yang belum dibayar.</p>
+
+                            <div class="row g-3 align-items-end">
+                                <input type="hidden" id="employee_id_admin" name="employee_id" value="{{ Auth::user()->id }}">
+                                <div class="col-md-5">
+                                    <label for="start_date_admin" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="start_date_admin">
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label for="end_date_admin" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="end_date_admin">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" type="button" id="calculate-btn-admin">
+                                        Tampilkan Rincian
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Results Section (Admin) --}}
+            <div id="payroll-details-container-admin" class="row" style="display: none;">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Pratinjau Slip Gaji</h4>
+                            <p class="card-title-desc">Berikut adalah rincian pendapatan pada periode <strong id="period_display_admin"></strong>.</p>
+
+                             <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr class="table-light">
+                                            <th>Jenis Pendapatan</th>
+                                            <th class="text-end">Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Gaji Harian</td>
+                                            <td class="text-end" id="total_daily_salary_display_admin">Rp 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Komisi Produksi</td>
+                                            <td class="text-end" id="total_production_commission_display_admin">Rp 0</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-light">
+                                            <th class="fs-5">TOTAL PERHITUNGAN</th>
+                                            <th class="text-end fs-5" id="grand_total_display_admin">Rp 0</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-lg-6">
+                                    <h5 class="card-title">Rincian Gaji Harian</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Tanggal</th>
+                                                    <th class="text-end">Jumlah</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="daily-salary-details-tbody-admin">
+                                                {{-- Data akan diisi oleh JavaScript --}}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h5 class="card-title">Rincian Komisi Produksi</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Tanggal</th>
+                                                    <th>Nama Item</th>
+                                                    <th>Qty</th>
+                                                    <th class="text-end">Komisi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="production-commission-details-tbody-admin">
+                                                {{-- Data akan diisi oleh JavaScript --}}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -758,6 +865,101 @@ $(document).ready(function() {
     // Sembunyikan pratinjau jika filter diubah (tidak berubah)
     $('#start_date, #end_date').on('change', function(){
         $('#payroll-details-container').slideUp();
+    });
+
+    // ============================================
+    // LOGIKA PERHITUNGAN GAJI ADMIN (Script Baru)
+    // ============================================
+    $('#calculate-btn-admin').on('click', function() {
+        var employeeId = $('#employee_id_admin').val();
+        var startDate = $('#start_date_admin').val();
+        var endDate = $('#end_date_admin').val();
+
+        if (!employeeId || !startDate || !endDate) {
+            alert('Silakan tentukan periode tanggal dengan lengkap.');
+            return;
+        }
+        $(this).html('Menghitung...').prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('payroll.calculate') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                user_id: employeeId,
+                start_date: startDate,
+                end_date: endDate
+            },
+            success: function(response) {
+                // Tampilkan hasil total
+                $('#total_daily_salary_display_admin').text(formatRupiah(response.total_daily_salary));
+                $('#total_production_commission_display_admin').text(formatRupiah(response.total_button_commission));
+                $('#grand_total_display_admin').text(formatRupiah(response.grand_total));
+                $('#period_display_admin').text(startDate + ' s/d ' + endDate);
+
+                // 1. Isi Tabel Gaji Harian
+                var salaryTbody = $('#daily-salary-details-tbody-admin');
+                salaryTbody.empty();
+                var salaries = response.details.salaries;
+
+                if (salaries.length > 0) {
+                    $.each(salaries, function(index, item) {
+                        var date = new Date(item.payment_date);
+                        var formattedDate = date.toLocaleDateString('id-ID', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+
+                        var row = `
+                            <tr>
+                                <td>${formattedDate}</td>
+                                <td class="text-end">${formatRupiah(item.amount)}</td>
+                            </tr>
+                        `;
+                        salaryTbody.append(row);
+                    });
+                } else {
+                    salaryTbody.append('<tr><td colspan="2" class="text-center text-muted">Tidak ada data.</td></tr>');
+                }
+
+                // 2. Isi Tabel Komisi Produksi
+                var productionTbody = $('#production-commission-details-tbody-admin');
+                productionTbody.empty();
+                var productionCommissions = response.details.button_commissions;
+
+                if (productionCommissions.length > 0) {
+                    $.each(productionCommissions, function(index, item) {
+                        var date = new Date(item.date);
+                        var formattedDate = date.toLocaleDateString('id-ID', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+
+                        var row = `
+                            <tr>
+                                <td>${formattedDate}</td>
+                                <td>${item.name || '-'}</td>
+                                <td>${item.quantity}</td>
+                                <td class="text-end">${formatRupiah(item.total_commission)}</td>
+                            </tr>
+                        `;
+                        productionTbody.append(row);
+                    });
+                } else {
+                    productionTbody.append('<tr><td colspan="4" class="text-center text-muted">Tidak ada data.</td></tr>');
+                }
+
+                // Tampilkan hasil
+                $('#payroll-details-container-admin').slideDown();
+                $('#calculate-btn-admin').html('Tampilkan Rincian').prop('disabled', false);
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat mengambil data.');
+                $('#calculate-btn-admin').html('Tampilkan Rincian').prop('disabled', false);
+            }
+        });
+    });
+
+    $('#start_date_admin, #end_date_admin').on('change', function(){
+        $('#payroll-details-container-admin').slideUp();
     });
 });
 </script>
