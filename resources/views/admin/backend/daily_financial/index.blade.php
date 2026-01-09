@@ -12,9 +12,13 @@
             </div>
 
             <div class="text-end">
-                <ol class="breadcrumb m-0 py-2">
-                     <a href="{{ route('daily.financial.create') }}" class="btn btn-secondary">Tutup Buku Hari Ini</a>
-                </ol>
+                <form action="{{ route('daily.financial.create') }}" method="GET" class="d-flex align-items-center gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">Pilih Tanggal</span>
+                        <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
+                        <button type="submit" class="btn btn-primary">Proses Tutup Buku</button>
+                    </div>
+                </form>
             </div>
         </div>
 
