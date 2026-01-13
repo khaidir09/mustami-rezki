@@ -46,7 +46,7 @@
                                 @foreach ($summaries as $key => $item)
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $item->date->format('d F Y') }}</td>
+                                        <td>{{ $item->date->translatedFormat('d F Y') }}</td>
                                         <td>Rp {{ number_format($item->opening_balance, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($item->total_income, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($item->total_expense, 0, ',', '.') }}</td>

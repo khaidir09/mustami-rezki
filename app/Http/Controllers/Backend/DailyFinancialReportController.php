@@ -50,7 +50,7 @@ class DailyFinancialReportController extends Controller
 
         // Hitung Rincian Pemasukan (Income)
         $salesIncome = Sale::whereDate('date', $date)->sum('grand_total');
-        $tailorIncome = TailorTransaction::whereDate('transaction_date', $date)->where('status', 'Diambil')->sum('paid_amount');
+        $tailorIncome = TailorTransaction::where('status', 'Diambil')->whereDate('picked_up_at', $date)->sum('paid_amount');
         $productionIncome = Production::whereDate('date', $date)->sum('total_price');
         $externalIncome = Acceptance::whereDate('date', $date)->sum('amount');
         $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
@@ -187,7 +187,7 @@ class DailyFinancialReportController extends Controller
         $salesIncome += $salesIncomeDariJahit;
 
         // 3. Tailor Transaction (Service)
-        $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->where('status', 'Diambil')->sum('total_price');
+        $tailorIncome = TailorTransaction::whereBetween('picked_up_at', [$startDate, $endDate])->where('status', 'Diambil')->sum('total_price');
 
         // 4. Production
         $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
@@ -223,7 +223,7 @@ class DailyFinancialReportController extends Controller
         // 1. Ambil Rincian Pemasukan
         $sales = Sale::whereDate('date', $date)->get();
         $tailorTransactions = TailorTransaction::with('soldProducts')
-            ->whereDate('transaction_date', $date)
+            ->whereDate('picked_up_at', $date)
             ->where('status', 'Diambil')
             ->get();
         $productions = Production::whereDate('date', $date)->get();

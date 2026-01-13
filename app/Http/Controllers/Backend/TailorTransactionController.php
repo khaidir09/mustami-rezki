@@ -126,6 +126,11 @@ class TailorTransactionController extends Controller
                 ];
             }
 
+            $pickedUpAt = null;
+            if ($request->status === 'Diambil') {
+                $pickedUpAt = now();
+            }
+
             // Gabungkan data umum dengan data spesifik dari percabangan
             $finalData = array_merge($transactionData, [
                 'transaction_code' => 'JAHIT-' . Carbon::now()->format('dm') . mt_rand(00, 99),
@@ -138,6 +143,7 @@ class TailorTransactionController extends Controller
                 'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
+                'picked_up_at' => $pickedUpAt,
             ]);
 
             $transaction = TailorTransaction::create($finalData);
@@ -179,7 +185,7 @@ class TailorTransactionController extends Controller
                 }
             }
 
-            // ## LOGIKA BARU: Simpan produk yang dijual & kurangi stok ##
+            // ## LANGKAH 5: SIMPAN PRODUK TAMBAHAN & HITUNG PROFIT PRODUK ##
             if ($request->has('products')) {
                 foreach ($request->products as $productId => $productData) {
                     $product = Product::find($productId);
@@ -200,11 +206,12 @@ class TailorTransactionController extends Controller
                     // ---- KALKULASI PROFIT PER ITEM ----
                     $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
 
-                    if ($totalProfit > 0) {
+                    if ($totalProfit > 0 && $request->status === 'Diambil') {
                         ProfitDistribution::create([
                             'transaction_id'   => $transaction->id,
                             'transaction_type' => TailorTransactionProduct::class, // Menggunakan class constant lebih aman
                             'amount'           => $totalProfit,
+                            'created_at'       => now(),
                         ]);
                     }
                 }
@@ -352,6 +359,15 @@ class TailorTransactionController extends Controller
                 ];
             }
 
+            // Cek logika: Jika status berubah menjadi 'Diambil' DAN sebelumnya belum ada tanggal ambilnya
+            if ($request->status == 'Diambil' && is_null($transaction->picked_up_at)) {
+                $pickedUpAt = now(); // Isi dengan waktu sekarang
+            }
+            // Opsional: Jika status dikembalikan dari 'Diambil' ke 'Dikerjakan' (karena salah klik), kita kosongkan lagi
+            elseif ($request->status != 'Diambil') {
+                $pickedUpAt = null;
+            }
+
             // ## LANGKAH 2: UPDATE TRANSAKSI UTAMA ##
             $finalData = array_merge($transactionData, [
                 'customer_id' => $request->customer_id,
@@ -363,7 +379,9 @@ class TailorTransactionController extends Controller
                 'paid_amount' => $request->paid_amount ?? 0,
                 'due_amount' => $due_amount,
                 'status' => $request->status,
+                'picked_up_at' => $pickedUpAt,
             ]);
+
             $transaction->update($finalData);
 
             // ## LANGKAH 3: SINKRONISASI ITEMS ##

@@ -37,4 +37,8 @@ class TailorTransaction extends Model
     {
         return $this->hasMany(TailorTransactionProduct::class);
     }
+
+    protected $casts = [
+        'picked_up_at' => 'datetime',
+    ];
 }
