@@ -49,8 +49,13 @@ class DailyFinancialReportController extends Controller
         }
 
         // Hitung Rincian Pemasukan (Income)
-        $salesIncome = Sale::whereDate('date', $date)->sum('grand_total');
-        $tailorIncome = TailorTransaction::where('status', 'Diambil')->whereDate('picked_up_at', $date)->sum('paid_amount');
+        $salesOnlyIncome = Sale::whereDate('date', $date)->sum('grand_total');
+        $tailorProductIncome = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($date) {
+            $query->where('status', 'Diambil')->whereDate('picked_up_at', $date);
+        })->sum('subtotal');
+
+        $salesIncome = $salesOnlyIncome + $tailorProductIncome;
+        $tailorIncome = TailorTransaction::where('status', 'Diambil')->whereDate('picked_up_at', $date)->sum('total_price');
         $productionIncome = Production::whereDate('date', $date)->sum('total_price');
         $externalIncome = Acceptance::whereDate('date', $date)->sum('amount');
         $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
@@ -181,7 +186,8 @@ class DailyFinancialReportController extends Controller
 
         // 2. Tailor Transaction Product (Sales from Tailor)
         $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('transaction_date', [$startDate, $endDate]);
+            $query->where('status', 'Diambil')
+                ->whereBetween('picked_up_at', [$startDate, $endDate]);
         })->sum('subtotal');
 
         $salesIncome += $salesIncomeDariJahit;
@@ -238,10 +244,11 @@ class DailyFinancialReportController extends Controller
             ->get();
 
         // Hitung Total Per Kategori
-        $totalSales = $sales->sum('grand_total');
-        $totalTailor = $tailorTransactions->sum(function ($tailor) {
-            return $tailor->paid_amount + $tailor->soldProducts->sum('subtotal');
+        $totalTailorProduct = $tailorTransactions->sum(function ($tailor) {
+            return $tailor->soldProducts->sum('subtotal');
         });
+        $totalSales = $sales->sum('grand_total') + $totalTailorProduct;
+        $totalTailor = $tailorTransactions->sum('total_price');
         $totalProduction = $productions->sum('total_price');
         $totalAcceptance = $acceptances->sum('amount');
 
