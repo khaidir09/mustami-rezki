@@ -594,6 +594,15 @@
     }
 
     $('#status').on('change', function() {
+        if ($(this).val() === 'Diambil') {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const formatted = now.toISOString().slice(0, 16);
+
+            if (!$('#picked_up_at').val()) {
+                $('#picked_up_at').val(formatted);
+            }
+        }
         togglePickedUpDate();
     });
 
