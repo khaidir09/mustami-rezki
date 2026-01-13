@@ -230,12 +230,12 @@ class AdminController extends Controller
 
         $data['omzetPenjualanDariJahitHari'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
             $today = Carbon::today();
-            $query->whereDate('transaction_date', $today)->where('status', 'Diambil');
+            $query->whereDate('picked_up_at', $today)->where('status', 'Diambil');
         })->sum('subtotal');
 
         $data['omzetPenjualanHari'] = $data['omzetPenjualanLangsungHari'] + $data['omzetPenjualanDariJahitHari'];
 
-        $data['omzetJahitHari'] = TailorTransaction::whereDate('transaction_date', $today)
+        $data['omzetJahitHari'] = TailorTransaction::whereDate('picked_up_at', $today)
             ->where('status', 'Diambil')
             ->sum('total_price');
 
@@ -247,15 +247,15 @@ class AdminController extends Controller
             ->sum('grand_total');
 
         $data['omzetPenjualanDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
-            $query->whereMonth('transaction_date', date('m'))
-                ->whereYear('transaction_date', date('Y'))
+            $query->whereMonth('picked_up_at', date('m'))
+                ->whereYear('picked_up_at', date('Y'))
                 ->where('status', 'Diambil');
         })->sum('subtotal');
 
         $data['omzetPenjualan'] = $data['omzetPenjualanLangsung'] + $data['omzetPenjualanDariJahit'];
 
-        $data['omzetJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
-            ->whereYear('transaction_date', date('Y'))
+        $data['omzetJahit'] = TailorTransaction::whereMonth('picked_up_at', date('m'))
+            ->whereYear('picked_up_at', date('Y'))
             ->where('status', 'Diambil')
             ->sum('total_price');
 
@@ -268,8 +268,8 @@ class AdminController extends Controller
             ->sum('quantity');
 
         $data['totalSaleItemDariJahit'] = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) {
-            $query->whereMonth('transaction_date', date('m'))
-                ->whereYear('transaction_date', date('Y'))
+            $query->whereMonth('picked_up_at', date('m'))
+                ->whereYear('picked_up_at', date('Y'))
                 ->where('status', 'Diambil');
         })->sum('quantity');
 
@@ -279,8 +279,8 @@ class AdminController extends Controller
             ->whereYear('date', date('Y'))
             ->count();
 
-        $data['totalTransaksiPenjualanDariJahit'] = TailorTransaction::whereMonth('transaction_date', date('m'))
-            ->whereYear('transaction_date', date('Y'))
+        $data['totalTransaksiPenjualanDariJahit'] = TailorTransaction::whereMonth('picked_up_at', date('m'))
+            ->whereYear('picked_up_at', date('Y'))
             ->where('status', 'Diambil')
             ->whereHas('soldProducts')
             ->count();
@@ -329,10 +329,10 @@ class AdminController extends Controller
         $salesIncome = Sale::where('date', '>=', $startDate)->sum('grand_total');
 
         $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate) {
-            $query->where('transaction_date', '>=', $startDate);
+            $query->where('picked_up_at', '>=', $startDate);
         })->sum('subtotal');
 
-        $tailorIncome = TailorTransaction::where('transaction_date', '>=', $startDate)->where('status', 'Diambil')->sum('paid_amount');
+        $tailorIncome = TailorTransaction::where('picked_up_at', '>=', $startDate)->where('status', 'Diambil')->sum('paid_amount');
         $productionIncome = Production::where('date', '>=', $startDate)->sum('total_price');
         $externalIncomeNew = Acceptance::where('date', '>=', $startDate)->sum('amount');
 
