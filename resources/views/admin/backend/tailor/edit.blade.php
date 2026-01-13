@@ -77,6 +77,10 @@
                                          <option value="Diambil" {{ $transaction->status == 'Diambil' ? 'selected' : '' }}>Diambil</option>
                                      </select>
                                 </div>
+                                <div class="col-md-3" id="picked_up_at_div" style="display: none;">
+                                    <label for="picked_up_at" class="form-label">Tanggal Diambil</label>
+                                    <input type="datetime-local" class="form-control" name="picked_up_at" id="picked_up_at" value="{{ $transaction->picked_up_at ? \Carbon\Carbon::parse($transaction->picked_up_at)->format('Y-m-d\TH:i') : '' }}">
+                                </div>
                             </div>
 
                             <div class="row g-3 align-items-end p-3 my-3 bg-light rounded">
@@ -581,6 +585,21 @@
     // 5. Logika Toggle Penjahit (tetap sama)
     // ... (salin kode toggleTailorSelection Anda yang sudah ada di sini jika ada)
     
+    function togglePickedUpDate() {
+        if ($('#status').val() === 'Diambil') {
+            $('#picked_up_at_div').show();
+        } else {
+            $('#picked_up_at_div').hide();
+        }
+    }
+
+    $('#status').on('change', function() {
+        togglePickedUpDate();
+    });
+
+    // Run on load
+    togglePickedUpDate();
+
     // ## PENTING: Panggil updateTotals() sekali saat halaman dimuat ##
     updateTotals(); 
 });

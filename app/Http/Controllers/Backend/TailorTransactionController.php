@@ -309,6 +309,7 @@ class TailorTransactionController extends Controller
             'products' => 'sometimes|array',
             'tailor_id' => 'required_if:work_type,Internal',
             'supplier_id' => 'required_if:work_type,Eksternal',
+            'picked_up_at' => 'nullable|date',
         ]);
 
         DB::beginTransaction();
@@ -359,12 +360,11 @@ class TailorTransactionController extends Controller
                 ];
             }
 
-            // Cek logika: Jika status berubah menjadi 'Diambil' DAN sebelumnya belum ada tanggal ambilnya
-            if ($request->status == 'Diambil' && is_null($transaction->picked_up_at)) {
-                $pickedUpAt = now(); // Isi dengan waktu sekarang
-            }
-            // Opsional: Jika status dikembalikan dari 'Diambil' ke 'Dikerjakan' (karena salah klik), kita kosongkan lagi
-            elseif ($request->status != 'Diambil') {
+            // Cek logika: Jika status berubah menjadi 'Diambil'
+            if ($request->status == 'Diambil') {
+                // Gunakan input dari user jika ada, jika kosong gunakan data lama, jika tidak ada juga baru pakai now()
+                $pickedUpAt = $request->picked_up_at ?: ($transaction->picked_up_at ?? now());
+            } else {
                 $pickedUpAt = null;
             }
 
