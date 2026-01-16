@@ -227,7 +227,8 @@ class DailyFinancialReportController extends Controller
         $date = $summary->date;
 
         // 1. Ambil Rincian Pemasukan
-        $sales = Sale::whereDate('date', $date)->get();
+        // rincian produk sale
+        $sales = Sale::with('saleItems.product')->whereDate('date', $date)->get();
         $tailorTransactions = TailorTransaction::with('soldProducts')
             ->whereDate('picked_up_at', $date)
             ->where('status', 'Diambil')

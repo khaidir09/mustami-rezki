@@ -153,7 +153,7 @@ class FinancialReportController extends Controller
         $summary = FinancialSummary::where('year', $year)->where('month', $month)->firstOrFail();
 
         // 2. Ambil Rincian Pemasukan
-        $sales = Sale::whereBetween('date', [$startDate, $endDate])->get();
+        $sales = Sale::with('saleItems.product')->whereBetween('date', [$startDate, $endDate])->get();
         $tailorTransactions = TailorTransaction::with('soldProducts')
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->get();

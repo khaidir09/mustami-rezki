@@ -134,7 +134,7 @@
             <tr>
                 <td>{{ $sale->date }}</td>
                 <td>Penjualan Produk</td>
-                <td>{{ $sale->note ?? '-' }}</td>
+                <td>{{ $sale->saleItems->pluck('product.name')->join(', ') }}</td>
                 <td class="text-right">@rupiah($sale->grand_total)</td>
             </tr>
             @endforeach
