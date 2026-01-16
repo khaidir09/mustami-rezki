@@ -32,14 +32,14 @@ class ProfitDistributionController extends Controller
         $productionQuery = Production::query();
 
         $saleQuery->whereDate('date', '>=', $startDate);
-        $tailorQuery->whereDate('transaction_date', '>=', $startDate);
+        $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '>=', $startDate);
         $productionQuery->whereDate('date', '>=', $startDate);
 
         $saleQuery->whereDate('date', '<=', $endDate);
-        $tailorQuery->whereDate('transaction_date', '<=', $endDate);
+        $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '<=', $endDate);
         $productionQuery->whereDate('date', '<=', $endDate);
 
-        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('paid_amount') + $productionQuery->sum('total_price');
+        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('total_price') + $productionQuery->sum('total_price');
 
         // 4. Ambil data detail untuk tabel dengan paginasi, Urutkan berdasarkan yang terbaru
         $distributions = $query->latest()->get();
