@@ -60,7 +60,7 @@
                                         <th>Tanggal</th>
                                         <th>ID Transaksi</th>
                                         <th>Tipe Transaksi</th>
-                                        <th>Jumlah</th>
+                                        <th>Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -71,9 +71,11 @@
                                         <td>
                                             @if($item->transaction_type == 'App\Models\Sale')
                                                 <a href="{{ route('details.sale', $item->transaction_id) }}">SALE-{{ $item->transaction_id }}</a>
-                                            @else
+                                            @elseif ($item->transaction_type == 'App\Models\TailorTransaction')
                                                 {{-- Tambahkan link untuk tipe lain jika ada, misal Jasa Jahit --}}
                                                 <a href="{{ route('details.tailor', $item->transaction_id) }}">JAHIT-{{ $item->transaction_id }}</a>
+                                            @else
+                                                <a href="{{ route('all.production') }}">PRODUKSI-{{ $item->transaction_id }}</a>
                                             @endif
                                         </td>
                                         <td>
