@@ -107,29 +107,35 @@
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <p class="text-muted mb-1">Total Keseluruhan Pendapatan</p>
-                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualanHari + $omzetJahitHari + $omzetProduksiHari)</h2>
+                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualanHari + $omzetJahitHari + $omzetProduksiHari + $externalIncomeHari)</h2>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mt-4 pt-2">
-                                <div class="row">
-                                    <div class="col-4">
+                                <div class="row g-2">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Penjualan</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetPenjualanHari)</h5>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Jasa Jahit</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetJahitHari)</h5>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Produksi</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetProduksiHari)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Eksternal</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($externalIncomeHari)</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -150,29 +156,35 @@
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <p class="text-muted mb-1">Total Keseluruhan Pendapatan</p>
-                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualan + $omzetJahit + $omzetProduksi)</h2>
+                                        <h2 class="text-success mb-0">@rupiah($omzetPenjualan + $omzetJahit + $omzetProduksi + $omzetEksternal)</h2>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mt-4 pt-2">
-                                <div class="row">
-                                    <div class="col-4">
+                                <div class="row g-2">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Penjualan</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetPenjualan)</h5>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Jasa Jahit</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetJahit)</h5>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <div class="text-center">
                                             <p class="text-muted mb-2">Produksi</p>
                                             <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetProduksi)</h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center">
+                                            <p class="text-muted mb-2">Eksternal</p>
+                                            <h5 class="fs-22 mb-0 me-2 fw-semibold text-black">@rupiah($omzetEksternal)</h5>
                                         </div>
                                     </div>
                                 </div>

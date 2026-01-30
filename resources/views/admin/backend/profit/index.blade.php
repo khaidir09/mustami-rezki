@@ -74,8 +74,10 @@
                                             @elseif ($item->transaction_type == 'App\Models\TailorTransaction')
                                                 {{-- Tambahkan link untuk tipe lain jika ada, misal Jasa Jahit --}}
                                                 <a href="{{ route('details.tailor', $item->transaction_id) }}">JAHIT-{{ $item->transaction_id }}</a>
+                                            @elseif ($item->transaction_type == 'App\Models\TailorTransactionProduct')
+                                                <a href="{{ route('details.tailor', $item->transaction_id) }}">SIT-{{ $item->transaction_id }}</a>
                                             @else
-                                                <a href="{{ route('all.production') }}">PRODUKSI-{{ $item->transaction_id }}</a>
+                                                <a href="{{ route('all.production', $item->transaction_id) }}">PRODUKSI-{{ $item->transaction_id }}</a>
                                             @endif
                                         </td>
                                         <td>

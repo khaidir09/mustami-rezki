@@ -206,7 +206,7 @@ class AdminController extends Controller
 
         $data['komisiProduksi'] = Production::whereYear('date', date('Y'))
             ->whereMonth('date', date('m'))
-            ->sum('total_commission');
+            ->sum('profit');
 
         $data['jumlahProduksi'] = Production::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
@@ -242,6 +242,10 @@ class AdminController extends Controller
         $data['omzetProduksiHari'] = Production::whereDate('date', $today)
             ->sum('total_price');
 
+        // penerimaan eksternal
+        $data['externalIncomeHari'] = Acceptance::whereDate('date', $today)
+            ->sum('amount');
+
         $data['omzetPenjualanLangsung'] = Sale::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('grand_total');
@@ -262,6 +266,11 @@ class AdminController extends Controller
         $data['omzetProduksi'] = Production::whereMonth('date', date('m'))
             ->whereYear('date', date('Y'))
             ->sum('total_price');
+
+        // penerimaan eksternal bulanan
+        $data['omzetEksternal'] = Acceptance::whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('amount');
 
         $data['totalSaleItemLangsung'] = SaleItem::whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
@@ -300,7 +309,7 @@ class AdminController extends Controller
         $data['kas'] = $activeSummary->opening_balance;
 
 
-        $data['totalProfitKotor'] = $data['totalProfit'] + $data['komisiProduksi'];
+        $data['totalProfitKotor'] = $data['totalProfit'];
 
         // --- Perbaikan Perhitungan Uang Bersih (Berdasarkan Arus Kas Harian) ---
         $latestDailySummary = DailyFinancialSummary::orderBy('date', 'desc')->first();
@@ -332,7 +341,7 @@ class AdminController extends Controller
             $query->where('picked_up_at', '>=', $startDate);
         })->sum('subtotal');
 
-        $tailorIncome = TailorTransaction::where('picked_up_at', '>=', $startDate)->where('status', 'Diambil')->sum('paid_amount');
+        $tailorIncome = TailorTransaction::where('picked_up_at', '>=', $startDate)->where('status', 'Diambil')->sum('total_price');
         $productionIncome = Production::where('date', '>=', $startDate)->sum('total_price');
         $externalIncomeNew = Acceptance::where('date', '>=', $startDate)->sum('amount');
 

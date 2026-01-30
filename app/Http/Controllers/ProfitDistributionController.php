@@ -8,6 +8,7 @@ use App\Models\Production;
 use Illuminate\Http\Request;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
+use App\Models\TailorTransactionProduct;
 
 class ProfitDistributionController extends Controller
 {
@@ -30,16 +31,17 @@ class ProfitDistributionController extends Controller
         $saleQuery = Sale::query();
         $tailorQuery = TailorTransaction::query();
         $productionQuery = Production::query();
+        $tailorProduct = TailorTransactionProduct::query();
 
         $saleQuery->whereDate('date', '>=', $startDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '>=', $startDate);
         $productionQuery->whereDate('date', '>=', $startDate);
-
+        $tailorProduct->whereDate('created_at', '>=', $startDate);
         $saleQuery->whereDate('date', '<=', $endDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '<=', $endDate);
         $productionQuery->whereDate('date', '<=', $endDate);
 
-        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('total_price') + $productionQuery->sum('total_price');
+        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('total_price') + $productionQuery->sum('total_price') + $tailorProduct->sum('subtotal');
 
         // 4. Ambil data detail untuk tabel dengan paginasi, Urutkan berdasarkan yang terbaru
         $distributions = $query->latest()->get();
