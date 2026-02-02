@@ -89,7 +89,7 @@ class AttendanceController extends Controller
                 Payroll::create([
                     'user_id'       => $user->id,
                     'type'          => 'Gaji Harian', // Jenis pembayaran
-                    'amount'        => 30000,   // Jumlah gaji
+                    'amount'        => 35000,   // Jumlah gaji
                     'payment_date'  => $today,         // Tanggal pembayaran = tanggal absen
                     'description'   => 'Gaji harian otomatis dari presensi tanggal ' . $today->format('d-m-Y'),
                     'is_processed'  => false,
