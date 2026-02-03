@@ -45,17 +45,29 @@ return new class extends Migration
             WHERE id NOT IN (SELECT keep_id FROM profit_sums)");
 
         // Step 3: Update the kept rows with the summed amount
-        // MySQL update with join
-        DB::statement("UPDATE profit_distributions pd
-            JOIN profit_sums ps ON pd.id = ps.keep_id
-            SET pd.amount = ps.total_amount");
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement("UPDATE profit_distributions
+                SET amount = (SELECT total_amount FROM profit_sums WHERE keep_id = profit_distributions.id)
+                WHERE id IN (SELECT keep_id FROM profit_sums)");
+        } else {
+            // MySQL update with join
+            DB::statement("UPDATE profit_distributions pd
+                JOIN profit_sums ps ON pd.id = ps.keep_id
+                SET pd.amount = ps.total_amount");
+        }
 
         // Step 4: Drop the column
-        Schema::table('profit_distributions', function (Blueprint $table) {
-            $table->dropColumn('distribution_type');
-        });
+        if (Schema::hasColumn('profit_distributions', 'distribution_type')) {
+            Schema::table('profit_distributions', function (Blueprint $table) {
+                $table->dropColumn('distribution_type');
+            });
+        }
 
-        DB::statement("DROP TEMPORARY TABLE profit_sums");
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement("DROP TABLE profit_sums");
+        } else {
+            DB::statement("DROP TEMPORARY TABLE profit_sums");
+        }
     }
 
     /**
