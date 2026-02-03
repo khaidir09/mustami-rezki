@@ -32,14 +32,15 @@ class ProfitDistributionController extends Controller
         $tailorQuery = TailorTransaction::query();
         $productionQuery = Production::query();
         // ambil data produk terjual dari transaksi jahit yang sudah diambil
-        $tailorProduct = TailorTransactionProduct::whereHas('tailorTransaction', function ($q) {
-            $q->where('status', 'Diambil');
+        $tailorProduct = TailorTransactionProduct::whereHas('tailorTransaction', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'Diambil')
+                ->whereDate('picked_up_at', '>=', $startDate)
+                ->whereDate('picked_up_at', '<=', $endDate);
         });
 
         $saleQuery->whereDate('date', '>=', $startDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '>=', $startDate);
         $productionQuery->whereDate('date', '>=', $startDate);
-        $tailorProduct->whereDate('created_at', '>=', $startDate);
         $saleQuery->whereDate('date', '<=', $endDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '<=', $endDate);
         $productionQuery->whereDate('date', '<=', $endDate);
