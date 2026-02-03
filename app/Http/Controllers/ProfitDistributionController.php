@@ -32,19 +32,21 @@ class ProfitDistributionController extends Controller
         $tailorQuery = TailorTransaction::query();
         $productionQuery = Production::query();
         // ambil data produk terjual dari transaksi jahit yang sudah diambil
-        $tailorProduct = TailorTransactionProduct::whereHas('tailorTransaction', function ($q) {
-            $q->where('status', 'Diambil');
+        $tailorProductQuery = TailorTransactionProduct::whereHas('tailorTransaction', function ($q) use ($request) {
+            $startDate = $request->input('start_date') ?: Carbon::now()->startOfMonth()->toDateString();
+            $endDate = $request->input('end_date') ?: Carbon::now()->endOfMonth()->toDateString();
+            $q->where('status', 'Diambil')->whereBetween('picked_up_at', [$startDate, $endDate]);
         });
 
         $saleQuery->whereDate('date', '>=', $startDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '>=', $startDate);
         $productionQuery->whereDate('date', '>=', $startDate);
-        $tailorProduct->whereDate('created_at', '>=', $startDate);
+
         $saleQuery->whereDate('date', '<=', $endDate);
         $tailorQuery->where('status', 'Diambil')->whereDate('picked_up_at', '<=', $endDate);
         $productionQuery->whereDate('date', '<=', $endDate);
 
-        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('total_price') + $productionQuery->sum('total_price') + $tailorProduct->sum('subtotal');
+        $totalOmzet = $saleQuery->sum('grand_total') + $tailorQuery->sum('total_price') + $productionQuery->sum('total_price') + $tailorProductQuery->sum('subtotal');
 
         // 4. Ambil data detail untuk tabel dengan paginasi, Urutkan berdasarkan yang terbaru
         $distributions = $query->latest()->get();
