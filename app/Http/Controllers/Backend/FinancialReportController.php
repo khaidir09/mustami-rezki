@@ -85,11 +85,14 @@ class FinancialReportController extends Controller
             // 2. Hitung Total Pemasukan (Income)
             $salesIncome = Sale::whereBetween('date', [$startDate, $endDate])->sum('grand_total');
             $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('transaction_date', [$startDate, $endDate]);
+                $query->where('status', 'Diambil')
+                    ->whereBetween('picked_up_at', [$startDate, $endDate]);
             })->sum('subtotal');
             $salesIncome += $salesIncomeDariJahit;
 
-            $tailorIncome = TailorTransaction::whereBetween('transaction_date', [$startDate, $endDate])->sum('total_price');
+            $tailorIncome = TailorTransaction::whereBetween('picked_up_at', [$startDate, $endDate])
+                ->where('status', 'Diambil')
+                ->sum('total_price');
             $productionIncome = Production::whereBetween('date', [$startDate, $endDate])->sum('total_price');
             $externalIncome = Acceptance::whereBetween('date', [$startDate, $endDate])->sum('amount');
             $totalIncome = $salesIncome + $tailorIncome + $productionIncome + $externalIncome;
@@ -155,7 +158,8 @@ class FinancialReportController extends Controller
         // 2. Ambil Rincian Pemasukan
         $sales = Sale::with('saleItems.product')->whereBetween('date', [$startDate, $endDate])->get();
         $tailorTransactions = TailorTransaction::with('soldProducts')
-            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->whereBetween('picked_up_at', [$startDate, $endDate])
+            ->where('status', 'Diambil')
             ->get();
         $productions = Production::whereBetween('date', [$startDate, $endDate])->get();
         $acceptances = Acceptance::whereBetween('date', [$startDate, $endDate])->get();

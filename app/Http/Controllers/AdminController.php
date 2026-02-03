@@ -338,7 +338,7 @@ class AdminController extends Controller
         $salesIncome = Sale::where('date', '>=', $startDate)->sum('grand_total');
 
         $salesIncomeDariJahit = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($startDate) {
-            $query->where('picked_up_at', '>=', $startDate);
+            $query->where('picked_up_at', '>=', $startDate)->where('status', 'Diambil');
         })->sum('subtotal');
 
         $tailorIncome = TailorTransaction::where('picked_up_at', '>=', $startDate)->where('status', 'Diambil')->sum('total_price');
