@@ -189,19 +189,22 @@ class TailorTransactionController extends Controller
             if ($request->has('products')) {
                 foreach ($request->products as $productId => $productData) {
                     $product = Product::find($productId);
-                    if ($product) {
-                        // Simpan ke tabel pivot baru
-                        $transaction->soldProducts()->create([
-                            'product_id' => $productId,
-                            'product_name' => $product->name,
-                            'quantity' => $productData['quantity'],
-                            'price' => $productData['price'],
-                            'subtotal' => $productData['quantity'] * $productData['price'],
-                        ]);
-
-                        // Kurangi stok produk
-                        $product->decrement('product_qty', $productData['quantity']);
+                    if (!$product) {
+                        // Tolak seluruh transaksi jika produk tidak ditemukan (di-rollback oleh catch)
+                        throw new \Exception('Produk dengan ID ' . $productId . ' tidak ditemukan.');
                     }
+
+                    // Simpan ke tabel pivot baru
+                    $transaction->soldProducts()->create([
+                        'product_id' => $productId,
+                        'product_name' => $product->name,
+                        'quantity' => $productData['quantity'],
+                        'price' => $productData['price'],
+                        'subtotal' => $productData['quantity'] * $productData['price'],
+                    ]);
+
+                    // Kurangi stok produk
+                    $product->decrement('product_qty', $productData['quantity']);
 
                     // ---- KALKULASI PROFIT PER ITEM ----
                     $totalProfit = ($productData['price'] - $product->modal) * $productData['quantity'];
