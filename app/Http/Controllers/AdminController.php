@@ -133,8 +133,8 @@ class AdminController extends Controller
             ->value('total_value');
         $data['ongoingJobs'] = TailorTransaction::whereIn('status', ['Antrian', 'Dikerjakan'])->count();
 
-        $data['totalProfit'] = ProfitDistribution::whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
+        $data['totalProfit'] = ProfitDistribution::whereMonth('realized_at', date('m'))
+            ->whereYear('realized_at', date('Y'))
             ->sum('amount');
 
         $data['completedJobsThisMonth'] = TailorTransaction::whereIn('status', ['Selesai', 'Diambil'])
@@ -142,8 +142,8 @@ class AdminController extends Controller
             ->whereYear('updated_at', date('Y'))
             ->count();
         $data['tailorOwnerProfit'] = ProfitDistribution::where('transaction_type', 'App\Models\TailorTransaction')
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
+            ->whereMonth('realized_at', date('m'))
+            ->whereYear('realized_at', date('Y'))
             ->sum('amount');
 
         $data['monthlyExpenses'] = Expense::whereYear('date', date('Y'))
@@ -297,8 +297,8 @@ class AdminController extends Controller
         $data['totalTransaksiPenjualan'] = $data['totalTransaksiPenjualanLangsung'] + $data['totalTransaksiPenjualanDariJahit'];
 
         $data['totalProfitPenjualan'] = ProfitDistribution::whereIn('transaction_type', ['App\Models\Sale', 'App\Models\TailorTransactionProduct'])
-            ->whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
+            ->whereMonth('realized_at', date('m'))
+            ->whereYear('realized_at', date('Y'))
             ->sum('amount');
 
         $data['externalIncome'] = Acceptance::whereMonth('date', date('m'))

@@ -61,6 +61,7 @@ class ProductionController extends Controller
             'transaction_id'   => $production->id,
             'transaction_type' => Production::class,
             'amount'           => $profit,
+            'realized_at'      => $production->date,
         ]);
 
         $notification = array(
@@ -120,6 +121,7 @@ class ProductionController extends Controller
             'transaction_id'   => $production->id,
             'transaction_type' => Production::class,
             'amount'           => $profit,
+            'realized_at'      => $production->date,
         ]);
 
         $notification = array(

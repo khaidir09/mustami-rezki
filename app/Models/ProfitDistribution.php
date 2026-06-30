@@ -10,5 +10,10 @@ class ProfitDistribution extends Model
         'transaction_id',
         'transaction_type',
         'amount',
+        'realized_at',
+    ];
+
+    protected $casts = [
+        'realized_at' => 'datetime',
     ];
 }

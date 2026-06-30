@@ -89,6 +89,7 @@ class SaleController extends Controller
                     'transaction_id'   => $editdatas->id,
                     'transaction_type' => Sale::class, // Menggunakan class constant lebih aman
                     'amount'           => $totalProfit,
+                    'realized_at'      => $request->date,
                 ]);
             }
 
@@ -188,6 +189,7 @@ class SaleController extends Controller
                     'transaction_id'   => $sale->id,
                     'transaction_type' => Sale::class,
                     'amount'           => $totalProfit,
+                    'realized_at'      => $request->date,
                 ]);
             }
 

@@ -21,9 +21,9 @@ class ProfitDistributionController extends Controller
         // 1. Memulai query builder dari model ProfitDistribution
         $query = ProfitDistribution::query();
 
-        // 2. Terapkan filter berdasarkan rentang tanggal
-        $query->whereDate('created_at', '>=', $startDate);
-        $query->whereDate('created_at', '<=', $endDate);
+        // 2. Terapkan filter berdasarkan rentang tanggal (basis realisasi profit)
+        $query->whereDate('realized_at', '>=', $startDate);
+        $query->whereDate('realized_at', '<=', $endDate);
 
         $totalProfit = (clone $query)->sum('amount');
 

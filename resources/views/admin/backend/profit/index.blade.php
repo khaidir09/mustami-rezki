@@ -67,7 +67,7 @@
                                     @forelse ($distributions as $key => $item)
                                     <tr>
                                         <td>{{ $key+1  }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->realized_at ?? $item->created_at)->format('d-m-Y') }}</td>
                                         <td>
                                             @if($item->transaction_type == 'App\Models\Sale')
                                                 <a href="{{ route('details.sale', $item->transaction_id) }}">SALE-{{ $item->transaction_id }}</a>

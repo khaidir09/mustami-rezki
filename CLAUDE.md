@@ -55,6 +55,21 @@ php artisan pail      # Tail application logs
 - New user-facing strings should be in Indonesian to match the existing UI.
 - Tests run against sqlite in-memory (see `phpunit.xml`); the real app runs on MySQL. Keep migrations portable across both.
 
+### Tailor report "realized revenue" convention
+
+A `TailorTransaction` only counts as **realized** (omzet/pendapatan jahit recognized) once `status = 'Diambil'`, and the recognition date is **`picked_up_at`** — not `transaction_date`, `created_at`, or `updated_at`. Any new revenue/omzet report or dashboard metric over tailoring orders MUST filter `->where('status', 'Diambil')` and range its dates on `picked_up_at`. This is applied consistently across the existing reports:
+
+- `ProfitDistributionController::index` omzet (`ProfitDistributionController.php:36-49`)
+- Dashboard omzet jahit, daily & monthly (`AdminController.php:238-263`, `:291-293`, `:344`)
+- `DailyFinancialReportController` (`:54-58`, `:189-196`, `:233-234`) and `FinancialReportController` (`:88-92`, `:158-159`)
+
+**Profit aggregates: filter `ProfitDistribution` by `realized_at`, never `created_at`.** `profit_distributions.realized_at` is the dedicated business/realization date (added 2026-06; `created_at` stays as the row insert/audit timestamp). It is set at every `ProfitDistribution::create(...)` from the source transaction's realization date — tailor types from `picked_up_at`, `Sale`/`Production` from their `date`. This keeps profit totals aligned with omzet totals over the same range, and prevents an edit (which deletes & re-creates the profit rows) from shoving an old transaction's profit into the current month. Every read of `ProfitDistribution` ranges on `realized_at` (`ProfitDistributionController.php:25-26`, `AdminController.php:136-138/144-147/299-302`). When adding a new write site, you MUST populate `realized_at`; when adding a new report, filter on it.
+
+Other caveats — do not assume a single date column everywhere:
+
+- **"Completed jobs" counts are a different basis**: `status IN ('Selesai','Diambil')` filtered by `updated_at` (`AdminController.php:140-143`) — a job-throughput metric, not realized revenue.
+- **Commission eligibility is broader** than realization: `status IN ('Selesai','Diambil')` (`TailorTransactionController.php:225`, `:480`), whereas profit distribution requires `status='Diambil'` only (`:226`).
+
 ## IMPORTANT
 
 - Gunakan package manager yang sudah dipakai proyek.

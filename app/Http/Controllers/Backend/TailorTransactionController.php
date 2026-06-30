@@ -214,7 +214,7 @@ class TailorTransactionController extends Controller
                             'transaction_id'   => $transaction->id,
                             'transaction_type' => TailorTransactionProduct::class, // Menggunakan class constant lebih aman
                             'amount'           => $totalProfit,
-                            'created_at'       => now(),
+                            'realized_at'      => $pickedUpAt,
                         ]);
                     }
                 }
@@ -246,6 +246,7 @@ class TailorTransactionController extends Controller
                     'transaction_id'   => $transaction->id,
                     'transaction_type' => TailorTransaction::class,
                     'amount'           => $profitToDistribute,
+                    'realized_at'      => $pickedUpAt,
                 ]);
             }
 
@@ -469,6 +470,7 @@ class TailorTransactionController extends Controller
                                 'transaction_id'   => $transaction->id,
                                 'transaction_type' => TailorTransactionProduct::class,
                                 'amount'           => $totalProfit,
+                                'realized_at'      => $pickedUpAt,
                             ]);
                         }
                     }
@@ -519,6 +521,7 @@ class TailorTransactionController extends Controller
                     'transaction_id'   => $transaction->id,
                     'transaction_type' => TailorTransaction::class,
                     'amount'           => $profitToDistribute,
+                    'realized_at'      => $pickedUpAt,
                 ]);
             }
 
