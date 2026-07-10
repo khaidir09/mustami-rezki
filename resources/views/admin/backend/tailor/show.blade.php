@@ -29,7 +29,29 @@
                             <div class="col-md-6 text-md-end">
                                 <h5>Info Transaksi:</h5>
                                 <p class="mb-1"><strong>Kode:</strong> {{ $transaction->transaction_code }}</p>
-                                <p class="mb-1"><strong>Penjahit:</strong> {{ $transaction->tailor->name ?? 'Belum Ditugaskan' }}</p>
+                                @php
+                                    $commissionByUser = $transaction->relationLoaded('commissions')
+                                        ? $transaction->commissions->keyBy('user_id')
+                                        : collect();
+                                @endphp
+                                @if($transaction->work_type === 'Internal' && $transaction->secondary_tailor_id)
+                                    <p class="mb-1"><strong>Penjahit Utama:</strong>
+                                        {{ $transaction->tailor->name ?? 'Belum Ditugaskan' }}
+                                        ({{ rtrim(rtrim(number_format($transaction->primary_tailor_pct, 2, ',', '.'), '0'), ',') }}%
+                                        @if($commissionByUser->has($transaction->tailor_id))
+                                            · @rupiah($commissionByUser[$transaction->tailor_id]->amount)
+                                        @endif)
+                                    </p>
+                                    <p class="mb-1"><strong>Penjahit Kedua:</strong>
+                                        {{ $transaction->secondaryTailor->name ?? 'N/A' }}
+                                        ({{ rtrim(rtrim(number_format($transaction->secondary_tailor_pct, 2, ',', '.'), '0'), ',') }}%
+                                        @if($commissionByUser->has($transaction->secondary_tailor_id))
+                                            · @rupiah($commissionByUser[$transaction->secondary_tailor_id]->amount)
+                                        @endif)
+                                    </p>
+                                @else
+                                    <p class="mb-1"><strong>Penjahit:</strong> {{ $transaction->tailor->name ?? 'Belum Ditugaskan' }}</p>
+                                @endif
                                 <p class="mb-1"><strong>Tgl. Masuk:</strong> {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') }}</p>
                                 <p class="mb-1"><strong>Target Selesai:</strong> {{ $transaction->due_date ? \Carbon\Carbon::parse($transaction->due_date)->format('d F Y') : '-' }}</p>
                                 <p class="mb-1"><strong>Status:</strong>

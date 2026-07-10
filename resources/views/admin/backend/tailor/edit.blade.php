@@ -83,6 +83,27 @@
                                 </div>
                             </div>
 
+                            {{-- Penjahit kedua (opsional) & pembagian komisi --}}
+                            <div class="row g-3 mb-3" id="secondary_tailor_row">
+                                <div class="col-md-3">
+                                    <label for="secondary_tailor_id" class="form-label">Penjahit Kedua (Opsional)</label>
+                                    <select name="secondary_tailor_id" id="secondary_tailor_id" class="form-select">
+                                        <option value="">— Tidak ada —</option>
+                                        @foreach($tailors as $tailor)
+                                        <option value="{{ $tailor->id }}" {{ $tailor->id == $transaction->secondary_tailor_id ? 'selected' : '' }}>{{ $tailor->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3 pct-field" style="display: none;">
+                                    <label for="primary_tailor_pct" class="form-label">Bobot Komisi Penjahit Utama (%)</label>
+                                    <input type="number" name="primary_tailor_pct" id="primary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->primary_tailor_pct ?? 50 }}">
+                                </div>
+                                <div class="col-md-3 pct-field" style="display: none;">
+                                    <label for="secondary_tailor_pct" class="form-label">Bobot Komisi Penjahit Kedua (%)</label>
+                                    <input type="number" name="secondary_tailor_pct" id="secondary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->secondary_tailor_pct ?? 50 }}">
+                                </div>
+                            </div>
+
                             <div class="row g-3 align-items-end p-3 my-3 bg-light rounded">
                                 <div class="col-md-2">
                                     <label for="type_selector" class="form-label">Jenis Jasa</label>
@@ -609,8 +630,55 @@
     // Run on load
     togglePickedUpDate();
 
+    // --- Logika bobot komisi penjahit kedua ---
+    const pctFields = document.querySelectorAll('.pct-field');
+    const primaryPctInput = document.getElementById('primary_tailor_pct');
+    const secondaryPctInput = document.getElementById('secondary_tailor_pct');
+
+    function togglePctFields() {
+        const hasSecondary = $('#secondary_tailor_id').val() !== '';
+        pctFields.forEach(el => { el.style.display = hasSecondary ? 'block' : 'none'; });
+    }
+
+    // Transaksi penjahit tunggal tersimpan dengan bobot utama 100%. Saat penjahit kedua
+    // baru dipilih, bobot lama tidak lagi berjumlah 100% sehingga disetel ulang ke 50/50.
+    function resetPctIfNotHundred() {
+        const total = (parseFloat(primaryPctInput.value) || 0) + (parseFloat(secondaryPctInput.value) || 0);
+        if (Math.abs(total - 100) > 0.01) {
+            primaryPctInput.value = 50;
+            secondaryPctInput.value = 50;
+        }
+    }
+
+    $('#secondary_tailor_id').on('change', function() {
+        if ($(this).val() !== '') {
+            resetPctIfNotHundred();
+        }
+        togglePctFields();
+    });
+
+    $(secondaryPctInput).on('input', function() {
+        const val = Math.min(100, Math.max(0, parseFloat(this.value) || 0));
+        primaryPctInput.value = (100 - val).toFixed(2).replace(/\.00$/, '');
+    });
+    $(primaryPctInput).on('input', function() {
+        const val = Math.min(100, Math.max(0, parseFloat(this.value) || 0));
+        secondaryPctInput.value = (100 - val).toFixed(2).replace(/\.00$/, '');
+    });
+
+    // Sembunyikan blok penjahit kedua saat Eksternal.
+    function toggleSecondaryTailorRow() {
+        const selectedType = document.querySelector('input[name="work_type"]:checked').value;
+        document.getElementById('secondary_tailor_row').style.display = (selectedType === 'Internal') ? 'flex' : 'none';
+    }
+    document.querySelectorAll('input[name="work_type"]').forEach(radio => {
+        radio.addEventListener('change', toggleSecondaryTailorRow);
+    });
+    toggleSecondaryTailorRow();
+    togglePctFields();
+
     // ## PENTING: Panggil updateTotals() sekali saat halaman dimuat ##
-    updateTotals(); 
+    updateTotals();
 });
 </script>
 @endpush

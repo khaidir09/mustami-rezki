@@ -28,8 +28,8 @@ class WhatsAppHelper
             // Tambahkan judul baru jika ada produk
             $productDetails .= "\n*Produk/Bahan dari Toko:*\n";
             foreach ($transaction->soldProducts as $productItem) {
-                // Format: - 1 Kain Katun (@ Rp 50.000)
-                $productDetails .= "- " . $productItem->quantity . " " . $productItem->product_name
+                // Format: - 1 Meter Kain Katun (@ Rp 50.000)
+                $productDetails .= "- " . $productItem->quantity . " " . $productItem->product->satuan . " " . $productItem->product_name
                     . " (@ " . 'Rp ' . number_format($productItem->price, 0, ',', '.') . ")\n";
             }
         }

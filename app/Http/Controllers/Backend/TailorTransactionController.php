@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Models\TailorCommission;
 use App\Models\TailorTransaction;
 use App\Models\ProfitDistribution;
+use App\Support\TailorCommissionCalculator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -32,8 +33,11 @@ class TailorTransactionController extends Controller
         // 2. Cek jika pengguna HANYA memiliki peran 'Tailor'
         // (dan bukan 'Super Admin' atau 'Admin')
         if ($user->hasRole('Tailor') && !$user->hasRole(['Super Admin', 'Admin'])) {
-            // Jika ya, tambahkan kondisi where untuk memfilter berdasarkan ID penjahit
-            $query->where('tailor_id', $user->id);
+            // Penjahit melihat transaksi di mana ia menjadi penjahit utama maupun penjahit kedua.
+            $query->where(function ($q) use ($user) {
+                $q->where('tailor_id', $user->id)
+                    ->orWhere('secondary_tailor_id', $user->id);
+            });
         }
 
         // 3. Eksekusi query
@@ -69,7 +73,15 @@ class TailorTransactionController extends Controller
             'items.*.service_type_id' => 'required|exists:service_types,id', // Validasi untuk type_id
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.price' => 'required|numeric|min:0',
+            'tailor_id' => 'required_if:work_type,Internal|nullable|exists:users,id',
+            'secondary_tailor_id' => 'nullable|exists:users,id|different:tailor_id',
+            'primary_tailor_pct' => 'nullable|numeric|min:0|max:100|required_with:secondary_tailor_id',
+            'secondary_tailor_pct' => 'nullable|numeric|min:0|max:100|required_with:secondary_tailor_id',
         ]);
+
+        if ($pctError = $this->validateCommissionSplit($request)) {
+            return redirect()->back()->withInput()->with(['message' => $pctError, 'alert-type' => 'error']);
+        }
 
         DB::beginTransaction();
 
@@ -100,6 +112,7 @@ class TailorTransactionController extends Controller
             $owner_profit = 0;
             $tailor_commission = 0;
             $profit_toko = 0;
+            $commissionRows = [];
 
             // ## LANGKAH 2: LAKUKAN PERCABANGAN DAN PERHITUNGAN ##
             if ($request->work_type == 'Internal') {
@@ -108,9 +121,15 @@ class TailorTransactionController extends Controller
                 $owner_profit = $total_profit * (1 / 3);
                 $tailor_commission = $total_profit * (2 / 3);
 
+                $split = $this->resolveCommissionSplit($request, $tailor_commission);
+                $commissionRows = $split['rows'];
+
                 $transactionData = [
                     'work_type' => 'Internal',
                     'tailor_id' => $request->tailor_id,
+                    'secondary_tailor_id' => $split['secondary_tailor_id'],
+                    'primary_tailor_pct' => $split['primary_pct'],
+                    'secondary_tailor_pct' => $split['secondary_pct'],
                     'supplier_id' => null,
                     'profit' => $total_profit,
                 ];
@@ -121,6 +140,9 @@ class TailorTransactionController extends Controller
                 $transactionData = [
                     'work_type' => 'Eksternal',
                     'tailor_id' => null,
+                    'secondary_tailor_id' => null,
+                    'primary_tailor_pct' => null,
+                    'secondary_tailor_pct' => null,
                     'supplier_id' => $request->supplier_id,
                     'profit' => $profit_toko, // Profit toko adalah profit utama di kasus ini
                 ];
@@ -226,16 +248,14 @@ class TailorTransactionController extends Controller
             $isProfitDistributable = ($request->status == 'Diambil');
 
 
-            if (
-                $request->work_type == 'Internal' &&
-                $tailor_commission > 0 &&
-                $isCommissionable
-            ) {
-                TailorCommission::create([
-                    'tailor_transaction_id' => $transaction->id,
-                    'user_id' => $request->tailor_id,
-                    'amount' => $tailor_commission,
-                ]);
+            if ($request->work_type == 'Internal' && $isCommissionable) {
+                foreach ($commissionRows as $row) {
+                    TailorCommission::create([
+                        'tailor_transaction_id' => $transaction->id,
+                        'user_id' => $row['user_id'],
+                        'amount' => $row['amount'],
+                    ]);
+                }
             }
 
             $profitToDistribute = ($request->work_type == 'Internal') ? $owner_profit : $profit_toko;
@@ -266,7 +286,14 @@ class TailorTransactionController extends Controller
      */
     public function show($id)
     {
-        $transaction = TailorTransaction::with(['customer', 'items.service', 'soldProducts.product'])->findOrFail($id);
+        $transaction = TailorTransaction::with([
+            'customer',
+            'items.service',
+            'soldProducts.product',
+            'tailor',
+            'secondaryTailor',
+            'commissions',
+        ])->findOrFail($id);
         return view('admin.backend.tailor.show', compact('transaction'));
     }
 
@@ -313,12 +340,24 @@ class TailorTransactionController extends Controller
             'products' => 'sometimes|array',
             'tailor_id' => 'required_if:work_type,Internal',
             'supplier_id' => 'required_if:work_type,Eksternal',
+            'secondary_tailor_id' => 'nullable|exists:users,id|different:tailor_id',
+            'primary_tailor_pct' => 'nullable|numeric|min:0|max:100|required_with:secondary_tailor_id',
+            'secondary_tailor_pct' => 'nullable|numeric|min:0|max:100|required_with:secondary_tailor_id',
             'picked_up_at' => 'nullable|date',
         ]);
+
+        if ($pctError = $this->validateCommissionSplit($request)) {
+            return redirect()->back()->withInput()->with(['message' => $pctError, 'alert-type' => 'error']);
+        }
 
         DB::beginTransaction();
         try {
             $transaction = TailorTransaction::findOrFail($id);
+
+            // Kunci seluruh transaksi jika ada komisi yang sudah dibayarkan (punya payroll_id).
+            if ($transaction->commissions()->whereNotNull('payroll_id')->exists()) {
+                throw new \Exception('Transaksi ini tidak dapat diubah karena komisinya sudah dibayarkan.');
+            }
 
             // ## LANGKAH 1: KALKULASI ULANG SEMUA NILAI DARI REQUEST ##
             $serviceTotal = 0;
@@ -342,15 +381,22 @@ class TailorTransactionController extends Controller
             $owner_profit = 0;
             $tailor_commission = 0;
             $profit_toko = 0;
+            $commissionRows = [];
 
             if ($request->work_type == 'Internal') {
                 $total_profit = $serviceTotal - ($request->cost_price ?? 0);
                 $owner_profit = $total_profit * (1 / 3);
                 $tailor_commission = $total_profit * (2 / 3);
 
+                $split = $this->resolveCommissionSplit($request, $tailor_commission);
+                $commissionRows = $split['rows'];
+
                 $transactionData = [
                     'work_type' => 'Internal',
                     'tailor_id' => $request->tailor_id,
+                    'secondary_tailor_id' => $split['secondary_tailor_id'],
+                    'primary_tailor_pct' => $split['primary_pct'],
+                    'secondary_tailor_pct' => $split['secondary_pct'],
                     'supplier_id' => null,
                     'profit' => $total_profit,
                 ];
@@ -359,6 +405,9 @@ class TailorTransactionController extends Controller
                 $transactionData = [
                     'work_type' => 'Eksternal',
                     'tailor_id' => null,
+                    'secondary_tailor_id' => null,
+                    'primary_tailor_pct' => null,
+                    'secondary_tailor_pct' => null,
                     'supplier_id' => $request->supplier_id,
                     'profit' => $profit_toko,
                 ];
@@ -479,30 +528,17 @@ class TailorTransactionController extends Controller
 
 
             // ## LANGKAH 6: SINKRONISASI KOMISI & PROFIT JASA ##
-            $shouldHaveCommission = $request->work_type == 'Internal' && $tailor_commission > 0 && in_array($request->status, ['Selesai', 'Diambil']);
-            $existingCommission = TailorCommission::where('tailor_transaction_id', $transaction->id)->first();
+            // Aman menghapus & membuat ulang: transaksi dengan komisi terbayar sudah ditolak di awal.
+            $shouldHaveCommission = $request->work_type == 'Internal' && in_array($request->status, ['Selesai', 'Diambil']);
+            $transaction->commissions()->delete();
 
             if ($shouldHaveCommission) {
-                if ($existingCommission) {
-                    // Jika komisi seharusnya ada & sudah ada -> UPDATE
-                    $existingCommission->update(['amount' => $tailor_commission, 'user_id' => $request->tailor_id]);
-                } else {
-                    // Jika komisi seharusnya ada & belum ada -> CREATE
+                foreach ($commissionRows as $row) {
                     TailorCommission::create([
                         'tailor_transaction_id' => $transaction->id,
-                        'user_id' => $request->tailor_id,
-                        'amount' => $tailor_commission,
+                        'user_id' => $row['user_id'],
+                        'amount' => $row['amount'],
                     ]);
-                }
-            } else {
-                if ($existingCommission) {
-                    // Jika komisi seharusnya TIDAK ada tapi di DB ada
-                    if ($existingCommission->payroll_id) {
-                        // PENTING: Jangan hapus komisi yang sudah dibayar!
-                        throw new \Exception('Tidak dapat mengubah status karena komisi untuk transaksi ini sudah dibayarkan.');
-                    }
-                    // Jika belum dibayar, aman untuk dihapus
-                    $existingCommission->delete();
                 }
             }
 
@@ -544,9 +580,9 @@ class TailorTransactionController extends Controller
         DB::beginTransaction();
         try {
 
-            $transaction = TailorTransaction::with('commission')->findOrFail($id);
+            $transaction = TailorTransaction::with('commissions')->findOrFail($id);
 
-            if ($transaction->commission && $transaction->commission->payroll_id) {
+            if ($transaction->commissions()->whereNotNull('payroll_id')->exists()) {
                 throw new \Exception('Transaksi ini tidak dapat dihapus karena komisinya sudah dibayarkan.');
             }
 
@@ -580,5 +616,47 @@ class TailorTransactionController extends Controller
             $notification = ['message' => $e->getMessage(), 'alert-type' => 'error'];
             return redirect()->back()->with($notification);
         }
+    }
+
+    /**
+     * Validasi total bobot komisi kedua penjahit harus 100% (hanya saat penjahit kedua diisi & Internal).
+     * Mengembalikan pesan error (string) bila tidak valid, atau null bila valid.
+     */
+    private function validateCommissionSplit(Request $request): ?string
+    {
+        if ($request->work_type !== 'Internal' || !$request->filled('secondary_tailor_id')) {
+            return null;
+        }
+
+        if (!TailorCommissionCalculator::percentagesSumTo100($request->primary_tailor_pct, $request->secondary_tailor_pct)) {
+            return 'Total persentase komisi kedua penjahit harus 100%.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Ubah request menjadi rincian pembagian komisi (porsi 2/3 penjahit) per penjahit.
+     *
+     * @return array{secondary_tailor_id: ?int, primary_pct: float, secondary_pct: ?float, rows: array<int, array{user_id: int, amount: float}>}
+     */
+    private function resolveCommissionSplit(Request $request, float $tailorPool): array
+    {
+        $secondaryTailorId = $request->filled('secondary_tailor_id') ? (int) $request->secondary_tailor_id : null;
+
+        $result = TailorCommissionCalculator::split(
+            $tailorPool,
+            (int) $request->tailor_id,
+            $secondaryTailorId,
+            $request->primary_tailor_pct,
+            $request->secondary_tailor_pct
+        );
+
+        return [
+            'secondary_tailor_id' => $secondaryTailorId,
+            'primary_pct' => $result['primary_pct'],
+            'secondary_pct' => $result['secondary_pct'],
+            'rows' => $result['rows'],
+        ];
     }
 }

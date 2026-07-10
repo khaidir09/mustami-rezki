@@ -79,6 +79,27 @@
                                 </div>
                             </div>
 
+                            {{-- Penjahit kedua (opsional) & pembagian komisi --}}
+                            <div class="row g-3 mb-3" id="secondary_tailor_row">
+                                <div class="col-md-3">
+                                    <label for="secondary_tailor_id" class="form-label">Penjahit Kedua (Opsional)</label>
+                                    <select name="secondary_tailor_id" id="secondary_tailor_id" class="form-select">
+                                        <option value="">— Tidak ada —</option>
+                                        @foreach($tailors as $tailor)
+                                        <option value="{{ $tailor->id }}">{{ $tailor->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3 pct-field" style="display: none;">
+                                    <label for="primary_tailor_pct" class="form-label">Bobot Komisi Penjahit Utama (%)</label>
+                                    <input type="number" name="primary_tailor_pct" id="primary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="50">
+                                </div>
+                                <div class="col-md-3 pct-field" style="display: none;">
+                                    <label for="secondary_tailor_pct" class="form-label">Bobot Komisi Penjahit Kedua (%)</label>
+                                    <input type="number" name="secondary_tailor_pct" id="secondary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="50">
+                                </div>
+                            </div>
+
                             <div class="row g-3 align-items-end pb-3 px-3 my-3 bg-light rounded">
                                 <div class="col-md-2">
                                     <label for="type_selector" class="form-label">Jenis Jasa <span class="text-danger">*</span></label>
@@ -555,6 +576,7 @@ const externalTailorDiv = document.getElementById('external_tailor_div');
 const externalTailorSelect = document.getElementById('supplier_id');
 const costPriceRow = document.getElementById('cost_price_row');
 const profitRow = document.getElementById('profit_row');
+const secondaryTailorRow = document.getElementById('secondary_tailor_row');
 
 function toggleTailorSelection() {
 const selectedType = document.querySelector('input[name="work_type"]:checked').value;
@@ -564,6 +586,7 @@ internalTailorDiv.style.display = 'block';
 internalTailorSelect.required = true;
 externalTailorDiv.style.display = 'none';
 externalTailorSelect.required = false;
+secondaryTailorRow.style.display = 'flex';
 
 costPriceRow.style.display = 'none';
 profitRow.style.display = 'none';
@@ -572,6 +595,8 @@ internalTailorDiv.style.display = 'none';
 internalTailorSelect.required = false;
 externalTailorDiv.style.display = 'block';
 externalTailorSelect.required = true;
+secondaryTailorRow.style.display = 'none';
+$('#secondary_tailor_id').val('').trigger('change');
 
 costPriceRow.style.display = 'table-row';
 profitRow.style.display = 'table-row';
@@ -579,11 +604,34 @@ profitRow.style.display = 'table-row';
 $('#tailor_id, #supplier_id').val(null).trigger('change');
 }
 
+// --- Logika bobot komisi penjahit kedua ---
+const pctFields = document.querySelectorAll('.pct-field');
+const primaryPctInput = document.getElementById('primary_tailor_pct');
+const secondaryPctInput = document.getElementById('secondary_tailor_pct');
+
+function togglePctFields() {
+const hasSecondary = $('#secondary_tailor_id').val() !== '';
+pctFields.forEach(el => { el.style.display = hasSecondary ? 'block' : 'none'; });
+}
+
+$('#secondary_tailor_id').on('change', togglePctFields);
+
+// Jaga agar total selalu 100%: saat salah satu diubah, yang lain menyesuaikan.
+$(secondaryPctInput).on('input', function() {
+    const val = Math.min(100, Math.max(0, parseFloat(this.value) || 0));
+    primaryPctInput.value = (100 - val).toFixed(2).replace(/\.00$/, '');
+});
+$(primaryPctInput).on('input', function() {
+    const val = Math.min(100, Math.max(0, parseFloat(this.value) || 0));
+    secondaryPctInput.value = (100 - val).toFixed(2).replace(/\.00$/, '');
+});
+
 workTypeRadios.forEach(radio => {
 radio.addEventListener('change', toggleTailorSelection);
 });
 
 toggleTailorSelection();
+togglePctFields();
 });
     </script>
 @endpush

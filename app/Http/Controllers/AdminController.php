@@ -167,11 +167,15 @@ class AdminController extends Controller
 
         // Cek jika user adalah Penjahit, ambil data personal
         if ($user->hasRole('Tailor')) {
-            $data['assignedJobs'] = TailorTransaction::where('tailor_id', $user->id)
+            $data['assignedJobs'] = TailorTransaction::where(function ($q) use ($user) {
+                $q->where('tailor_id', $user->id)->orWhere('secondary_tailor_id', $user->id);
+            })
                 ->whereIn('status', ['Antrian', 'Dikerjakan'])
                 ->count();
 
-            $data['completedJobsThisMonth'] = TailorTransaction::where('tailor_id', $user->id)
+            $data['completedJobsThisMonth'] = TailorTransaction::where(function ($q) use ($user) {
+                $q->where('tailor_id', $user->id)->orWhere('secondary_tailor_id', $user->id);
+            })
                 ->whereIn('status', ['Selesai', 'Diambil'])
                 ->whereYear('updated_at', date('Y'))
                 ->whereMonth('updated_at', date('m'))
