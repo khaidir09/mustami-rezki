@@ -28,9 +28,10 @@ class WhatsAppHelper
             // Tambahkan judul baru jika ada produk
             $productDetails .= "\n*Produk/Bahan dari Toko:*\n";
             foreach ($transaction->soldProducts as $productItem) {
-                // Format: - 1 Meter Kain Katun (@ Rp 50.000)
+                // Format: 2 Meter Kain Katun x (@ Rp 50.000) = Rp 100.000
                 $productDetails .= "- " . $productItem->quantity . " " . $productItem->product->satuan . " " . $productItem->product_name
-                    . " (@ " . 'Rp ' . number_format($productItem->price, 0, ',', '.') . ")\n";
+                    . " x (@ " . 'Rp ' . number_format($productItem->price, 0, ',', '.') . ")"
+                    . " = Rp " . number_format($productItem->subtotal, 0, ',', '.') . "\n";
             }
         }
 
@@ -49,7 +50,7 @@ class WhatsAppHelper
             . "*Yth. Bapak/Ibu " . $transaction->customer->name . "*\n\n"
             . "Ijin kami informasikan untuk jahitan dengan:\n\n"
             . "No. Nota: " . $transaction->transaction_code . "\n"
-            . "Tanggal Masuk: _" . \Carbon\Carbon::parse($transaction->transaction_date)->format('d F Y') . "_\n\n"
+            . "Tanggal Masuk: _" . \Carbon\Carbon::parse($transaction->transaction_date)->locale('id')->translatedFormat('d F Y') . "_\n\n"
             . "*Rincian Pesanan:*\n"
             . $serviceDetails  . "\n"
             . $productDetails . "\n"
