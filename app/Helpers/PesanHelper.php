@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use App\Models\TailorTransaction;
 
-class PesanlHelper
+class PesanHelper
 {
     public static function generateTailorInvoiceLink(TailorTransaction $transaction)
     {
