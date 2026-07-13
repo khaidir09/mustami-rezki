@@ -83,7 +83,7 @@
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
                                                 @if($item->customer->phone)
                                                     <a title="Kirim Nota via WA" 
-                                                    href="{{ \App\Helpers\WhatsAppHelper::generateTailorInvoiceLink($item) }}" 
+                                                    href="{{ \App\Helpers\PesanHelper::generateTailorInvoiceLink($item) }}" 
                                                     target="_blank" 
                                                     class="btn btn-primary btn-sm">
                                                         <span class="mdi mdi-message-text mdi-18px"></span>
