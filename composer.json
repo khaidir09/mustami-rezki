@@ -34,7 +34,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/WhatsAppHelper.php"
+            "app/Helpers/WhatsAppHelper.php",
+            "app/Helpers/PesanHelper.php"
         ]
     },
     "autoload-dev": {
