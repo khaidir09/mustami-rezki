@@ -18,7 +18,10 @@ class PesanHelper
         $serviceDetails = "";
         if ($transaction->items->isNotEmpty()) {
             foreach ($transaction->items as $item) {
-                $serviceDetails .= "- " . $item->quantity . " " . $item->nama_komponen . "\n";
+                // Format: - 3 Bikin Celana SMA x 60.000 = Rp180.000
+                $serviceDetails .= "- " . $item->quantity . " " . $item->nama_komponen
+                    . " x " . number_format($item->price, 0, ',', '.')
+                    . " = Rp" . number_format($item->subtotal, 0, ',', '.') . "\n";
             }
         }
 
