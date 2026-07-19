@@ -314,7 +314,11 @@ class TailorTransactionController extends Controller
     public function edit($id)
     {
         // Ambil data transaksi beserta item dan relasi servicenya
-        $transaction = TailorTransaction::with('items.service')->findOrFail($id);
+        $transaction = TailorTransaction::with('items.service', 'commissions')->findOrFail($id);
+
+        // Komisi yang sudah masuk payroll mengunci field penentu nominal komisi di form
+        // (lihat pemeriksaan yang sama di update()).
+        $commissionLocked = $transaction->commissions->whereNotNull('payroll_id')->isNotEmpty();
 
         // Ambil data master untuk dropdown
         $customers = Customer::all();
@@ -323,7 +327,7 @@ class TailorTransactionController extends Controller
         $types = ServiceType::all();
         $serviceSuppliers = Supplier::where('type', 'Jasa')->get();
 
-        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services', 'types', 'tailors', 'serviceSuppliers'));
+        return view('admin.backend.tailor.edit', compact('transaction', 'customers', 'services', 'types', 'tailors', 'serviceSuppliers', 'commissionLocked'));
     }
 
     /**
@@ -352,12 +356,12 @@ class TailorTransactionController extends Controller
 
         DB::beginTransaction();
         try {
-            $transaction = TailorTransaction::findOrFail($id);
+            $transaction = TailorTransaction::with('commissions')->findOrFail($id);
 
-            // Kunci seluruh transaksi jika ada komisi yang sudah dibayarkan (punya payroll_id).
-            if ($transaction->commissions()->whereNotNull('payroll_id')->exists()) {
-                throw new \Exception('Transaksi ini tidak dapat diubah karena komisinya sudah dibayarkan.');
-            }
+            // Komisi yang sudah masuk payroll tidak boleh berubah nilainya, tetapi transaksinya
+            // tetap boleh diedit — owner sering membayar komisi saat status 'Selesai', lalu status
+            // baru diubah ke 'Diambil' ketika pelanggan mengambil barangnya.
+            $hasPaidCommission = $transaction->commissions->whereNotNull('payroll_id')->isNotEmpty();
 
             // ## LANGKAH 1: KALKULASI ULANG SEMUA NILAI DARI REQUEST ##
             $serviceTotal = 0;
@@ -411,6 +415,12 @@ class TailorTransactionController extends Controller
                     'supplier_id' => $request->supplier_id,
                     'profit' => $profit_toko,
                 ];
+            }
+
+            $shouldHaveCommission = $request->work_type == 'Internal' && in_array($request->status, ['Selesai', 'Diambil']);
+
+            if ($hasPaidCommission && !$this->commissionRowsUnchanged($transaction->commissions, $commissionRows, $shouldHaveCommission)) {
+                throw new \Exception('Komisi transaksi ini sudah dibayarkan, sehingga penjahit, nominal jasa, dan modal tidak dapat diubah. Perubahan status, tanggal, pembayaran pelanggan, dan produk tetap diperbolehkan.');
             }
 
             // Cek logika: Jika status berubah menjadi 'Diambil'
@@ -528,17 +538,19 @@ class TailorTransactionController extends Controller
 
 
             // ## LANGKAH 6: SINKRONISASI KOMISI & PROFIT JASA ##
-            // Aman menghapus & membuat ulang: transaksi dengan komisi terbayar sudah ditolak di awal.
-            $shouldHaveCommission = $request->work_type == 'Internal' && in_array($request->status, ['Selesai', 'Diambil']);
-            $transaction->commissions()->delete();
+            // Komisi terbayar dibiarkan apa adanya agar tautan payroll-nya tidak putus —
+            // nilainya sudah dipastikan tidak berubah oleh pemeriksaan di LANGKAH 1.
+            if (!$hasPaidCommission) {
+                $transaction->commissions()->delete();
 
-            if ($shouldHaveCommission) {
-                foreach ($commissionRows as $row) {
-                    TailorCommission::create([
-                        'tailor_transaction_id' => $transaction->id,
-                        'user_id' => $row['user_id'],
-                        'amount' => $row['amount'],
-                    ]);
+                if ($shouldHaveCommission) {
+                    foreach ($commissionRows as $row) {
+                        TailorCommission::create([
+                            'tailor_transaction_id' => $transaction->id,
+                            'user_id' => $row['user_id'],
+                            'amount' => $row['amount'],
+                        ]);
+                    }
                 }
             }
 
@@ -616,6 +628,31 @@ class TailorTransactionController extends Controller
             $notification = ['message' => $e->getMessage(), 'alert-type' => 'error'];
             return redirect()->back()->with($notification);
         }
+    }
+
+    /**
+     * Apakah hasil perhitungan ulang komisi identik dengan baris komisi yang tersimpan?
+     * Dipakai untuk mengizinkan edit transaksi yang komisinya sudah dibayarkan, selama
+     * penjahit dan nominalnya tidak berubah. Toleransi 1 rupiah untuk selisih pembulatan.
+     *
+     * @param  \Illuminate\Support\Collection<int, TailorCommission>  $existing
+     * @param  array<int, array{user_id: int, amount: float}>  $newRows
+     */
+    private function commissionRowsUnchanged($existing, array $newRows, bool $shouldHaveCommission): bool
+    {
+        if (!$shouldHaveCommission || $existing->count() !== count($newRows)) {
+            return false;
+        }
+
+        foreach ($newRows as $row) {
+            $match = $existing->firstWhere('user_id', $row['user_id']);
+
+            if (!$match || abs((float) $match->amount - (float) $row['amount']) > 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -17,16 +17,28 @@
                     <div class="card-body">
                         <form action="{{ route('update.tailor', $transaction->id) }}" method="POST" id="tailorTransactionForm">
                             @csrf
+
+                            @if($commissionLocked)
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Komisi transaksi ini sudah dibayarkan.</strong>
+                                Penjahit, harga jasa, dan biaya modal dikunci agar nominal komisi yang sudah dibayar tidak berubah.
+                                Status, tanggal, pembayaran pelanggan, dan produk toko tetap dapat diubah.
+                            </div>
+                            @endif
                             <div class="row g-3 mb-3">
                                 <div class="col-md-3">
                                     <label for="work-type" class="form-label">Tipe Pengerjaan <span class="text-danger">*</span></label>
                                     <div>
+                                        {{-- Radio disabled tidak ikut terkirim, jadi nilainya dititipkan lewat hidden input. --}}
+                                        @if($commissionLocked)
+                                        <input type="hidden" name="work_type" value="{{ $transaction->work_type }}">
+                                        @endif
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="work_type" id="internalRadio" value="Internal" {{ $transaction->work_type == 'Internal' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="work_type" id="internalRadio" value="Internal" {{ $transaction->work_type == 'Internal' ? 'checked' : '' }} @disabled($commissionLocked)>
                                             <label class="form-check-label" for="internalRadio">Internal (Penjahit In-House)</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="work_type" id="eksternalRadio" value="Eksternal" {{ $transaction->work_type == 'Eksternal' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="work_type" id="eksternalRadio" value="Eksternal" {{ $transaction->work_type == 'Eksternal' ? 'checked' : '' }} @disabled($commissionLocked)>
                                             <label class="form-check-label" for="eksternalRadio">Eksternal</label>
                                         </div>
                                     </div>
@@ -52,7 +64,10 @@
                                 </div>
                                 <div class="col-md-3" id="internal_tailor_div">
                                     <label for="tailor_id" class="form-label">Ditugaskan Kepada</label>
-                                    <select name="tailor_id" id="tailor_id" class="form-select">
+                                    @if($commissionLocked)
+                                    <input type="hidden" name="tailor_id" value="{{ $transaction->tailor_id }}">
+                                    @endif
+                                    <select name="tailor_id" id="tailor_id" class="form-select" @disabled($commissionLocked)>
                                         <option value="">Pilih Penjahit</option>
                                         @foreach($tailors as $tailor)
                                         <option value="{{ $tailor->id }}" {{ $tailor->id == $transaction->tailor_id ? 'selected' : '' }}>{{ $tailor->name }}</option>
@@ -87,7 +102,10 @@
                             <div class="row g-3 mb-3" id="secondary_tailor_row">
                                 <div class="col-md-3">
                                     <label for="secondary_tailor_id" class="form-label">Penjahit Kedua (Opsional)</label>
-                                    <select name="secondary_tailor_id" id="secondary_tailor_id" class="form-select">
+                                    @if($commissionLocked)
+                                    <input type="hidden" name="secondary_tailor_id" value="{{ $transaction->secondary_tailor_id }}">
+                                    @endif
+                                    <select name="secondary_tailor_id" id="secondary_tailor_id" class="form-select" @disabled($commissionLocked)>
                                         <option value="">— Tidak ada —</option>
                                         @foreach($tailors as $tailor)
                                         <option value="{{ $tailor->id }}" {{ $tailor->id == $transaction->secondary_tailor_id ? 'selected' : '' }}>{{ $tailor->name }}</option>
@@ -96,15 +114,15 @@
                                 </div>
                                 <div class="col-md-3 pct-field" style="display: none;">
                                     <label for="primary_tailor_pct" class="form-label">Bobot Komisi Penjahit Utama (%)</label>
-                                    <input type="number" name="primary_tailor_pct" id="primary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->primary_tailor_pct ?? 50 }}">
+                                    <input type="number" name="primary_tailor_pct" id="primary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->primary_tailor_pct ?? 50 }}" @readonly($commissionLocked)>
                                 </div>
                                 <div class="col-md-3 pct-field" style="display: none;">
                                     <label for="secondary_tailor_pct" class="form-label">Bobot Komisi Penjahit Kedua (%)</label>
-                                    <input type="number" name="secondary_tailor_pct" id="secondary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->secondary_tailor_pct ?? 50 }}">
+                                    <input type="number" name="secondary_tailor_pct" id="secondary_tailor_pct" class="form-control" min="0" max="100" step="0.01" value="{{ $transaction->secondary_tailor_pct ?? 50 }}" @readonly($commissionLocked)>
                                 </div>
                             </div>
 
-                            <div class="row g-3 align-items-end p-3 my-3 bg-light rounded">
+                            <div class="row g-3 align-items-end p-3 my-3 bg-light rounded" @style(['display: none' => $commissionLocked])>
                                 <div class="col-md-2">
                                     <label for="type_selector" class="form-label">Jenis Jasa</label>
                                     <select id="type_selector" class="form-select">
@@ -175,10 +193,14 @@
                                                      <td>{{ $item->nama_komponen }}</td>
                                                      <td>{{ $item->quantity }}</td>
                                                      <td>
-                                                         <input type="number" name="items[{{ $item->id }}][price]" class="form-control item-price" value="{{ $item->price }}">
+                                                         <input type="number" name="items[{{ $item->id }}][price]" class="form-control item-price" value="{{ $item->price }}" @readonly($commissionLocked)>
                                                      </td>
                                                      <td class="subtotal-display">@rupiah($item->subtotal)</td>
-                                                     <td><button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button></td>
+                                                     <td>
+                                                         @unless($commissionLocked)
+                                                         <button type="button" class="btn btn-sm btn-danger removeItemBtn">Hapus</button>
+                                                         @endunless
+                                                     </td>
                                                  </tr>
                                                  @endforeach
                                              </tbody>
@@ -268,7 +290,7 @@
                                             </tr>
                                             <tr>
                                                 <td id="cost_price_label">Biaya Modal</td>
-                                                <td><input type="number" name="cost_price" id="cost_price" class="form-control" value="{{ $transaction->cost_price }}"></td>
+                                                <td><input type="number" name="cost_price" id="cost_price" class="form-control" value="{{ $transaction->cost_price }}" @readonly($commissionLocked)></td>
                                             </tr>
                                             <tr>
                                                 <td>Profit</td>
