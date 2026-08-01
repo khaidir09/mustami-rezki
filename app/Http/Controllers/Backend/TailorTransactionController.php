@@ -19,16 +19,54 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TailorTransactionItem;
 use App\Models\TailorTransactionProduct;
+use App\Helpers\PesanHelper;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TailorTransactionController extends Controller
 {
-    public function index()
+    /**
+     * Kolom daftar transaksi yang boleh diurutkan dari header tabel, beserta labelnya.
+     * Dipakai sekaligus sebagai whitelist — kunci di luar daftar ini diabaikan.
+     */
+    private const SORT_COLUMNS = [
+        'transaction_code' => 'Kode Transaksi',
+        'customer' => 'Pelanggan',
+        'tailor' => 'Penjahit',
+        'transaction_date' => 'Tgl. Masuk',
+        'due_date' => 'Est. Selesai',
+        'total' => 'Total Biaya',
+        'items_count' => 'Komponen',
+        'status' => 'Status',
+    ];
+
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        // 1. Mulai query builder dengan eager loading
-        $query = TailorTransaction::with('customer', 'tailor', 'commission', 'supplier')->latest();
+        // Rentang default 3 bulan terakhir — daftar transaksi sudah menyentuh ribuan baris,
+        // sehingga memuat seluruh riwayat sekaligus membuat halaman berat.
+        $startDate = $request->input('start_date') ?: Carbon::now()->subMonths(3)->toDateString();
+        $endDate = $request->input('end_date') ?: Carbon::now()->toDateString();
+        $status = $request->input('status');
+        $search = trim((string) $request->input('search'));
+
+        // is_string() menjaga parameter berbentuk array (?sort[]=...) agar tidak masuk ke
+        // array_key_exists()/strtolower(); apa pun di luar whitelist jatuh ke urutan bawaan.
+        $sortInput = $request->input('sort');
+        $sort = is_string($sortInput) && array_key_exists($sortInput, self::SORT_COLUMNS) ? $sortInput : null;
+
+        $dirInput = $request->input('dir');
+        $dir = is_string($dirInput) && strtolower($dirInput) === 'asc' ? 'asc' : 'desc';
+
+        // 1. Mulai query builder dengan eager loading.
+        // Jumlah komponen & total produk terjual diambil sebagai agregat SQL, bukan dengan
+        // memuat seluruh relasi items/soldProducts per baris (N+1 pada daftar ribuan transaksi).
+        $query = TailorTransaction::query()
+            ->with(['customer:id,name,phone', 'tailor:id,name', 'supplier:id,name'])
+            ->withCount('items')
+            ->withSum('soldProducts', 'subtotal');
+
+        $this->applySorting($query, $sort, $dir);
 
         // 2. Cek jika pengguna HANYA memiliki peran 'Tailor'
         // (dan bukan 'Super Admin' atau 'Admin')
@@ -40,11 +78,100 @@ class TailorTransactionController extends Controller
             });
         }
 
-        // 3. Eksekusi query
-        // Jika Admin/Super Admin, tidak ada 'where' tambahan, jadi semua data akan diambil.
-        $transactions = $query->get();
+        if ($status) {
+            $query->where('status', $status);
+        }
 
-        return view('admin.backend.tailor.index', compact('transactions'));
+        // Pencarian sengaja mengabaikan rentang tanggal: pengguna mencari nota lama justru
+        // karena tanggalnya sudah tidak diingat.
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('transaction_code', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($c) use ($search) {
+                        $c->where('name', 'like', "%{$search}%");
+                    });
+            });
+        } else {
+            $query->whereDate('transaction_date', '>=', $startDate)
+                ->whereDate('transaction_date', '<=', $endDate);
+        }
+
+        // 3. Eksekusi query dengan paginasi sisi server
+        $transactions = $query->paginate(50)->withQueryString();
+
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']);
+        $sortColumns = self::SORT_COLUMNS;
+
+        return view('admin.backend.tailor.index', compact(
+            'transactions',
+            'isAdmin',
+            'startDate',
+            'endDate',
+            'status',
+            'search',
+            'sort',
+            'dir',
+            'sortColumns'
+        ));
+    }
+
+    /**
+     * Terapkan pengurutan sisi server untuk daftar transaksi.
+     *
+     * Kolom relasi (pelanggan, penjahit) dan kolom hitungan (total biaya) diurutkan lewat
+     * subquery/ekspresi agar tidak perlu join yang menggandakan baris. Arah urut sudah
+     * dibatasi ke 'asc'/'desc' oleh pemanggil sebelum masuk ke ekspresi mentah.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<TailorTransaction>  $query
+     */
+    private function applySorting($query, ?string $sort, string $dir): void
+    {
+        switch ($sort) {
+            case 'customer':
+                $query->orderBy(
+                    Customer::select('name')->whereColumn('customers.id', 'tailor_transactions.customer_id'),
+                    $dir
+                );
+                break;
+
+            case 'tailor':
+                // Kolom penjahit menampilkan nama penjahit (Internal) atau supplier (Eksternal).
+                $query->orderByRaw(
+                    'COALESCE('
+                        . '(select name from users where users.id = tailor_transactions.tailor_id), '
+                        . '(select name from suppliers where suppliers.id = tailor_transactions.supplier_id)'
+                        . ") {$dir}"
+                );
+                break;
+
+            case 'total':
+                // sold_products_sum_subtotal bernilai NULL bila transaksi tidak menjual produk.
+                $query->orderByRaw("(total_price + COALESCE(sold_products_sum_subtotal, 0)) {$dir}");
+                break;
+
+            case null:
+                $query->latest();
+                break;
+
+            default:
+                $query->orderBy($sort, $dir);
+        }
+
+        $query->orderByDesc('id'); // pemecah seri agar urutan antar halaman tetap stabil
+    }
+
+    /**
+     * Alihkan ke WhatsApp dengan nota transaksi.
+     *
+     * Nota dibangun saat tombol diklik, bukan saat daftar transaksi dirender — satu link
+     * berisi seluruh isi nota (~650 byte), jadi membangunnya per baris membuat halaman
+     * daftar membengkak ratusan KB untuk link yang hampir tidak pernah diklik.
+     */
+    public function whatsapp($id)
+    {
+        $transaction = TailorTransaction::with(['customer', 'items', 'soldProducts.product'])->findOrFail($id);
+
+        return redirect()->away(PesanHelper::generateTailorInvoiceLink($transaction));
     }
 
     /**

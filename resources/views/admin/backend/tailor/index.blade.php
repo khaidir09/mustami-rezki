@@ -10,7 +10,7 @@
                 <h4 class="fs-18 fw-semibold m-0">Semua Transaksi Jasa Jahit</h4>
             </div>
 
-            @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+            @if ($isAdmin)
                 <div class="text-end">
                     <a href="{{ route('add.tailor') }}" class="btn btn-secondary">Tambah Transaksi Jahit</a>
                 </div>
@@ -21,26 +21,70 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+
+                        <form action="{{ route('all.tailor') }}" method="GET" class="mb-4">
+                            <div class="row align-items-end g-2">
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label">Cari Kode / Pelanggan</label>
+                                    <input type="text" name="search" id="search" class="form-control" value="{{ $search }}" placeholder="JAHIT-0801 atau nama">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select name="status" id="status" class="form-select">
+                                        <option value="">Semua</option>
+                                        @foreach (['Antrian', 'Dikerjakan', 'Selesai', 'Diambil'] as $statusOption)
+                                            <option value="{{ $statusOption }}" @selected($status === $statusOption)>{{ $statusOption }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="start_date" class="form-label">Tgl. Masuk Dari</label>
+                                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="end_date" class="form-label">Sampai</label>
+                                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                    <a href="{{ route('all.tailor') }}" class="btn btn-secondary">Reset</a>
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">
+                                @if ($search !== '')
+                                    Menampilkan hasil pencarian <strong>"{{ $search }}"</strong> dari seluruh periode (filter tanggal diabaikan saat mencari).
+                                @else
+                                    Rentang tanggal masuk {{ \Carbon\Carbon::parse($startDate)->format('d-m-Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d-m-Y') }} &mdash; total {{ number_format($transactions->total(), 0, ',', '.') }} transaksi.
+                                @endif
+                            </div>
+                        </form>
+
                         <div class="table-responsive">
-                            <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
+                            <table class="table table-bordered nowrap">
                                 <thead>
                                     <tr>
                                         <th>No.</th>
-                                        <th>Kode Transaksi</th>
-                                        <th>Pelanggan</th>
-                                        <th>Penjahit</th>
-                                        <th>Tgl. Masuk</th>
-                                        <th>Est. Selesai</th>
-                                        <th>Total Biaya</th>
-                                        <th>Komponen</th>
-                                        <th>Status</th>
+                                        @foreach ($sortColumns as $column => $label)
+                                            <th>
+                                                {{-- Klik header membalik arah urut kolom aktif, kolom lain mulai dari menaik --}}
+                                                <a href="{{ route('all.tailor', array_merge(request()->except(['sort', 'dir', 'page']), ['sort' => $column, 'dir' => $sort === $column && $dir === 'asc' ? 'desc' : 'asc'])) }}"
+                                                   class="text-body text-decoration-none">
+                                                    {{ $label }}
+                                                    @if ($sort === $column)
+                                                        <span class="mdi mdi-arrow-{{ $dir === 'asc' ? 'up' : 'down' }}"></span>
+                                                    @else
+                                                        <span class="mdi mdi-unfold-more-horizontal text-muted"></span>
+                                                    @endif
+                                                </a>
+                                            </th>
+                                        @endforeach
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($transactions as $key => $item)
+                                    @forelse ($transactions as $key => $item)
                                     <tr>
-                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $transactions->firstItem() + $key }}</td>
                                         <td>
                                             <a title="Lihat Detail" href="{{ route('details.tailor', $item->id) }}">{{ $item->transaction_code }}</a>
                                         </td>
@@ -57,9 +101,9 @@
                                         <td>{{ \Carbon\Carbon::parse($item->transaction_date)->format('d-m-Y') }}</td>
                                         <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('d-m-Y') : '-' }}</td>
                                         {{-- Hitung total biaya keseluruhan jasa jahit dan harga produk yang digunakan dari stok toko --}}
-                                        <td>Rp {{ number_format($item->total_price + $item->soldProducts->sum('subtotal'), 0, ',', '.') }}</td>
+                                        <td>@rupiah($item->total_price + ($item->sold_products_sum_subtotal ?? 0))</td>
                                         {{-- Hitung total komponen dari jasa jahit --}}
-                                        <td>{{ $item->items->count() }}</td>
+                                        <td>{{ $item->items_count }}</td>
                                         <td>
                                             @switch($item->status)
                                                 @case('Antrian')
@@ -79,12 +123,13 @@
                                             @endswitch
                                         </td>
                                         <td>
-                                            @if (Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Admin'))
+                                            @if ($isAdmin)
                                             <a title="Edit" href="{{ route('edit.tailor', $item->id) }}" class="btn btn-success btn-sm"> <span class="mdi mdi-book-edit mdi-18px"></span> </a>
                                                 @if($item->customer->phone)
-                                                    <a title="Kirim Nota via WA" 
-                                                    href="{{ \App\Helpers\PesanHelper::generateTailorInvoiceLink($item) }}" 
-                                                    target="_blank" 
+                                                    {{-- Nota WA dibangun di server saat diklik (route wa.tailor), bukan saat daftar dirender --}}
+                                                    <a title="Kirim Nota via WA"
+                                                    href="{{ route('wa.tailor', $item->id) }}"
+                                                    target="_blank"
                                                     class="btn btn-primary btn-sm">
                                                         <span class="mdi mdi-message-text mdi-18px"></span>
                                                     </a>
@@ -93,27 +138,27 @@
                                             <a title="Delete" href="{{ route('delete.tailor', $item->id) }}" class="btn btn-danger btn-sm" id="delete"><span class="mdi mdi-delete mdi-18px"></span></a>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted py-4">
+                                            Tidak ada transaksi pada filter ini. Coba ubah rentang tanggal atau gunakan kolom pencarian.
+                                        </td>
+                                    </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
+
+                        @if ($transactions->hasPages())
+                            <div class="mt-3">
+                                {{ $transactions->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
-                </div> 
+                </div>
             </div>
         </div>
         
     </div> 
 </div> 
 @endsection
-
-@push('scripts')
-    <script>
-        $("#datatable").dataTable({
-            "columnDefs": [{
-                "sortable": false,
-                "targets": [9]
-            }],
-            "order": [[0, "asc"]]
-        });
-    </script>
-@endpush
