@@ -48,6 +48,16 @@ class DailyFinancialReportController extends Controller
             return redirect()->route('daily.financial.index')->with($notification);
         }
 
+        // Check for future reports (Sequential Closing Enforcement)
+        $futureSummary = DailyFinancialSummary::whereDate('date', '>', $date)->exists();
+        if ($futureSummary) {
+            $notification = [
+                'message' => 'Tidak dapat menutup buku untuk tanggal ' . $date->format('d-m-Y') . ' karena terdapat laporan tanggal setelahnya. Harap hapus laporan tanggal depan terlebih dahulu untuk menjaga integritas saldo.',
+                'alert-type' => 'error'
+            ];
+            return redirect()->route('daily.financial.index')->with($notification);
+        }
+
         // Hitung Rincian Pemasukan (Income)
         $salesOnlyIncome = Sale::whereDate('date', $date)->sum('grand_total');
         $tailorProductIncome = TailorTransactionProduct::whereHas('tailorTransaction', function ($query) use ($date) {
@@ -77,8 +87,25 @@ class DailyFinancialReportController extends Controller
 
         if ($lastSummary) {
             // Jika ketemu (misal: data hari Kamis, sedangkan hari ini Sabtu),
-            // maka closing balance Kamis otomatis jadi opening balance Sabtu.
-            $openingBalance = $lastSummary->closing_balance;
+            // Cek apakah ada gap (hari Jumat yang kosong)
+            $lastDate = Carbon::parse($lastSummary->date);
+            $yesterday = $date->copy()->subDay();
+
+            // Jika ada selisih hari (missal lastDate < yesterday)
+            if ($lastDate->lt($yesterday)) {
+                // Hitung akumulasi transaksi selama gap (mulai dari lastDate + 1 hari sampai yesterday)
+                $gapStart = $lastDate->copy()->addDay()->startOfDay();
+                $gapEnd = $yesterday->endOfDay();
+
+                $gapIncome = $this->calculateIncome($gapStart, $gapEnd);
+                $gapExpense = $this->calculateExpense($gapStart, $gapEnd);
+
+                // Opening balance hari ini = Closing balance terakhir + Transaksi selama gap
+                $openingBalance = $lastSummary->closing_balance + $gapIncome - $gapExpense;
+            } else {
+                // Tidak ada gap (berurutan), langsung pakai closing balance kemarin
+                $openingBalance = $lastSummary->closing_balance;
+            }
         } else {
             // 2. Jika SAMA SEKALI tidak ada data hari sebelumnya (misal: penggunaan pertama kali)
             // Maka hitung mundur dari Monthly Summary (seperti logika awal Anda)
